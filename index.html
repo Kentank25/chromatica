@@ -4,66 +4,81 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Alchemist Simulator | Master Mixer</title>
-    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
   </head>
-  <body>
-    <div class="game-container">
-      <div class="header-stats">
-        <div class="score-display">
-          <span>⭐ Skor:</span>
+  <body class="min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100 flex items-center justify-center px-4">
+    <div id="mode-menu" class="mode-screen fixed inset-0 flex items-center justify-center bg-slate-950/70 backdrop-blur">
+      <div class="mode-card bg-slate-900/80 border border-slate-800 shadow-2xl rounded-2xl p-6 max-w-sm w-full text-center space-y-4">
+        <h2 class="text-xl font-semibold">Pilih Mode</h2>
+        <p class="text-sm text-slate-300">Pilih Classic untuk santai (tanpa leveling) atau Ranked untuk progres level.</p>
+        <div class="mode-menu-buttons grid grid-cols-2 gap-3">
+          <button id="btn-menu-classic" class="btn-secondary w-full">Classic</button>
+          <button id="btn-menu-ranked" class="btn-main w-full">Ranked</button>
+        </div>
+        <button id="btn-howto" class="btn-secondary btn-compact mode-howto w-full">How to Use</button>
+      </div>
+    </div>
+
+    <div class="game-container hidden mx-auto max-w-md w-full bg-slate-900/70 border border-slate-800 shadow-2xl rounded-2xl backdrop-blur p-5 space-y-4">
+      <div class="header-stats flex items-center justify-between gap-3 bg-slate-900/60 rounded-xl px-4 py-2">
+        <div class="score-display flex items-center gap-2 text-sm">
+          <span id="icon-score" class="icon text-amber-300"></span>
+          <span>Skor:</span>
           <span id="score">0</span>
         </div>
-        <div class="highscore-display">
-          <span>🏆</span>
+        <div class="highscore-display flex items-center gap-2 text-sm">
+          <span id="icon-highscore" class="icon text-amber-200"></span>
           <span id="highscore">0</span>
         </div>
-        <div class="level-display">
-          <span>🎯</span>
-          <select id="level-select">
-            <option value="easy">Easy</option>
-            <option value="medium" selected>Medium</option>
-            <option value="hard">Hard</option>
-          </select>
+        <div class="level-display flex items-center gap-2 text-sm">
+          <span id="icon-level" class="icon text-sky-300"></span>
+          <span id="level-text">Lv 1</span>
+          <span id="difficulty-text">Easy</span>
+          <button id="header-hint" class="btn-hint-icon" title="Gunakan tombol Hint untuk membuka satu komponen RGB per klik. Kuota hint tergantung level dan achievement."><span id="icon-header-hint" class="icon"></span></button>
+          <button id="btn-pause" class="btn-secondary btn-compact" title="Jeda / Lanjutkan"><span id="icon-pause" class="icon"></span><span class="sr-only">Pause</span></button>
+          <button id="btn-back-menu" class="btn-secondary btn-compact" title="Kembali ke menu mode"><span id="icon-back" class="icon"></span><span class="sr-only">Menu</span></button>
         </div>
       </div>
       
-      <div class="stats-bar">
-        <span class="stat-item success">✅ <span id="stat-success">0</span></span>
-        <span class="stat-item fail">❌ <span id="stat-fail">0</span></span>
-        <span class="stat-item total">📊 <span id="stat-total">0</span></span>
-        <button id="btn-achievements" class="btn-achievement">🏅</button>
+      <div class="stats-bar flex items-center justify-center gap-3 text-xs bg-slate-900/60 rounded-xl px-3 py-2">
+        <span class="stat-item success"><span id="icon-success" class="icon"></span> <span id="stat-success">0</span></span>
+        <span class="stat-item fail"><span id="icon-fail" class="icon"></span> <span id="stat-fail">0</span></span>
+        <span class="stat-item total"><span id="icon-total" class="icon"></span> <span id="stat-total">0</span></span>
+        <button id="btn-achievements" class="btn-achievement"><span id="icon-achievements" class="icon"></span><span class="sr-only">Achievement</span></button>
       </div>
       
-      <h1>Alchemist Mixer</h1>
-      <div class="customer-area">
-        <div id="customer-info">
-          <span id="customer-emoji">🧙‍♂️</span>
-          <p id="customer-request">"Buatkan aku ramuan ini!"</p>
+      <h1 class="text-center text-2xl font-semibold">Alchemist Mixer</h1>
+      <div class="customer-area bg-slate-900/60 rounded-xl p-3 flex flex-col gap-2">
+        <div id="customer-info" class="flex items-center justify-between gap-3">
+          <span id="customer-emoji" class="text-3xl">🧙‍♂️</span>
+          <p id="customer-request" class="text-sm text-slate-200 flex-1 text-right">"Buatkan aku ramuan ini!"</p>
         </div>
-        <div class="timer-bar">
-          <div id="timer-fill"></div>
+        <div class="timer-bar h-2 bg-slate-700 rounded-full overflow-hidden">
+          <div id="timer-fill" class="h-full"></div>
         </div>
       </div>
       
       <!-- Waiting State: Tampil saat tidak ada orderan -->
-      <div id="waiting-state" class="waiting-area hidden">
-        <p>☕ Tidak ada pelanggan...</p>
-        <button id="btn-next-customer" class="btn-main pulse-btn">📋 Ambil Orderan Baru</button>
+      <div id="waiting-state" class="waiting-area hidden bg-slate-900/60 rounded-xl p-4 text-center space-y-3">
+        <p class="text-slate-300"><span id="icon-waiting" class="icon mr-1"></span>Tidak ada pelanggan...</p>
+        <button id="btn-next-customer" class="btn-main pulse-btn w-full"><span id="icon-next" class="icon mr-1"></span>Ambil Orderan Baru</button>
       </div>
 
-      <div class="mission-card">
-        <p>Target Warna:</p>
-        <div id="target-box" class="color-preview"></div>
-        <div class="target-rgb-hint hidden" id="target-rgb-hint">
+      <div class="mission-card bg-slate-900/60 rounded-xl p-4 space-y-3">
+        <p class="text-sm text-slate-300">Target Warna:</p>
+        <div id="target-box" class="color-preview mx-auto"></div>
+        <div class="target-rgb-hint hidden flex items-center justify-center gap-2" id="target-rgb-hint">
           <span class="rgb-value red-text">R: <span id="target-r">?</span></span>
           <span class="rgb-value green-text">G: <span id="target-g">?</span></span>
           <span class="rgb-value blue-text">B: <span id="target-b">?</span></span>
         </div>
-        <button id="btn-hint" class="btn-hint">💡 Hint (3x)</button>
-        <p id="hint">Tahan tombol untuk menuang!</p>
+        <button id="btn-hint" class="btn-hint w-full"><span id="icon-hint" class="icon mr-1"></span><span class="hint-label">Hint</span></button>
+        <p id="hint" class="text-xs text-slate-400">Tahan tombol untuk menuang!</p>
       </div>
 
-      <div class="cauldron-area">
+      <div class="cauldron-area flex justify-center">
         <div class="cauldron">
           <div id="liquid">
             <div id="bubbles-container"></div>
@@ -71,20 +86,20 @@
         </div>
       </div>
       
-      <div class="rgb-preview">
+      <div class="rgb-preview flex justify-center gap-2 text-xs font-semibold">
         <span class="rgb-value red-text">R: <span id="rgb-r">0</span></span>
         <span class="rgb-value green-text">G: <span id="rgb-g">0</span></span>
         <span class="rgb-value blue-text">B: <span id="rgb-b">0</span></span>
       </div>
 
-      <div class="controls">
-        <div class="bottle-group">
+      <div class="controls space-y-3">
+        <div class="bottle-group grid grid-cols-3 gap-2">
           <button class="btn-pour red" id="btn-r">Merah</button>
           <button class="btn-pour green" id="btn-g">Hijau</button>
           <button class="btn-pour blue" id="btn-b">Biru</button>
         </div>
 
-        <div class="action-group">
+        <div class="action-group grid grid-cols-2 gap-2">
           <button id="btn-submit" class="btn-main">Sajikan Ramuan!</button>
           <button id="btn-reset" class="btn-secondary">Buang & Ulangi</button>
         </div>
@@ -92,12 +107,12 @@
     </div>
 
     <div id="result-modal" class="modal hidden">
-      <div class="modal-content">
+      <div class="modal-content w-full max-w-sm">
         <h2 id="result-title">Hasil Ramuan</h2>
         <p id="result-score">Akurasi: 0%</p>
         <p id="result-bonus" class="bonus-text"></p>
         <p id="combo-display" class="combo-text"></p>
-        <button class="btn-main" onclick="closeResultModal()">OK</button>
+        <button class="btn-main w-full">OK</button>
       </div>
     </div>
     
@@ -105,28 +120,28 @@
     <div id="confetti-container"></div>
     
     <!-- Tutorial Modal -->
-    <div id="tutorial-modal" class="modal">
-      <div class="modal-content tutorial-content">
-        <h2>🧪 Selamat Datang, Alchemist!</h2>
+    <div id="tutorial-modal" class="modal hidden">
+      <div class="modal-content tutorial-content w-full max-w-md">
+        <h2>Selamat Datang, Alchemist!</h2>
         <div class="tutorial-steps">
           <div class="tutorial-step">
-            <span class="step-icon">🎨</span>
+            <span class="step-icon icon" id="tutorial-icon-target"></span>
             <p>Lihat <strong>Target Warna</strong> yang diminta pelanggan</p>
           </div>
           <div class="tutorial-step">
-            <span class="step-icon">🧪</span>
+            <span class="step-icon icon" id="tutorial-icon-pour"></span>
             <p><strong>Tahan tombol</strong> Merah/Hijau/Biru untuk menuang</p>
           </div>
           <div class="tutorial-step">
-            <span class="step-icon">👁️</span>
+            <span class="step-icon icon" id="tutorial-icon-vision"></span>
             <p>Perhatikan nilai <strong>RGB</strong> untuk akurasi</p>
           </div>
           <div class="tutorial-step">
-            <span class="step-icon">⏱️</span>
+            <span class="step-icon icon" id="tutorial-icon-timer"></span>
             <p>Selesaikan sebelum <strong>waktu habis!</strong></p>
           </div>
         </div>
-        <button class="btn-main" onclick="closeTutorial()">Mulai Bermain! 🚀</button>
+        <button class="btn-main w-full">Mulai Bermain! 🚀</button>
         <label class="dont-show-again">
           <input type="checkbox" id="dont-show-tutorial"> Jangan tampilkan lagi
         </label>
@@ -135,24 +150,24 @@
     
     <!-- Achievement Modal -->
     <div id="achievement-modal" class="modal hidden">
-      <div class="modal-content achievement-content">
-        <h2>🏅 Achievement</h2>
+      <div class="modal-content achievement-content w-full max-w-md">
+        <h2 class="flex items-center gap-2 justify-center"><span id="icon-achievement-title" class="icon"></span>Achievement</h2>
         <div id="achievement-list" class="achievement-list">
           <!-- Achievements will be populated by JS -->
         </div>
-        <button class="btn-main" onclick="closeAchievementModal()">Tutup</button>
+        <button class="btn-main w-full">Tutup</button>
       </div>
     </div>
     
     <!-- Achievement Popup -->
     <div id="achievement-popup" class="achievement-popup hidden">
-      <span class="popup-icon">🎉</span>
+      <span class="popup-icon icon" id="popup-achievement-icon"></span>
       <div class="popup-text">
         <strong>Achievement Unlocked!</strong>
         <p id="popup-achievement-name"></p>
       </div>
     </div>
 
-    <script src="script.js"></script>
+    <script type="module" src="main.js"></script>
   </body>
 </html>
