@@ -6,168 +6,514 @@
     <title>Alchemist Simulator | Master Mixer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
   </head>
-  <body class="min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100 flex items-center justify-center px-4">
-    <div id="mode-menu" class="mode-screen fixed inset-0 flex items-center justify-center bg-slate-950/70 backdrop-blur">
-      <div class="mode-card bg-slate-900/80 border border-slate-800 shadow-2xl rounded-2xl p-6 max-w-sm w-full text-center space-y-4">
-        <h2 class="text-xl font-semibold">Pilih Mode</h2>
-        <p class="text-sm text-slate-300">Pilih Classic untuk santai (tanpa leveling) atau Ranked untuk progres level.</p>
-        <div class="mode-menu-buttons grid grid-cols-2 gap-3">
-          <button id="btn-menu-classic" class="btn-secondary w-full">Classic</button>
-          <button id="btn-menu-ranked" class="btn-main w-full">Ranked</button>
-        </div>
-        <button id="btn-howto" class="btn-secondary btn-compact mode-howto w-full">How to Use</button>
-      </div>
-    </div>
+  <body class="overflow-x-hidden">
+    <div class="game-wrapper">
+      <!-- Mode Menu Overlay -->
+      <div id="mode-menu" class="modal-overlay">
+        <div class="modal-card">
+          <div class="space-y-2">
+            <h1
+              class="text-3xl text-transparent bg-clip-text bg-linear-to-r from-pink-300 via-purple-300 to-indigo-300 text-glow"
+            >
+              Alchemist Simulator
+            </h1>
+            <p class="text-magical-200">Master the Art of Color Mixing</p>
+          </div>
 
-    <div class="game-container hidden mx-auto max-w-md w-full bg-slate-900/70 border border-slate-800 shadow-2xl rounded-2xl backdrop-blur p-5 space-y-4">
-      <div class="header-stats flex items-center justify-between gap-3 bg-slate-900/60 rounded-xl px-4 py-2">
-        <div class="score-display flex items-center gap-2 text-sm">
-          <span id="icon-score" class="icon text-amber-300"></span>
-          <span>Skor:</span>
-          <span id="score">0</span>
-        </div>
-        <div class="highscore-display flex items-center gap-2 text-sm">
-          <span id="icon-highscore" class="icon text-amber-200"></span>
-          <span id="highscore">0</span>
-        </div>
-        <div class="level-display flex items-center gap-2 text-sm">
-          <span id="icon-level" class="icon text-sky-300"></span>
-          <span id="level-text">Lv 1</span>
-          <span id="difficulty-text">Easy</span>
-          <button id="header-hint" class="btn-hint-icon" title="Gunakan tombol Hint untuk membuka satu komponen RGB per klik. Kuota hint tergantung level dan achievement."><span id="icon-header-hint" class="icon"></span></button>
-          <button id="btn-pause" class="btn-secondary btn-compact" title="Jeda / Lanjutkan"><span id="icon-pause" class="icon"></span><span class="sr-only">Pause</span></button>
-          <button id="btn-back-menu" class="btn-secondary btn-compact" title="Kembali ke menu mode"><span id="icon-back" class="icon"></span><span class="sr-only">Menu</span></button>
-        </div>
-      </div>
-      
-      <div class="stats-bar flex items-center justify-center gap-3 text-xs bg-slate-900/60 rounded-xl px-3 py-2">
-        <span class="stat-item success"><span id="icon-success" class="icon"></span> <span id="stat-success">0</span></span>
-        <span class="stat-item fail"><span id="icon-fail" class="icon"></span> <span id="stat-fail">0</span></span>
-        <span class="stat-item total"><span id="icon-total" class="icon"></span> <span id="stat-total">0</span></span>
-        <button id="btn-achievements" class="btn-achievement"><span id="icon-achievements" class="icon"></span><span class="sr-only">Achievement</span></button>
-      </div>
-      
-      <h1 class="text-center text-2xl font-semibold">Alchemist Mixer</h1>
-      <div class="customer-area bg-slate-900/60 rounded-xl p-3 flex flex-col gap-2">
-        <div id="customer-info" class="flex items-center justify-between gap-3">
-          <span id="customer-emoji" class="text-3xl">🧙‍♂️</span>
-          <p id="customer-request" class="text-sm text-slate-200 flex-1 text-right">"Buatkan aku ramuan ini!"</p>
-        </div>
-        <div class="timer-bar h-2 bg-slate-700 rounded-full overflow-hidden">
-          <div id="timer-fill" class="h-full"></div>
-        </div>
-      </div>
-      
-      <!-- Waiting State: Tampil saat tidak ada orderan -->
-      <div id="waiting-state" class="waiting-area hidden bg-slate-900/60 rounded-xl p-4 text-center space-y-3">
-        <p class="text-slate-300"><span id="icon-waiting" class="icon mr-1"></span>Tidak ada pelanggan...</p>
-        <button id="btn-next-customer" class="btn-main pulse-btn w-full"><span id="icon-next" class="icon mr-1"></span>Ambil Orderan Baru</button>
-      </div>
+          <div class="space-y-4 py-4">
+            <button
+              id="btn-menu-classic"
+              class="btn-secondary w-full justify-between group"
+            >
+              <span class="flex items-center gap-2">
+                <span class="icon text-magical-300 bg-white/10 p-1.5 rounded-lg"
+                  >☕</span
+                >
+                <span class="text-lg">Classic Mode</span>
+              </span>
+              <span
+                class="text-xs text-magical-300 opacity-0 group-hover:opacity-100 transition-opacity"
+                >Relaxed</span
+              >
+            </button>
 
-      <div class="mission-card bg-slate-900/60 rounded-xl p-4 space-y-3">
-        <p class="text-sm text-slate-300">Target Warna:</p>
-        <div id="target-box" class="color-preview mx-auto"></div>
-        <div class="target-rgb-hint hidden flex items-center justify-center gap-2" id="target-rgb-hint">
-          <span class="rgb-value red-text">R: <span id="target-r">?</span></span>
-          <span class="rgb-value green-text">G: <span id="target-g">?</span></span>
-          <span class="rgb-value blue-text">B: <span id="target-b">?</span></span>
+            <button
+              id="btn-menu-ranked"
+              class="btn-main w-full justify-between group relative overflow-hidden"
+            >
+              <span class="flex items-center gap-2 relative z-10">
+                <span class="icon text-white bg-white/20 p-1.5 rounded-lg"
+                  >🏆</span
+                >
+                <span class="text-lg">Ranked Mode</span>
+              </span>
+              <span
+                class="text-xs text-white/80 relative z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+                >Level Up!</span
+              >
+              <div
+                class="absolute inset-0 bg-linear-to-r from-pink-500/20 to-purple-500/20 blur-xl group-hover:opacity-100 transition-opacity"
+              ></div>
+            </button>
+          </div>
+
+          <button
+            id="btn-howto"
+            class="text-sm text-magical-300 hover:text-white transition-colors flex items-center justify-center gap-2 w-full py-2"
+          >
+            <span class="icon">📖</span> How to Play
+          </button>
         </div>
-        <button id="btn-hint" class="btn-hint w-full"><span id="icon-hint" class="icon mr-1"></span><span class="hint-label">Hint</span></button>
-        <p id="hint" class="text-xs text-slate-400">Tahan tombol untuk menuang!</p>
       </div>
 
-      <div class="cauldron-area flex justify-center">
-        <div class="cauldron">
-          <div id="liquid">
-            <div id="bubbles-container"></div>
+      <!-- Ambient Background Elements -->
+      <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div
+          class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-600/20 rounded-full blur-[120px]"
+        ></div>
+        <div
+          class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-rose-600/20 rounded-full blur-[120px]"
+          style="animation-delay: 1s"
+        ></div>
+      </div>
+
+      <!-- Main Game Container -->
+      <div class="game-container hidden">
+        <div class="game-grid">
+          <!-- Left Column: Info & Quest -->
+          <div class="flex flex-col gap-4">
+            <!-- Header / Stats (Moved here for desktop layout alignment) -->
+            <div class="header-stats justify-between">
+              <div class="flex items-center gap-4">
+                <div class="stat-badge">
+                  <span id="icon-score" class="icon text-amber-300"></span>
+                  <span id="score" class="font-bold text-white">0</span>
+                </div>
+                <div class="stat-badge">
+                  <span id="icon-highscore" class="icon text-amber-100"></span>
+                  <span id="highscore" class="text-amber-100">0</span>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <button
+                  id="btn-achievements"
+                  class="btn-achievement text-amber-300 hover:text-amber-100 p-2 rounded-lg hover:bg-white/5 transition-colors"
+                >
+                  <span id="icon-achievements" class="icon"></span>
+                </button>
+                <button
+                  id="btn-back-menu"
+                  class="btn-secondary btn-compact p-2! rounded-lg!"
+                  title="Menu"
+                >
+                  <span id="icon-back" class="icon"></span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Level Info -->
+            <div class="flex justify-between items-center px-1">
+              <div class="stat-badge bg-indigo-500/20! border-indigo-400/20!">
+                <span id="icon-level" class="icon text-indigo-300"></span>
+                <span id="level-text" class="text-indigo-100">Lv 1</span>
+              </div>
+              <div class="flex gap-2">
+                <span
+                  class="stat-badge bg-emerald-500/10! text-emerald-300! border-emerald-500/20!"
+                >
+                  <span id="icon-success" class="icon mr-1"></span>
+                  <span id="stat-success">0</span>
+                </span>
+                <span
+                  class="stat-badge bg-rose-500/10! text-rose-300! border-rose-500/20!"
+                >
+                  <span id="icon-fail" class="icon mr-1"></span>
+                  <span id="stat-fail">0</span>
+                </span>
+              </div>
+            </div>
+
+            <!-- Customer / Order Area -->
+            <div class="customer-area group">
+              <div
+                id="customer-info"
+                class="flex items-center justify-between gap-4 relative z-10"
+              >
+                <div class="relative">
+                  <div
+                    class="absolute inset-0 bg-purple-500/30 blur-xl rounded-full"
+                  ></div>
+                  <span
+                    id="customer-emoji"
+                    class="text-5xl md:text-6xl relative z-10 filter drop-shadow-lg animate-[float_4s_ease-in-out_infinite]"
+                    >🧙‍♂️</span
+                  >
+                </div>
+
+                <div class="flex-1 text-right space-y-1">
+                  <p
+                    class="text-xs text-magical-300 uppercase tracking-widest font-bold"
+                  >
+                    Request
+                  </p>
+                  <p
+                    id="customer-request"
+                    class="text-sm md:text-base text-white italic font-medium"
+                  >
+                    "Brew me this potion!"
+                  </p>
+                </div>
+              </div>
+
+              <div class="timer-bar mt-3 h-2!">
+                <div id="timer-fill"></div>
+              </div>
+            </div>
+
+            <!-- Mission / Target (Moved Here) -->
+            <div
+              class="mission-card glass-panel rounded-2xl p-4 relative overflow-hidden flex flex-row items-center justify-between gap-4"
+            >
+              <div class="flex flex-col gap-1">
+                <p
+                  class="text-xs text-magical-300 uppercase tracking-widest font-bold"
+                >
+                  Target
+                </p>
+                <button
+                  id="btn-hint"
+                  class="btn-secondary px-3! py-1! text-[10px] gap-1 w-fit"
+                >
+                  <span
+                    id="icon-hint"
+                    class="icon text-amber-300 w-3 h-3"
+                  ></span>
+                  Hint
+                </button>
+              </div>
+
+              <div class="flex items-center gap-4">
+                <div
+                  id="target-rgb-hint"
+                  class="hidden grid-cols-3 gap-2 text-center bg-black/20 rounded-xl p-1.5"
+                >
+                  <div class="space-y-0.5">
+                    <span class="text-[8px] text-rose-400 font-bold block"
+                      >R</span
+                    ><span id="target-r" class="text-xs font-mono text-white"
+                      >?</span
+                    >
+                  </div>
+                  <div class="space-y-0.5">
+                    <span class="text-[8px] text-emerald-400 font-bold block"
+                      >G</span
+                    ><span id="target-g" class="text-xs font-mono text-white"
+                      >?</span
+                    >
+                  </div>
+                  <div class="space-y-0.5">
+                    <span class="text-[8px] text-sky-400 font-bold block"
+                      >B</span
+                    ><span id="target-b" class="text-xs font-mono text-white"
+                      >?</span
+                    >
+                  </div>
+                </div>
+                <div
+                  id="target-box"
+                  class="color-target-box bg-black w-16 h-16! rounded-xl!"
+                ></div>
+              </div>
+
+              <button
+                id="header-hint"
+                class="absolute top-2 right-2 text-magical-300 hover:text-white opacity-50"
+              >
+                <span id="icon-header-hint" class="icon w-3 h-3"></span>
+              </button>
+            </div>
+
+            <!-- Waiting State (Overlay in Left Col or Full?) -->
+            <!-- We keep waiting state inside the grid flow or overlay? Let's keep it here but we might need to hide other elements when waiting. 
+                 Existing logic hides .customer-area, let's preserve that behavior.
+            -->
+            <div
+              id="waiting-state"
+              class="hidden flex flex-col items-center justify-center py-10 space-y-6 panel-card border-dashed border-2 border-white/10!"
+            >
+              <div class="relative">
+                <div
+                  class="absolute inset-0 bg-indigo-500/20 blur-2xl rounded-full"
+                ></div>
+                <span class="text-6xl grayscale opacity-50 block">💤</span>
+              </div>
+              <p class="text-magical-200 font-medium">No customers yet...</p>
+              <button
+                id="btn-next-customer"
+                class="btn-main w-full shadow-lg shadow-pink-500/20"
+              >
+                <span id="icon-next" class="icon mr-2"></span> Take Order
+              </button>
+            </div>
+          </div>
+
+          <!-- Right Column: Action Area -->
+          <div class="flex flex-col gap-4 h-full">
+            <!-- Top Controls (Pause) -->
+            <div class="flex justify-end mb-2">
+              <button
+                id="btn-pause"
+                class="btn-secondary btn-compact p-2! rounded-lg!"
+                title="Pause"
+              >
+                <span id="icon-pause" class="icon"></span>
+              </button>
+            </div>
+
+            <!-- Cauldron & Mixing -->
+            <div
+              class="cauldron-area relative flex-1 flex flex-col justify-center items-center py-4"
+            >
+              <div
+                class="cauldron w-36! h-44! border-4 rounded-b-[1.5rem]! shadow-2xl"
+              >
+                <div id="liquid"><div id="bubbles-container"></div></div>
+                <div
+                  class="absolute top-4 left-3 w-3 h-12 bg-white/10 rounded-full blur-[1px]"
+                ></div>
+                <div
+                  class="absolute top-4 right-5 w-1.5 h-4 bg-white/10 rounded-full blur-[1px]"
+                ></div>
+              </div>
+
+              <!-- RGB Current Values -->
+              <div class="mt-3 z-20">
+                <div
+                  class="rgb-display bg-[#15141b]/90 backdrop-blur-xl rounded-full px-4 py-1.5 border border-white/20 shadow-lg ring-1 ring-white/5 text-xs"
+                >
+                  <span class="text-rose-400 font-mono"
+                    >R:<span id="rgb-r" class="ml-1">0</span></span
+                  >
+                  <div class="w-px h-3 bg-white/10 mx-2"></div>
+                  <span class="text-emerald-400 font-mono"
+                    >G:<span id="rgb-g" class="ml-1">0</span></span
+                  >
+                  <div class="w-px h-3 bg-white/10 mx-2"></div>
+                  <span class="text-sky-400 font-mono"
+                    >B:<span id="rgb-b" class="ml-1">0</span></span
+                  >
+                </div>
+              </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls space-y-3 mt-auto">
+              <div class="bottle-group grid grid-cols-3 gap-2">
+                <div class="flex flex-col gap-1">
+                  <button class="btn-pour red group h-14!" id="btn-r">
+                    <span class="relative z-10 drop-shadow-md text-sm"
+                      >Red</span
+                    >
+                    <div
+                      class="absolute inset-x-0 bottom-0 h-1 bg-white/50 group-active:h-full transition-all duration-200 opacity-30"
+                    ></div>
+                  </button>
+                  <button
+                    id="btn-dec-r"
+                    class="btn-decrement bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/20 text-rose-200 rounded-xl py-1 text-xs font-bold transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    −
+                  </button>
+                </div>
+                <div class="flex flex-col gap-1">
+                  <button class="btn-pour green group h-14!" id="btn-g">
+                    <span class="relative z-10 drop-shadow-md text-sm"
+                      >Green</span
+                    >
+                    <div
+                      class="absolute inset-x-0 bottom-0 h-1 bg-white/50 group-active:h-full transition-all duration-200 opacity-30"
+                    ></div>
+                  </button>
+                  <button
+                    id="btn-dec-g"
+                    class="btn-decrement bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/20 text-emerald-200 rounded-xl py-1 text-xs font-bold transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    −
+                  </button>
+                </div>
+                <div class="flex flex-col gap-1">
+                  <button class="btn-pour blue group h-14!" id="btn-b">
+                    <span class="relative z-10 drop-shadow-md text-sm"
+                      >Blue</span
+                    >
+                    <div
+                      class="absolute inset-x-0 bottom-0 h-1 bg-white/50 group-active:h-full transition-all duration-200 opacity-30"
+                    ></div>
+                  </button>
+                  <button
+                    id="btn-dec-b"
+                    class="btn-decrement bg-sky-500/20 hover:bg-sky-500/30 border border-sky-500/20 text-sky-200 rounded-xl py-1 text-xs font-bold transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    −
+                  </button>
+                </div>
+              </div>
+
+              <div class="action-group grid grid-cols-4 gap-2">
+                <button
+                  id="btn-reset"
+                  class="btn-secondary col-span-1 bg-rose-500/10! hover:bg-rose-500/20! border-rose-500/20! text-rose-200! py-3!"
+                  title="Empty"
+                >
+                  🗑️
+                </button>
+                <button
+                  id="btn-submit"
+                  class="btn-main col-span-3 text-base shadow-pink-500/20 py-3!"
+                >
+                  ✨ Serve
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      
-      <div class="rgb-preview flex justify-center gap-2 text-xs font-semibold">
-        <span class="rgb-value red-text">R: <span id="rgb-r">0</span></span>
-        <span class="rgb-value green-text">G: <span id="rgb-g">0</span></span>
-        <span class="rgb-value blue-text">B: <span id="rgb-b">0</span></span>
-      </div>
+    </div>
 
-      <div class="controls space-y-3">
-        <div class="bottle-group grid grid-cols-3 gap-2">
-          <button class="btn-pour red" id="btn-r">Merah</button>
-          <button class="btn-pour green" id="btn-g">Hijau</button>
-          <button class="btn-pour blue" id="btn-b">Biru</button>
+    <!-- Result Modal -->
+    <div id="result-modal" class="modal-overlay hidden">
+      <div class="modal-card">
+        <h2
+          id="result-title"
+          class="text-2xl text-transparent bg-clip-text bg-linear-to-r from-pink-300 to-purple-300"
+        >
+          Result
+        </h2>
+        <div class="py-4 space-y-2 relative">
+          <div
+            class="absolute inset-0 bg-linear-to-b from-white/5 to-transparent blur-xl rounded-full"
+          ></div>
+          <p
+            id="result-score"
+            class="text-4xl font-bold text-white relative z-10"
+          >
+            0%
+          </p>
+          <p id="result-bonus" class="bonus-text relative z-10"></p>
+          <p id="combo-display" class="combo-text font-mono relative z-10"></p>
         </div>
-
-        <div class="action-group grid grid-cols-2 gap-2">
-          <button id="btn-submit" class="btn-main">Sajikan Ramuan!</button>
-          <button id="btn-reset" class="btn-secondary">Buang & Ulangi</button>
-        </div>
+        <button class="btn-main w-full">Next Customer</button>
       </div>
     </div>
 
-    <div id="result-modal" class="modal hidden">
-      <div class="modal-content w-full max-w-sm">
-        <h2 id="result-title">Hasil Ramuan</h2>
-        <p id="result-score">Akurasi: 0%</p>
-        <p id="result-bonus" class="bonus-text"></p>
-        <p id="combo-display" class="combo-text"></p>
-        <button class="btn-main w-full">OK</button>
-      </div>
-    </div>
-    
     <!-- Confetti Container -->
     <div id="confetti-container"></div>
-    
+
     <!-- Tutorial Modal -->
-    <div id="tutorial-modal" class="modal hidden">
-      <div class="modal-content tutorial-content w-full max-w-md">
-        <h2>Selamat Datang, Alchemist!</h2>
-        <div class="tutorial-steps">
+    <div id="tutorial-modal" class="modal-overlay hidden">
+      <div class="modal-card max-w-md text-left">
+        <h2 class="text-center text-xl mb-2">Alchemist's Guide</h2>
+        <div class="tutorial-steps space-y-3">
           <div class="tutorial-step">
-            <span class="step-icon icon" id="tutorial-icon-target"></span>
-            <p>Lihat <strong>Target Warna</strong> yang diminta pelanggan</p>
+            <span
+              class="step-icon icon text-pink-400 bg-pink-400/10 p-2 rounded-lg"
+              id="tutorial-icon-target"
+            ></span>
+            <div>
+              <p class="font-bold text-white text-sm">Target Color</p>
+              <p class="text-xs text-magical-200">
+                Match the color shown in the box.
+              </p>
+            </div>
           </div>
           <div class="tutorial-step">
-            <span class="step-icon icon" id="tutorial-icon-pour"></span>
-            <p><strong>Tahan tombol</strong> Merah/Hijau/Biru untuk menuang</p>
+            <span
+              class="step-icon icon text-purple-400 bg-purple-400/10 p-2 rounded-lg"
+              id="tutorial-icon-pour"
+            ></span>
+            <div>
+              <p class="font-bold text-white text-sm">Mix RGB</p>
+              <p class="text-xs text-magical-200">
+                Hold Red, Green, Blue buttons to pour.
+              </p>
+            </div>
           </div>
           <div class="tutorial-step">
-            <span class="step-icon icon" id="tutorial-icon-vision"></span>
-            <p>Perhatikan nilai <strong>RGB</strong> untuk akurasi</p>
+            <span
+              class="step-icon icon text-sky-400 bg-sky-400/10 p-2 rounded-lg"
+              id="tutorial-icon-vision"
+            ></span>
+            <div>
+              <p class="font-bold text-white text-sm">Precision</p>
+              <p class="text-xs text-magical-200">
+                Watch the numbers! Accuracy is key.
+              </p>
+            </div>
           </div>
           <div class="tutorial-step">
-            <span class="step-icon icon" id="tutorial-icon-timer"></span>
-            <p>Selesaikan sebelum <strong>waktu habis!</strong></p>
+            <span
+              class="step-icon icon text-amber-400 bg-amber-400/10 p-2 rounded-lg"
+              id="tutorial-icon-timer"
+            ></span>
+            <div>
+              <p class="font-bold text-white text-sm">Be Quick!</p>
+              <p class="text-xs text-magical-200">
+                Customers won't wait forever.
+              </p>
+            </div>
           </div>
         </div>
-        <button class="btn-main w-full">Mulai Bermain! 🚀</button>
-        <label class="dont-show-again">
-          <input type="checkbox" id="dont-show-tutorial"> Jangan tampilkan lagi
+        <button class="btn-main w-full mt-4">Start Mixing! ⚗️</button>
+        <label class="dont-show-again cursor-pointer">
+          <input
+            type="checkbox"
+            id="dont-show-tutorial"
+            class="accent-pink-500 rounded"
+          />
+          Don't show again
         </label>
       </div>
     </div>
-    
+
     <!-- Achievement Modal -->
-    <div id="achievement-modal" class="modal hidden">
-      <div class="modal-content achievement-content w-full max-w-md">
-        <h2 class="flex items-center gap-2 justify-center"><span id="icon-achievement-title" class="icon"></span>Achievement</h2>
-        <div id="achievement-list" class="achievement-list">
+    <div id="achievement-modal" class="modal-overlay hidden">
+      <div class="modal-card max-w-md p-6! max-h-[85vh] flex flex-col">
+        <h2
+          class="flex items-center gap-2 justify-center text-xl border-b border-white/10 pb-4 w-full"
+        >
+          <span id="icon-achievement-title" class="icon text-amber-400"></span>
+          Achievements
+        </h2>
+        <div
+          id="achievement-list"
+          class="achievement-list flex-1 overflow-y-auto pr-2 custom-scrollbar"
+        >
           <!-- Achievements will be populated by JS -->
         </div>
-        <button class="btn-main w-full">Tutup</button>
-      </div>
-    </div>
-    
-    <!-- Achievement Popup -->
-    <div id="achievement-popup" class="achievement-popup hidden">
-      <span class="popup-icon icon" id="popup-achievement-icon"></span>
-      <div class="popup-text">
-        <strong>Achievement Unlocked!</strong>
-        <p id="popup-achievement-name"></p>
+        <button class="btn-main w-full mt-4">Close</button>
       </div>
     </div>
 
-    <script type="module" src="main.js"></script>
+    <!-- Achievement Popup -->
+    <div id="achievement-popup" class="achievement-popup hidden">
+      <span
+        class="popup-icon icon bg-white/10 p-2 rounded-full"
+        id="popup-achievement-icon"
+      ></span>
+      <div class="popup-text">
+        <strong class="text-amber-300 block text-sm"
+          >Achievement Unlocked!</strong
+        >
+        <p id="popup-achievement-name" class="text-white font-bold text-sm"></p>
+      </div>
+    </div>
+
+    <script type="module" src="/src/js/main.js"></script>
   </body>
 </html>
