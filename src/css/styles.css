@@ -255,6 +255,10 @@
   }
 
   /* Achievements */
+  .achievement-list {
+    @apply flex flex-col gap-3;
+  }
+
   .achievement-item {
     @apply flex items-center gap-4 p-4 bg-white/5 rounded-xl border border-white/5 transition-all text-left hover:bg-white/10;
   }

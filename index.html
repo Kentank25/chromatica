@@ -239,10 +239,6 @@
               </button>
             </div>
 
-            <!-- Waiting State (Overlay in Left Col or Full?) -->
-            <!-- We keep waiting state inside the grid flow or overlay? Let's keep it here but we might need to hide other elements when waiting. 
-                 Existing logic hides .customer-area, let's preserve that behavior.
-            -->
             <div
               id="waiting-state"
               class="hidden flex flex-col items-center justify-center py-10 space-y-6 panel-card border-dashed border-2 border-white/10!"
@@ -494,13 +490,12 @@
           id="achievement-list"
           class="achievement-list flex-1 overflow-y-auto pr-2 custom-scrollbar"
         >
-          <!-- Achievements will be populated by JS -->
-        </div>
+         </div>
         <button class="btn-main w-full mt-4">Close</button>
       </div>
     </div>
 
-    <!-- Achievement Popup -->
+    
     <div id="achievement-popup" class="achievement-popup hidden">
       <span
         class="popup-icon icon bg-white/10 p-2 rounded-full"
