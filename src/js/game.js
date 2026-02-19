@@ -314,6 +314,22 @@ function unlockAchievement(achievement) {
   playAchievement();
 }
 
+function updatePauseControl() {
+  const pauseBtn = q("#btn-pause");
+  if (!pauseBtn) return;
+  const isClassic = state.gameMode === "classic";
+  pauseBtn.disabled = !isClassic;
+  pauseBtn.classList.toggle("opacity-50", !isClassic);
+  pauseBtn.classList.toggle("pointer-events-none", !isClassic);
+  pauseBtn.title = isClassic
+    ? "Jeda / Lanjutkan (Classic)"
+    : "Pause hanya tersedia di mode Classic";
+  if (!isClassic) {
+    state.isPaused = false;
+    setIcon(q("#icon-pause"), "pause", "w-5 h-5");
+  }
+}
+
 function showAchievementPopup(achievement) {
   const popup = q("#achievement-popup");
   q("#popup-achievement-name").innerText = `${achievement.name}`;
@@ -331,6 +347,7 @@ function showAchievementPopup(achievement) {
 }
 
 export function togglePause() {
+  if (state.gameMode !== "classic") return;
   if (state.isPaused) {
     state.isPaused = false;
     setIcon(q("#icon-pause"), "pause", "w-5 h-5");
@@ -410,6 +427,7 @@ export function selectMode(mode) {
   q(".game-container").classList.remove("hidden");
   syncLevelAndDifficulty();
   updateUI();
+  updatePauseControl();
   showWaitingState();
 }
 
