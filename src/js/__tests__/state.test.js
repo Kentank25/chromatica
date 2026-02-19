@@ -8,7 +8,6 @@ import {
   activateModeData,
 } from "../state.js";
 
-// Mock localStorage
 const localStorageMock = (() => {
   let store = {};
   return {
@@ -64,7 +63,6 @@ describe("getHintQuota", () => {
       unlockedAchievements: [],
       hintBonusAchievementIds: state.hintBonusAchievementIds,
     };
-    // base(1) + milestone(2) = 3
     expect(getHintQuota(s)).toBe(3);
   });
 
@@ -74,7 +72,6 @@ describe("getHintQuota", () => {
       unlockedAchievements: ["hint_bonus_apprentice", "hint_bonus_expert"],
       hintBonusAchievementIds: state.hintBonusAchievementIds,
     };
-    // base(1) + achievement(2) = 3
     expect(getHintQuota(s)).toBe(3);
   });
 
@@ -84,14 +81,12 @@ describe("getHintQuota", () => {
       unlockedAchievements: ["hint_bonus_apprentice"],
       hintBonusAchievementIds: state.hintBonusAchievementIds,
     };
-    // base(1) + milestone(1) + achievement(1) = 3
     expect(getHintQuota(s)).toBe(3);
   });
 });
 
 describe("syncLevelAndDifficulty", () => {
   beforeEach(() => {
-    // Create mock DOM elements
     document.body.innerHTML = '<span id="level-text"></span>';
   });
 
@@ -200,7 +195,7 @@ describe("saveProgress", () => {
       unlockedAchievements: [],
     };
     saveProgress(s);
-    expect(s.highScore).toBe(200); // max(200, 150) = 200
+    expect(s.highScore).toBe(200);
   });
 
   it("does not decrease highScore when score drops", () => {
@@ -221,7 +216,7 @@ describe("saveProgress", () => {
       unlockedAchievements: [],
     };
     saveProgress(s);
-    expect(s.highScore).toBe(300); // max(300, 50) = 300
+    expect(s.highScore).toBe(300);
   });
 });
 

@@ -28,8 +28,6 @@ let pourInterval = null;
 let decInterval = null;
 let timerLowPlayed = false;
 
-// ── Game Initialization ──────────────────────────────────────────
-
 export function initRound() {
   syncLevelAndDifficulty();
   const settings = state.levelSettings[state.currentLevel];
@@ -79,8 +77,6 @@ export function initRound() {
 
   timerLowPlayed = false;
 }
-
-// ── Customer Flow ────────────────────────────────────────────────
 
 export function nextCustomer() {
   state.hasActiveOrder = true;
@@ -157,8 +153,6 @@ export function customerLeaves() {
   checkAchievements();
 }
 
-// ── Pouring ──────────────────────────────────────────────────────
-
 let pourTick = 0;
 
 export function startPour(color) {
@@ -180,8 +174,6 @@ export function stopPour() {
   clearInterval(pourInterval);
   pourInterval = null;
 }
-
-// ── Decrement (hold-to-decrease) ─────────────────────────────────
 
 export function startDecrement(color) {
   if (decInterval) return;
@@ -206,8 +198,6 @@ export function resetCauldron() {
   q("#bubbles-container").innerHTML = "";
   updateUI();
 }
-
-// ── Submit / Result ──────────────────────────────────────────────
 
 export function checkResult() {
   if (!state.hasActiveOrder) return;
@@ -237,7 +227,6 @@ export function checkResult() {
       state.combo > 1 ? Math.round(baseScore * (state.combo * 0.1)) : 0;
     const totalGained = baseScore + comboBonus;
     state.score += totalGained;
-    // Fix: highScore = max, not cumulative
     state.highScore = Math.max(state.highScore, state.score);
 
     resultTitle.innerText = "🎉 Perfect Mix!";
@@ -282,8 +271,6 @@ export function checkResult() {
   }, 2000);
 }
 
-// ── Hints ────────────────────────────────────────────────────────
-
 export function handleHint() {
   if (state.hintUsed >= state.hintQuota || !state.hasActiveOrder) return;
   const unrevealed = Object.keys(state.hintRevealed).filter(
@@ -311,8 +298,6 @@ export function handleHint() {
     btn.innerHTML = iconText("lightbulb", "Empty", "w-4 h-4");
   }
 }
-
-// ── Achievements ─────────────────────────────────────────────────
 
 export function checkAchievements() {
   state.achievements.forEach((ach) => {
@@ -345,8 +330,6 @@ function showAchievementPopup(achievement) {
   }, 4000);
 }
 
-// ── Pause / Toggle ───────────────────────────────────────────────
-
 export function togglePause() {
   if (state.isPaused) {
     state.isPaused = false;
@@ -358,8 +341,6 @@ export function togglePause() {
     pauseTimer();
   }
 }
-
-// ── UI Updates ───────────────────────────────────────────────────
 
 export function updateUI() {
   q("#rgb-r").innerText = state.currentRGB.r;
@@ -380,8 +361,6 @@ export function updateUI() {
     liquid.style.height = `${fill}%`;
   }
 }
-
-// ── UI State Management ──────────────────────────────────────────
 
 export function showWaitingState() {
   state.hasActiveOrder = false;
@@ -418,8 +397,6 @@ export function closeResultModal() {
   showWaitingState();
 }
 
-// ── Mode / Menu ──────────────────────────────────────────────────
-
 export function showModeMenu() {
   q("#mode-menu").classList.remove("hidden");
   q(".game-container").classList.add("hidden");
@@ -447,8 +424,6 @@ export function backToMenu() {
   q("#mode-menu").classList.remove("hidden");
   q("#waiting-state").classList.add("hidden");
 }
-
-// ── Achievement Modal ────────────────────────────────────────────
 
 export function showAchievementModal() {
   const list = q("#achievement-list");

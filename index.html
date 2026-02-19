@@ -13,7 +13,6 @@
   </head>
   <body class="overflow-x-hidden">
     <div class="game-wrapper">
-      <!-- Mode Menu Overlay -->
       <div id="mode-menu" class="modal-overlay">
         <div class="modal-card">
           <div class="space-y-2">
@@ -70,8 +69,6 @@
           </button>
         </div>
       </div>
-
-      <!-- Ambient Background Elements -->
       <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div
           class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-600/20 rounded-full blur-[120px]"
@@ -81,13 +78,9 @@
           style="animation-delay: 1s"
         ></div>
       </div>
-
-      <!-- Main Game Container -->
       <div class="game-container hidden">
         <div class="game-grid">
-          <!-- Left Column: Info & Quest -->
           <div class="flex flex-col gap-4">
-            <!-- Header / Stats (Moved here for desktop layout alignment) -->
             <div class="header-stats justify-between">
               <div class="flex items-center gap-4">
                 <div class="stat-badge">
@@ -116,8 +109,6 @@
                 </button>
               </div>
             </div>
-
-            <!-- Level Info -->
             <div class="flex justify-between items-center px-1">
               <div class="stat-badge bg-indigo-500/20! border-indigo-400/20!">
                 <span id="icon-level" class="icon text-indigo-300"></span>
@@ -138,8 +129,6 @@
                 </span>
               </div>
             </div>
-
-            <!-- Customer / Order Area -->
             <div class="customer-area group">
               <div
                 id="customer-info"
@@ -175,8 +164,6 @@
                 <div id="timer-fill"></div>
               </div>
             </div>
-
-            <!-- Mission / Target (Moved Here) -->
             <div
               class="mission-card glass-panel rounded-2xl p-4 relative overflow-hidden flex flex-row items-center justify-between gap-4"
             >
@@ -258,10 +245,7 @@
               </button>
             </div>
           </div>
-
-          <!-- Right Column: Action Area -->
           <div class="flex flex-col gap-4 h-full">
-            <!-- Top Controls (Pause) -->
             <div class="flex justify-end mb-2">
               <button
                 id="btn-pause"
@@ -271,8 +255,6 @@
                 <span id="icon-pause" class="icon"></span>
               </button>
             </div>
-
-            <!-- Cauldron & Mixing -->
             <div
               class="cauldron-area relative flex-1 flex flex-col justify-center items-center py-4"
             >
@@ -287,8 +269,6 @@
                   class="absolute top-4 right-5 w-1.5 h-4 bg-white/10 rounded-full blur-[1px]"
                 ></div>
               </div>
-
-              <!-- RGB Current Values -->
               <div class="mt-3 z-20">
                 <div
                   class="rgb-display bg-[#15141b]/90 backdrop-blur-xl rounded-full px-4 py-1.5 border border-white/20 shadow-lg ring-1 ring-white/5 text-xs"
@@ -307,8 +287,6 @@
                 </div>
               </div>
             </div>
-
-            <!-- Controls -->
             <div class="controls space-y-3 mt-auto">
               <div class="bottle-group grid grid-cols-3 gap-2">
                 <div class="flex flex-col gap-1">
@@ -382,7 +360,6 @@
       </div>
     </div>
 
-    <!-- Result Modal -->
     <div id="result-modal" class="modal-overlay hidden">
       <div class="modal-card">
         <h2
@@ -408,10 +385,7 @@
       </div>
     </div>
 
-    <!-- Confetti Container -->
     <div id="confetti-container"></div>
-
-    <!-- Tutorial Modal -->
     <div id="tutorial-modal" class="modal-overlay hidden">
       <div class="modal-card max-w-md text-left">
         <h2 class="text-center text-xl mb-2">Alchemist's Guide</h2>
@@ -477,7 +451,6 @@
       </div>
     </div>
 
-    <!-- Achievement Modal -->
     <div id="achievement-modal" class="modal-overlay hidden">
       <div class="modal-card max-w-md p-6! max-h-[85vh] flex flex-col">
         <h2

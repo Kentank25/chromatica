@@ -1,4 +1,3 @@
-// Audio system using Web Audio API — synthesized sounds, no external files
 let audioCtx = null;
 
 function getCtx() {
@@ -55,16 +54,16 @@ export function playPour() {
 }
 
 export function playSuccess() {
-  playTone(523, 0.12, "sine", 0.12); // C5
-  setTimeout(() => playTone(659, 0.12, "sine", 0.12), 100); // E5
-  setTimeout(() => playTone(784, 0.2, "sine", 0.15), 200); // G5
-  setTimeout(() => playTone(1047, 0.3, "sine", 0.1), 320); // C6
+  playTone(523, 0.12, "sine", 0.12);
+  setTimeout(() => playTone(659, 0.12, "sine", 0.12), 100);
+  setTimeout(() => playTone(784, 0.2, "sine", 0.15), 200);
+  setTimeout(() => playTone(1047, 0.3, "sine", 0.1), 320);
 }
 
 export function playFail() {
-  playTone(392, 0.15, "sawtooth", 0.08); // G4
-  setTimeout(() => playTone(311, 0.15, "sawtooth", 0.08), 120); // Eb4
-  setTimeout(() => playTone(261, 0.3, "sawtooth", 0.06), 240); // C4
+  playTone(392, 0.15, "sawtooth", 0.08);
+  setTimeout(() => playTone(311, 0.15, "sawtooth", 0.08), 120);
+  setTimeout(() => playTone(261, 0.3, "sawtooth", 0.06), 240);
 }
 
 export function playTimerLow() {
@@ -73,10 +72,10 @@ export function playTimerLow() {
 }
 
 export function playAchievement() {
-  playTone(659, 0.1, "sine", 0.12); // E5
-  setTimeout(() => playTone(784, 0.1, "sine", 0.12), 80); // G5
-  setTimeout(() => playTone(1047, 0.15, "sine", 0.12), 160); // C6
-  setTimeout(() => playTone(1319, 0.3, "sine", 0.1), 260); // E6
+  playTone(659, 0.1, "sine", 0.12);
+  setTimeout(() => playTone(784, 0.1, "sine", 0.12), 80);
+  setTimeout(() => playTone(1047, 0.15, "sine", 0.12), 160);
+  setTimeout(() => playTone(1319, 0.3, "sine", 0.1), 260);
 }
 
 export function playDecrement() {

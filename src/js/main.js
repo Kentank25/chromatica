@@ -23,8 +23,6 @@ import {
 const q = (sel) => document.querySelector(sel);
 const TUTORIAL_HIDE_KEY = "alchemistHideTutorial";
 
-// ── Icon Hydration ───────────────────────────────────────────────
-
 function hydrateIcons() {
   setIcon(
     q("#icon-score"),
@@ -59,7 +57,6 @@ function hydrateIcons() {
   setIcon(q("#icon-next"), "clipboard", "w-5 h-5");
   setIcon(q("#icon-hint"), "lightbulb", "w-4 h-4");
 
-  // Tutorial Icons
   setIcon(q("#tutorial-icon-target"), "swatch", "w-6 h-6");
   setIcon(q("#tutorial-icon-pour"), "beaker", "w-6 h-6");
   setIcon(q("#tutorial-icon-vision"), "eye", "w-6 h-6");
@@ -67,8 +64,6 @@ function hydrateIcons() {
 
   setIcon(q("#popup-achievement-icon"), "sparkles", "w-6 h-6 text-amber-300");
 }
-
-// ── Tutorial ─────────────────────────────────────────────────────
 
 function openTutorial(force = false) {
   const modal = q("#tutorial-modal");
@@ -88,8 +83,6 @@ function closeTutorial() {
     localStorage.setItem(TUTORIAL_HIDE_KEY, "true");
   modal.classList.add("hidden");
 }
-
-// ── Event Binding ────────────────────────────────────────────────
 
 function bindHoldButton(id, onStart, onStop) {
   const btn = document.getElementById(id);
@@ -114,12 +107,10 @@ function bindHoldButton(id, onStart, onStop) {
 }
 
 function bindEvents() {
-  // Pour buttons (hold to increase)
   bindHoldButton("btn-r", () => startPour("r"), stopPour);
   bindHoldButton("btn-g", () => startPour("g"), stopPour);
   bindHoldButton("btn-b", () => startPour("b"), stopPour);
 
-  // Decrement buttons (hold to decrease)
   bindHoldButton("btn-dec-r", () => startDecrement("r"), stopDecrement);
   bindHoldButton("btn-dec-g", () => startDecrement("g"), stopDecrement);
   bindHoldButton("btn-dec-b", () => startDecrement("b"), stopDecrement);
@@ -140,8 +131,6 @@ function bindEvents() {
   const tutorialClose = q("#tutorial-modal .btn-main");
   if (tutorialClose) tutorialClose.onclick = closeTutorial;
 }
-
-// ── Init ─────────────────────────────────────────────────────────
 
 function init() {
   activateModeData();

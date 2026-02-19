@@ -12,12 +12,11 @@ const CONFIG = {
 export function createBubble(container) {
   if (!container) return;
   const bubble = document.createElement("div");
-  // Random size between 0.5rem (2) and 1.5rem (6)
   const size = Math.random() * 10 + 5 + "px";
   const colorClass =
     CONFIG.bubbleColors[Math.floor(Math.random() * CONFIG.bubbleColors.length)];
   const left = Math.random() * 100 + "%";
-  const duration = Math.random() * 2 + 1 + "s"; // 1-3s
+  const duration = Math.random() * 2 + 1 + "s";
   const delay = Math.random() * 1 + "s";
 
   bubble.className = `absolute bottom-0 rounded-full opacity-60 animate-[bubble-rise_3s_ease-in_infinite] ${colorClass}`;
@@ -29,7 +28,6 @@ export function createBubble(container) {
 
   container.appendChild(bubble);
 
-  // Cleanup
   setTimeout(() => bubble.remove(), 3000);
 }
 
@@ -50,7 +48,7 @@ export function createConfetti(container) {
     conf.style.backgroundColor = color;
     conf.style.left = left;
     conf.style.width = size;
-    conf.style.height = size * 0.6 + "px"; // Rectangular
+    conf.style.height = size * 0.6 + "px";
     conf.style.animationDuration = animDuration;
     conf.style.transform = `rotate(${Math.random() * 360}deg)`;
 

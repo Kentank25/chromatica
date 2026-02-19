@@ -37,13 +37,11 @@ export const state = {
   hintQuota: 1,
   hintRevealed: { r: false, g: false, b: false },
 
-  // Per-mode data
   modeData: {
     classic: loadModeStats("classic"),
     ranked: loadModeStats("ranked"),
   },
 
-  // Convenience getters — these will be kept in sync
   score: 0,
   highScore: 0,
   stats: createFreshStats(),
@@ -182,7 +180,6 @@ export const state = {
   emojis: ["🧙‍♂️", "🧝‍♀️", "🧛‍♂️", "🧚", "🧟"],
 };
 
-/** Activate the stats object for the current game mode */
 export function activateModeData(s = state) {
   const data = s.modeData[s.gameMode];
   s.score = data.score;
@@ -220,12 +217,10 @@ export function syncLevelAndDifficulty(s = state) {
 
 export function saveProgress(s = state) {
   const prefix = `alchemist_${s.gameMode}_`;
-  // Fix: highScore is always the max of current score and stored highScore
   s.highScore = Math.max(s.highScore, s.score);
   s.stats.highScore = s.highScore;
   s.stats.score = s.score;
 
-  // Sync back to modeData
   s.modeData[s.gameMode] = s.stats;
 
   localStorage.setItem(`${prefix}highScore`, s.highScore);

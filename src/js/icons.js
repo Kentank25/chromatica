@@ -39,9 +39,6 @@ const ICON_MAP = {
   fire: Flame,
 };
 
-/**
- * Returns an SVG HTML string for the given icon name.
- */
 export function icon(name, classes = "w-5 h-5") {
   const iconData = ICON_MAP[name];
   if (!iconData) return "";
@@ -51,17 +48,11 @@ export function icon(name, classes = "w-5 h-5") {
   return el.outerHTML;
 }
 
-/**
- * Sets the innerHTML of an element to the SVG icon.
- */
 export function setIcon(el, name, classes = "w-5 h-5") {
   if (!el) return;
   el.innerHTML = icon(name, classes);
 }
 
-/**
- * Returns icon + text as HTML string.
- */
 export function iconText(name, text, classes = "w-5 h-5") {
   return `${icon(name, classes)}<span class="ml-1">${text}</span>`;
 }

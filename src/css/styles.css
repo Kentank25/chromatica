@@ -88,7 +88,6 @@
 }
 
 @layer components {
-  /* Layout & Container */
   .game-wrapper {
     @apply min-h-screen w-full flex items-center justify-center p-4;
   }
@@ -107,14 +106,12 @@
     @apply bg-white/5 rounded-2xl p-5 border border-white/5 flex flex-col gap-4 shadow-lg;
   }
 
-  /* Typography */
   h1,
   h2,
   h3 {
     @apply font-bold tracking-tight text-white/90;
   }
 
-  /* Buttons */
   .btn-main {
     @apply inline-flex items-center justify-center rounded-2xl bg-linear-to-r from-pink-500 to-rose-600 text-white font-bold tracking-wide px-6 py-3 shadow-lg shadow-rose-500/30 transition-all duration-200 hover:shadow-rose-500/50 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0;
   }
@@ -152,7 +149,6 @@
     @apply bg-linear-to-br from-sky-400 to-sky-600 shadow-sky-500/30 hover:shadow-sky-500/50;
   }
 
-  /* Icons & Stats */
   .icon {
     @apply inline-flex items-center justify-center align-middle filter drop-shadow-sm;
   }
@@ -166,7 +162,6 @@
     color: var(--color-magical-100);
   }
 
-  /* HUD Elements */
   .customer-area {
     @apply backdrop-blur-md border border-white/10 shadow-xl rounded-2xl p-4 flex flex-col gap-3 relative overflow-hidden;
     background-color: color-mix(in srgb, var(--color-deep-900), transparent 40%);
@@ -185,7 +180,6 @@
     @apply h-full w-full bg-linear-to-r from-emerald-400 to-emerald-600 shadow-[0_0_10px_rgba(52,211,153,0.5)] transition-[width] duration-100 ease-linear;
   }
 
-  /* Game Elements */
   .cauldron-area {
     @apply flex justify-center py-4;
   }
@@ -207,7 +201,6 @@
     @apply border-rose-500/50;
   }
 
-  /* Glow Effects - Previously Missing */
   .glow-success {
     box-shadow:
       0 0 30px rgba(16, 185, 129, 0.6),
@@ -227,7 +220,6 @@
     box-shadow: 0 -5px 15px rgba(255, 255, 255, 0.1);
   }
 
-  /* Color Targets & Inputs */
   .color-target-box {
     @apply w-16 h-16 rounded-xl mx-auto shadow-lg ring-2 ring-white/20 relative cursor-help transition-transform hover:scale-105;
   }
@@ -240,7 +232,6 @@
     @apply px-3 py-1.5 rounded-lg bg-black/30 border border-white/5 min-w-12 text-center;
   }
 
-  /* Modals */
   .modal-overlay {
     @apply fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-50 p-4 animate-[fadeIn_0.2s_ease-out];
   }
@@ -254,7 +245,6 @@
     );
   }
 
-  /* Achievements */
   .achievement-list {
     @apply flex flex-col gap-3;
   }
@@ -278,7 +268,6 @@
     animation: popup-slide 4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
-  /* Animations — keyframes defined in @theme above */
   .bubble-magical {
     @apply absolute bottom-0 left-1/2 w-3 h-3 bg-white/30 rounded-full blur-[1px];
     box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
@@ -297,7 +286,6 @@
   }
 }
 
-/* Helper Utility */
 .no-scroll {
   overflow: hidden;
 }

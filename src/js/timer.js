@@ -1,5 +1,3 @@
-// Timer module — fixes the pause/resume bug by properly tracking remaining time
-
 let timerInterval = null;
 let remainingMs = 0;
 let onTickCallback = null;
@@ -39,7 +37,6 @@ export function startTimer(totalMs, onTick, onExpire) {
 export function pauseTimer() {
   if (isPaused || !timerInterval) return;
   isPaused = true;
-  // Snapshot the remaining time at pause moment
   const elapsed = Date.now() - startTimestamp;
   remainingMs = Math.max(0, durationForThisRun - elapsed);
 }
@@ -47,7 +44,6 @@ export function pauseTimer() {
 export function resumeTimer(totalMsForPercent) {
   if (!isPaused || !timerInterval) return;
   isPaused = false;
-  // Reset the clock references so elapsed calculation is correct from this point
   durationForThisRun = remainingMs;
   startTimestamp = Date.now();
 }
