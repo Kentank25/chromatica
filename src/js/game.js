@@ -21,6 +21,10 @@ import {
   playTimerLow,
   playAchievement,
   playDecrement,
+  startGameBgm,
+  stopGameBgm,
+  startMenuBgm,
+  stopMenuBgm,
 } from "./audio.js";
 
 const q = (sel) => document.querySelector(sel);
@@ -417,6 +421,8 @@ export function closeResultModal() {
 export function showModeMenu() {
   q("#mode-menu").classList.remove("hidden");
   q(".game-container").classList.add("hidden");
+  stopGameBgm();
+  startMenuBgm();
 }
 
 export function selectMode(mode) {
@@ -429,6 +435,8 @@ export function selectMode(mode) {
   updateUI();
   updatePauseControl();
   showWaitingState();
+  stopMenuBgm();
+  startGameBgm();
 }
 
 export function backToMenu() {
@@ -441,6 +449,8 @@ export function backToMenu() {
   q(".game-container").classList.add("hidden");
   q("#mode-menu").classList.remove("hidden");
   q("#waiting-state").classList.add("hidden");
+  stopGameBgm();
+  startMenuBgm();
 }
 
 export function showAchievementModal() {
