@@ -1,0 +1,97 @@
+.splash {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-gradient);
+  position: relative;
+  overflow: hidden;
+  transition: opacity 0.6s ease;
+}
+
+.splash--fade-out { opacity: 0; }
+
+/* Animated gradient orbs */
+.splash__orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.4;
+  animation: float 8s ease-in-out infinite;
+}
+
+.splash__orb--1 {
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, #45B6FE, transparent 70%);
+  top: 10%; left: 15%;
+  animation-delay: 0s;
+}
+
+.splash__orb--2 {
+  width: 250px; height: 250px;
+  background: radial-gradient(circle, #B44FFF, transparent 70%);
+  bottom: 15%; right: 20%;
+  animation-delay: -3s;
+}
+
+.splash__orb--3 {
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, #FF4A4A, transparent 70%);
+  top: 50%; left: 60%;
+  animation-delay: -5s;
+}
+
+.splash__content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  animation: scaleIn 1s ease-out;
+}
+
+.splash__title {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  color: var(--text-primary);
+  letter-spacing: 12px;
+  text-shadow: 0 0 40px rgba(69, 182, 254, 0.4), 0 0 80px rgba(69, 182, 254, 0.2);
+  margin: 0 0 8px;
+}
+
+.splash__subtitle {
+  font-family: var(--font-body);
+  font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+  color: var(--text-secondary);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin: 0 0 48px;
+}
+
+.splash__loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.splash__loader-track {
+  width: 200px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.splash__loader-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #45B6FE, #B44FFF);
+  border-radius: 2px;
+  transition: width 0.1s ease;
+  box-shadow: 0 0 10px rgba(69, 182, 254, 0.5);
+}
+
+.splash__loader-text {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+}

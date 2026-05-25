@@ -1,0 +1,74 @@
+/* ═══════════════════════════════════════════════
+   GlassCard Component Styles
+   ═══════════════════════════════════════════════ */
+
+.glass-card {
+  position: relative;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition:
+    border-color var(--transition-normal),
+    box-shadow var(--transition-normal),
+    transform var(--transition-normal);
+}
+
+/* Inner highlight at top */
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 30%,
+    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0.08) 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* ── Padding Variants ──────────────────────── */
+.glass-card--pad-sm { padding: var(--space-sm); }
+.glass-card--pad-md { padding: var(--space-md); }
+.glass-card--pad-lg { padding: var(--space-lg); }
+.glass-card--pad-xl { padding: var(--space-xl); }
+
+/* ── Hoverable ─────────────────────────────── */
+.glass-card--hoverable:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ── Glow Colors ───────────────────────────── */
+.glass-card--glow-success {
+  box-shadow: var(--shadow-glow-success);
+  border-color: rgba(69, 182, 254, 0.2);
+}
+
+.glass-card--glow-failure {
+  box-shadow: var(--shadow-glow-failure);
+  border-color: rgba(255, 74, 74, 0.2);
+}
+
+.glass-card--glow-combo {
+  box-shadow: var(--shadow-glow-combo);
+  border-color: rgba(180, 79, 255, 0.2);
+}
+
+.glass-card--glow-gold {
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.25);
+  border-color: rgba(255, 215, 0, 0.2);
+}
+
+.glass-card--glow-custom {
+  /* glow color set via inline style */
+}

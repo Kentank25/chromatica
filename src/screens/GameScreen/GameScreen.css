@@ -1,0 +1,104 @@
+.game-screen {
+  min-height: 100vh;
+  background: var(--bg-gradient);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.game-screen__main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 300px 1fr 360px;
+  gap: var(--space-lg);
+  padding: 80px var(--space-xl) var(--space-xl);
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  align-items: center;
+}
+
+.game-screen__left {
+  display: flex;
+  justify-content: center;
+}
+
+.game-screen__center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xl);
+  position: relative;
+}
+
+.game-screen__vials {
+  display: flex;
+  gap: var(--space-3xl);
+  align-items: flex-end;
+}
+
+.game-screen__right {
+  display: flex;
+  justify-content: center;
+}
+
+/* Feedback overlay */
+.game-screen__feedback {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-xl);
+  border-radius: var(--radius-xl);
+  animation: scaleIn 0.4s var(--spring);
+  z-index: 20;
+  backdrop-filter: blur(20px);
+}
+
+.game-screen__feedback--success {
+  background: rgba(69, 182, 254, 0.15);
+  border: 2px solid rgba(69, 182, 254, 0.4);
+  box-shadow: 0 0 40px rgba(69, 182, 254, 0.3);
+}
+
+.game-screen__feedback--fail {
+  background: rgba(255, 74, 74, 0.15);
+  border: 2px solid rgba(255, 74, 74, 0.4);
+  box-shadow: 0 0 40px rgba(255, 74, 74, 0.3);
+  animation: scaleIn 0.4s var(--spring), shake 0.5s ease 0.3s;
+}
+
+.game-screen__feedback-icon { font-size: 2.5rem; }
+
+.game-screen__feedback-accuracy {
+  font-family: var(--font-mono);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.game-screen__feedback-points {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: var(--accent-gold);
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .game-screen__main {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    padding-top: 70px;
+  }
+  .game-screen__vials { gap: var(--space-xl); }
+}
+
+@media (max-width: 640px) {
+  .game-screen__main { padding: 60px var(--space-md) var(--space-md); }
+  .game-screen__vials { gap: var(--space-lg); }
+}

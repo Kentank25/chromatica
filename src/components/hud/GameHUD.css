@@ -1,0 +1,66 @@
+.game-hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.game-hud > * {
+  pointer-events: auto;
+}
+
+.game-hud__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.game-hud__left,
+.game-hud__right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.game-hud__center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.game-hud__bottom {
+  display: flex;
+  justify-content: center;
+  padding-bottom: var(--space-sm);
+}
+
+.game-hud__pause-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all var(--transition-fast);
+}
+
+.game-hud__pause-btn:hover {
+  background: var(--surface-hover);
+  transform: scale(1.1);
+}
+
+@media (max-width: 768px) {
+  .game-hud { padding: var(--space-sm); }
+  .game-hud__top { flex-wrap: wrap; }
+}

@@ -1,0 +1,181 @@
+/* ═══════════════════════════════════════════════
+   Button Component Styles
+   ═══════════════════════════════════════════════ */
+
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-normal),
+    background var(--transition-normal),
+    border-color var(--transition-normal),
+    opacity var(--transition-normal);
+  overflow: hidden;
+}
+
+/* Shimmer overlay on hover */
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.06) 45%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.06) 55%,
+    transparent 60%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+}
+
+.btn:hover::after {
+  transform: translateX(100%);
+}
+
+/* ── Sizes ─────────────────────────────────── */
+.btn--sm {
+  padding: 6px 14px;
+  font-size: 0.8rem;
+}
+
+.btn--md {
+  padding: 10px 22px;
+  font-size: 0.95rem;
+}
+
+.btn--lg {
+  padding: 14px 32px;
+  font-size: 1.1rem;
+}
+
+/* ── Variants ──────────────────────────────── */
+
+/* Primary */
+.btn--primary {
+  background: linear-gradient(135deg, #2e8ed8 0%, #45B6FE 50%, #6bc8ff 100%);
+  color: #0B0C10;
+  border-color: rgba(69, 182, 254, 0.3);
+  box-shadow:
+    0 2px 12px rgba(69, 182, 254, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.btn--primary:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow:
+    0 4px 20px rgba(69, 182, 254, 0.4),
+    0 0 30px rgba(69, 182, 254, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.btn--primary:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow:
+    0 1px 8px rgba(69, 182, 254, 0.2),
+    inset 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* Secondary (Glass) */
+.btn--secondary {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+
+.btn--secondary:hover {
+  transform: translateY(-1px) scale(1.02);
+  background: var(--surface-hover);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-md);
+}
+
+.btn--secondary:active {
+  transform: translateY(0) scale(0.98);
+  background: var(--surface-active);
+}
+
+/* Danger */
+.btn--danger {
+  background: linear-gradient(135deg, #d43535 0%, #FF4A4A 50%, #ff6b6b 100%);
+  color: #fff;
+  border-color: rgba(255, 74, 74, 0.3);
+  box-shadow:
+    0 2px 12px rgba(255, 74, 74, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.btn--danger:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow:
+    0 4px 20px rgba(255, 74, 74, 0.4),
+    0 0 30px rgba(255, 74, 74, 0.15);
+}
+
+.btn--danger:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 1px 8px rgba(255, 74, 74, 0.2);
+}
+
+/* Ghost */
+.btn--ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: transparent;
+}
+
+.btn--ghost:hover {
+  color: var(--text-primary);
+  background: rgba(197, 198, 199, 0.06);
+  transform: translateY(-1px);
+}
+
+.btn--ghost:active {
+  transform: translateY(0) scale(0.98);
+  background: rgba(197, 198, 199, 0.1);
+}
+
+/* ── Disabled ──────────────────────────────── */
+.btn:disabled,
+.btn--disabled {
+  opacity: 0.4;
+  pointer-events: none;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ── Icon ──────────────────────────────────── */
+.btn__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15em;
+  line-height: 1;
+}
+
+/* ── Spring Animation ──────────────────────── */
+.btn--spring {
+  animation: btnSpring 0.4s var(--spring);
+}
+
+@keyframes btnSpring {
+  0%   { transform: scale(0.95); }
+  60%  { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}

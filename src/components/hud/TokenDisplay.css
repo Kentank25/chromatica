@@ -1,0 +1,48 @@
+.token-display {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.token-display__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 10px;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.token-display__item--active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.token-display__item--active:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-hover);
+  transform: scale(1.08);
+  box-shadow: var(--shadow-glow-combo);
+}
+
+.token-display__item--active:active {
+  transform: scale(0.95);
+}
+
+.token-display__icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.token-display__count {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}

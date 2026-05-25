@@ -1,0 +1,33 @@
+.score-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.score-display__label {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.score-display__value {
+  font-family: var(--font-mono);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--accent-gold);
+  text-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
+  transition: transform 0.3s var(--spring);
+}
+
+.score-display__value--pop {
+  animation: scorePop 0.4s var(--spring);
+}
+
+@keyframes scorePop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
