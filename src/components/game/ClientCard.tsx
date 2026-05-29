@@ -6,8 +6,7 @@ import './ClientCard.css';
 
 interface ClientCardProps {
   client: Client | null;
-  timeRemaining: number;
-  maxTime: number;
+  timerPct: number;
   phase?: GamePhase;
   feedback?: {
     passed: boolean;
@@ -33,13 +32,10 @@ const EXPRESSION_EMOJIS: Record<ClientExpression, string> = {
 
 const ClientCardComponent: React.FC<ClientCardProps> = ({
   client,
-  timeRemaining,
-  maxTime,
+  timerPct,
   phase = 'idle',
   feedback = null,
 }) => {
-  const timePct = maxTime > 0 ? (timeRemaining / maxTime) * 100 : 0;
-
   const dynamicExpression = useMemo<ClientExpression>(() => {
     if (phase === 'evaluating' && feedback) {
       if (feedback.passed) {
@@ -48,10 +44,10 @@ const ClientCardComponent: React.FC<ClientCardProps> = ({
         return 'enraged';
       }
     }
-    if (timePct > 70) return 'neutral';
-    if (timePct > 40) return 'annoyed';
-    return 'enraged';
-  }, [timePct, phase, feedback]);
+    if (timerPct > 70) return 'neutral';
+    if (timerPct > 40) return 'annoyed';
+    return 'enraged'; // This maps both >15% and <=15% to 'enraged'
+  }, [timerPct, phase, feedback]);
 
   const typeClass = useMemo(() => {
     if (!client) return '';
@@ -72,9 +68,9 @@ const ClientCardComponent: React.FC<ClientCardProps> = ({
 
   const urgencyClass =
     phase === 'playing'
-      ? timePct < 10
+      ? timerPct < 10
         ? 'client-card--critical'
-        : timePct < 25
+        : timerPct < 25
           ? 'client-card--urgent'
           : ''
       : '';
@@ -118,11 +114,11 @@ const ClientCardComponent: React.FC<ClientCardProps> = ({
       <div className="client-card__timer">
         <span className="client-card__timer-label">⏳ Patience</span>
         <ProgressBar
-          value={timePct}
+          value={timerPct}
           color="auto"
           animated={true}
           size="thin"
-          glow={timePct < 25}
+          glow={timerPct < 25}
         />
       </div>
     </article>

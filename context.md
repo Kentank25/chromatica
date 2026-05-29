@@ -101,7 +101,8 @@ src/
 │   ├── MainMenu/       # Glowing title, Play/Settings/Credits
 │   ├── GameScreen/     # Full gameplay: timer, mixing, eval, combos, waves
 │   ├── PauseOverlay/   # Resume/Restart/Quit, volume sliders
-│   └── ResultsScreen/  # S/A/B/C/D rating, stats grid, retry
+│   ├── ResultsScreen/  # S/A/B/C/D rating, stats grid, retry
+│   └── WaveTransition/ # Full-screen celebration overlay + sparkles (NEW)
 │
 ├── styles/             # Global CSS
 │   ├── variables.css   # 50+ CSS custom properties (tokens)
@@ -394,8 +395,7 @@ Navigation is via `useNavigate()` from React Router. No hash routing.
 3. **Adaptive BGM** — Web Audio API bus routing for parallel BGM layer crossfading
 4. **Mobile touch optimization** — Layout works responsively but ingredient buttons could use larger touch targets
 5. **Persistent high score leaderboard** — Currently saves to localStorage, could add cloud sync
-6. **Wave clear celebration screen** — `'waveClear'` phase exists but no dedicated transition animation between waves
-7. **More ingredients** — System supports arbitrary ingredients; can add Teal, Magenta, Brown, Gold etc.
+6. **More ingredients** — System supports arbitrary ingredients; can add Teal, Magenta, Brown, Gold etc.
 
 ---
 

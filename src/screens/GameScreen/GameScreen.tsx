@@ -11,6 +11,7 @@ import { getWaveConfig, isWaveClear } from '../../engine/waveManager';
 import { useGameLoop } from '../../hooks/useGameLoop';
 import { useEscapeKey } from '../../hooks/useInput';
 import { PauseOverlay } from '../PauseOverlay/PauseOverlay';
+import { WaveTransition } from '../WaveTransition/WaveTransition';
 import type { EvaluationResult } from '../../types/game.types';
 import './GameScreen.css';
 
@@ -52,6 +53,16 @@ export const GameScreen: React.FC = () => {
   const [showFeedback, setShowFeedback] = useState(false);
   const [hintChannel, setHintChannel] = useState<'r' | 'g' | 'b' | null>(null);
 
+  // Wave stats local tracking
+  const [waveAccuracies, setWaveAccuracies] = useState<number[]>([]);
+  const [showWaveTransition, setShowWaveTransition] = useState(false);
+  const [transitionStats, setTransitionStats] = useState({
+    waveNumber: 1,
+    clientsServed: 0,
+    accuracy: 0,
+    pointsEarned: 0,
+  });
+
   // Timers and Refs
   const feedbackTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const localTimeRef = useRef(0);
@@ -60,6 +71,7 @@ export const GameScreen: React.FC = () => {
   // Initialize game on mount
   useEffect(() => {
     startGame();
+    setWaveAccuracies([]);
     const client = generateClient(1);
     setCurrentClient(client);
     localTimeRef.current = client.modifiers.patience;
@@ -94,20 +106,25 @@ export const GameScreen: React.FC = () => {
     }
 
     const waveConfig = getWaveConfig(currentWave);
-    let waveToUse = currentWave;
     if (isWaveClear(clientsServedThisWave, waveScore, waveConfig)) {
-      addWaveResult({
+      // Calculate average accuracy of the wave
+      const avgAccuracy = waveAccuracies.length > 0
+        ? waveAccuracies.reduce((sum, val) => sum + val, 0) / waveAccuracies.length
+        : 0;
+
+      setTransitionStats({
         waveNumber: currentWave,
         clientsServed: clientsServedThisWave,
-        averageAccuracy: 0,
+        accuracy: avgAccuracy,
         pointsEarned: waveScore,
       });
-      nextWave();
-      waveToUse = currentWave + 1;
+      setShowWaveTransition(true);
+      setPhase('waveClear');
+      return;
     }
 
     // Spawn next client
-    const newClient = generateClient(waveToUse);
+    const newClient = generateClient(currentWave);
     setCurrentClient(newClient);
     localTimeRef.current = newClient.modifiers.patience;
     setTimeRemaining(newClient.modifiers.patience);
@@ -117,12 +134,43 @@ export const GameScreen: React.FC = () => {
     currentWave,
     clientsServedThisWave,
     waveScore,
+    waveAccuracies,
+    setPhase,
+    setCurrentClient,
+    setTimeRemaining,
+    navigate,
+  ]);
+
+  // Stable transition close handler
+  const handleTransitionClose = useCallback(() => {
+    setShowWaveTransition(false);
+
+    // Save wave results history
+    addWaveResult({
+      waveNumber: transitionStats.waveNumber,
+      clientsServed: transitionStats.clientsServed,
+      averageAccuracy: transitionStats.accuracy,
+      pointsEarned: transitionStats.pointsEarned,
+    });
+
+    // Advance wave
+    nextWave();
+    setWaveAccuracies([]);
+
+    // Spawn first client of the next wave
+    const nextWaveNumber = transitionStats.waveNumber + 1;
+    const newClient = generateClient(nextWaveNumber);
+    setCurrentClient(newClient);
+    localTimeRef.current = newClient.modifiers.patience;
+    setTimeRemaining(newClient.modifiers.patience);
+    setPhase('playing');
+  }, [
+    transitionStats,
     addWaveResult,
     nextWave,
     setCurrentClient,
     setTimeRemaining,
     setPhase,
-    navigate,
   ]);
 
   // Stable timeout logic
@@ -209,6 +257,9 @@ export const GameScreen: React.FC = () => {
 
     incrementClientsServed();
 
+    // Track accuracy of the current submission
+    setWaveAccuracies((prev) => [...prev, result.accuracy]);
+
     feedbackTimer.current = setTimeout(() => {
       setShowFeedback(false);
       setFeedback(null);
@@ -268,6 +319,8 @@ export const GameScreen: React.FC = () => {
   // Stable restart handler
   const handleRestart = useCallback(() => {
     setShowPause(false);
+    setShowWaveTransition(false);
+    setWaveAccuracies([]);
     startGame();
     const client = generateClient(1);
     setCurrentClient(client);
@@ -293,8 +346,7 @@ export const GameScreen: React.FC = () => {
           {currentClient && (
             <ClientCard
               client={currentClient}
-              timeRemaining={timeRemaining}
-              maxTime={currentClient.modifiers.patience}
+              timerPct={currentClient.modifiers.patience > 0 ? (timeRemaining / currentClient.modifiers.patience) * 100 : 0}
               phase={phase}
               feedback={feedback}
             />
@@ -351,6 +403,16 @@ export const GameScreen: React.FC = () => {
           onResume={() => setShowPause(false)}
           onRestart={handleRestart}
           onQuit={() => navigate('/menu')}
+        />
+      )}
+
+      {showWaveTransition && (
+        <WaveTransition
+          waveNumber={transitionStats.waveNumber}
+          clientsServed={transitionStats.clientsServed}
+          accuracy={transitionStats.accuracy}
+          pointsEarned={transitionStats.pointsEarned}
+          onClose={handleTransitionClose}
         />
       )}
     </div>
