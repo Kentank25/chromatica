@@ -213,3 +213,31 @@
     height: 90px;
   }
 }
+
+/* ── Toast Alert ───────────────────────────── */
+.color-mixer__toast {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent-success);
+  color: #ffffff;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: bold;
+  z-index: 10002;
+  box-shadow: var(--shadow-glow-success);
+  animation: toastFade 2s ease forwards;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+@keyframes toastFade {
+  0% { opacity: 0; transform: translate(-50%, -10px); }
+  15% { opacity: 1; transform: translate(-50%, 0); }
+  85% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -10px); }
+}
+

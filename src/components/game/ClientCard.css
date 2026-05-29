@@ -13,7 +13,7 @@
   border: var(--glass-border);
   border-radius: var(--radius-xl);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   animation: slideInLeft 0.5s var(--spring) forwards;
   max-width: 320px;
   width: 100%;
@@ -267,3 +267,45 @@
     height: 64px;
   }
 }
+
+/* ── Speech Bubble ─────────────────────────── */
+.client-card__bubble {
+  position: absolute;
+  top: -55px;
+  left: 20px;
+  background: rgba(31, 40, 51, 0.95);
+  border: 1px solid rgba(197, 198, 199, 0.25);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 8px 14px;
+  border-radius: var(--radius-lg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 500;
+  max-width: 250px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 10;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.client-card__bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 30px;
+  border-width: 6px 6px 0;
+  border-style: solid;
+  border-color: rgba(31, 40, 51, 0.95) transparent;
+  display: block;
+  width: 0;
+}
+
+.client-card__bubble--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+

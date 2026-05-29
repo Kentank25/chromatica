@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import type { Client, GamePhase, ClientExpression } from '../../types/game.types';
 import { rgbToHex } from '../../utils/colorUtils';
 import ProgressBar from '../common/ProgressBar';
@@ -36,6 +36,34 @@ const ClientCardComponent: React.FC<ClientCardProps> = ({
   phase = 'idle',
   feedback = null,
 }) => {
+  const [dialogue, setDialogue] = useState('');
+  const [showBubble, setShowBubble] = useState(false);
+
+  useEffect(() => {
+    if (!client) {
+      setShowBubble(false);
+      return;
+    }
+
+    const dialogues: Record<string, string[]> = {
+      villager: ["I need this for my garden fence!", "Can you match this for me?"],
+      wizard: ["I require PRECISELY this hue.", "My spell demands exactness."],
+      zombie: ["Graaagh... me want this color...", "Pretty... color..."],
+      noble: ["Perfect, commoner. Not one shade off.", "I hope you know what you're doing."],
+    };
+
+    const lines = dialogues[client.type] || [];
+    const line = lines[Math.floor(Math.random() * lines.length)] || '';
+    setDialogue(line);
+    setShowBubble(true);
+
+    const timer = setTimeout(() => {
+      setShowBubble(false);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [client?.id, client?.type]);
+
   const dynamicExpression = useMemo<ClientExpression>(() => {
     if (phase === 'evaluating' && feedback) {
       if (feedback.passed) {
@@ -77,6 +105,13 @@ const ClientCardComponent: React.FC<ClientCardProps> = ({
 
   return (
     <article className={`client-card client-card--entering ${urgencyClass}`} key={client.id}>
+      {/* Speech bubble */}
+      {dialogue && (
+        <div className={`client-card__bubble ${showBubble ? 'client-card__bubble--visible' : ''}`}>
+          {dialogue}
+        </div>
+      )}
+
       {/* Expression with key to trigger CSS pop animation on change */}
       <span
         key={dynamicExpression}
@@ -126,3 +161,4 @@ const ClientCardComponent: React.FC<ClientCardProps> = ({
 };
 
 export default React.memo(ClientCardComponent);
+

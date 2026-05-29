@@ -39,4 +39,6 @@ export interface Ingredient {
   name: string;
   displayColor: RGB;
   km: KMCoefficients;
+  unlockWave?: number;
 }
+

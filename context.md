@@ -39,7 +39,8 @@ npm run preview  # Preview production build
 
 ### Build Status
 - `tsc --noEmit`: **0 errors** (verified)
-- `vite build`: **80 modules, 252ms** — 273.76 KB JS (86.75 KB gzip), 46.58 KB CSS (8.73 KB gzip)
+- `vite build`: **82 modules, 239ms** — 278.74 KB JS (88.12 KB gzip), 51.54 KB CSS (9.53 KB gzip)
+
 
 ---
 
@@ -103,7 +104,8 @@ src/
 │   ├── GameScreen/     # Full gameplay: timer, mixing, eval, combos, waves
 │   ├── PauseOverlay/   # Resume/Restart/Quit, volume sliders
 │   ├── ResultsScreen/  # S/A/B/C/D rating, stats grid, retry
-│   └── WaveTransition/ # Full-screen celebration overlay + sparkles (NEW)
+│   ├── WaveTransition/ # Full-screen celebration overlay + sparkles (NEW)
+│   └── LeaderboardScreen/ # Top 10 high score table, rank, grade, date, NEW badges (NEW)
 │
 ├── styles/             # Global CSS
 │   ├── variables.css   # 50+ CSS custom properties (tokens)
@@ -395,8 +397,9 @@ Navigation is via `useNavigate()` from React Router. No hash routing.
 2. **PixiJS integration** — The original plan calls for PixiJS (v8) WebGL rendering for liquid shader effects in the PotionVial. Current implementation uses CSS/SVG which works for MVP.
 3. **Adaptive BGM** — Web Audio API bus routing for parallel BGM layer crossfading
 4. **Mobile touch optimization** — Layout works responsively but ingredient buttons could use larger touch targets
-5. **Persistent high score leaderboard** — Currently saves to localStorage, could add cloud sync
-6. **More ingredients** — System supports arbitrary ingredients; can add Teal, Magenta, Brown, Gold etc.
+5. **Leaderboard sync** — Current leaderboard is local-only; could add cloud sync (Firebase/Supabase)
+6. **Even more ingredients** — System easily supports arbitrary ingredients; can add more themed pigments
+
 
 ---
 

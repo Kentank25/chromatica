@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useGameStore } from '../../store/gameStore';
 import { BASE_INGREDIENTS, mixColorsKM } from '../../engine/colorScience';
 import { rgbToHex } from '../../utils/colorUtils';
@@ -18,6 +18,7 @@ const ColorMixerComponent: React.FC<ColorMixerProps> = ({
   resetKey,
 }) => {
   const setPlayerMix = useGameStore((s) => s.setPlayerMix);
+  const currentWave = useGameStore((s) => s.currentWave);
 
   // Track amount per ingredient by ingredient id
   const [amounts, setAmounts] = useState<Record<string, number>>(() => {
@@ -28,10 +29,40 @@ const ColorMixerComponent: React.FC<ColorMixerProps> = ({
     return initial;
   });
 
-  // Compute the mixed color from current amounts
+  // Toast notifications for newly unlocked ingredients
+  const [toastMessage, setToastMessage] = useState('');
+  const [showToast, setShowToast] = useState(false);
+  const prevWaveRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (prevWaveRef.current === null) {
+      prevWaveRef.current = currentWave;
+      return; // skip on initial mount
+    }
+    const newlyUnlocked = BASE_INGREDIENTS.filter(
+      (ing) =>
+        ing.unlockWave !== undefined &&
+        ing.unlockWave > prevWaveRef.current! &&
+        ing.unlockWave <= currentWave
+    );
+    if (newlyUnlocked.length > 0) {
+      setToastMessage(`New ingredient unlocked: ${newlyUnlocked[0].name}!`);
+      setShowToast(true);
+      const timer = setTimeout(() => setShowToast(false), 2000);
+      return () => clearTimeout(timer);
+    }
+    prevWaveRef.current = currentWave;
+  }, [currentWave]);
+
+  // Filter ingredients visible in the current wave
+  const visibleIngredients = useMemo(() => {
+    return BASE_INGREDIENTS.filter((ing) => (ing.unlockWave ?? 1) <= currentWave);
+  }, [currentWave]);
+
+  // Compute the mixed color from current amounts of unlocked ingredients only
   const mixedColor: RGB = useMemo(() => {
     const entries: Array<{ ingredient: Ingredient; amount: number }> = [];
-    BASE_INGREDIENTS.forEach((ing: Ingredient) => {
+    visibleIngredients.forEach((ing: Ingredient) => {
       const amt = amounts[ing.id] || 0;
       if (amt > 0) {
         entries.push({ ingredient: ing, amount: amt });
@@ -41,7 +72,7 @@ const ColorMixerComponent: React.FC<ColorMixerProps> = ({
       return { r: 40, g: 40, b: 50 }; // empty dark
     }
     return mixColorsKM(entries);
-  }, [amounts]);
+  }, [amounts, visibleIngredients]);
 
   // Sync to store
   useEffect(() => {
@@ -84,6 +115,13 @@ const ColorMixerComponent: React.FC<ColorMixerProps> = ({
 
   return (
     <section className="color-mixer" aria-label="Color Mixer">
+      {/* Toast Alert */}
+      {showToast && (
+        <div className="color-mixer__toast" role="alert">
+          {toastMessage}
+        </div>
+      )}
+
       {/* Preview */}
       <div className="color-mixer__preview">
         <span className="color-mixer__preview-label">Your Brew</span>
@@ -102,7 +140,7 @@ const ColorMixerComponent: React.FC<ColorMixerProps> = ({
 
       {/* Ingredients */}
       <div className="color-mixer__ingredients">
-        {BASE_INGREDIENTS.map((ing: Ingredient) => {
+        {visibleIngredients.map((ing: Ingredient) => {
           const amt = amounts[ing.id] || 0;
           return (
             <div
@@ -173,3 +211,4 @@ const ColorMixerComponent: React.FC<ColorMixerProps> = ({
 };
 
 export default React.memo(ColorMixerComponent);
+

@@ -348,6 +348,46 @@ export const BASE_INGREDIENTS: Ingredient[] = [
       S: [0.85, 0.7, 0.95],
     },
   },
+  {
+    id: 'teal',
+    name: 'Deepwater Pearl',
+    displayColor: { r: 0, g: 150, b: 160 },
+    km: {
+      K: [3.5, 0.15, 0.15],
+      S: [0.8, 1.0, 1.0],
+    },
+    unlockWave: 3,
+  },
+  {
+    id: 'magenta',
+    name: "Dragon's Blood",
+    displayColor: { r: 210, g: 30, b: 140 },
+    km: {
+      K: [0.15, 4.0, 0.15],
+      S: [1.0, 0.75, 0.95],
+    },
+    unlockWave: 4,
+  },
+  {
+    id: 'ochre',
+    name: 'Earth Clay',
+    displayColor: { r: 180, g: 120, b: 50 },
+    km: {
+      K: [0.5, 1.8, 3.8],
+      S: [0.9, 0.85, 0.7],
+    },
+    unlockWave: 5,
+  },
+  {
+    id: 'silver',
+    name: 'Lunar Dust',
+    displayColor: { r: 200, g: 205, b: 215 },
+    km: {
+      K: [0.03, 0.025, 0.01],
+      S: [2.5, 2.5, 2.7],
+    },
+    unlockWave: 6,
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -361,29 +401,35 @@ export const BASE_INGREDIENTS: Ingredient[] = [
  *   - Easy:  2 ingredients, generous amounts.
  *   - Medium: 2-3 ingredients, mixed amounts.
  *   - Hard:  3-4 ingredients with subtle ratios.
+ * @param wave - Current wave to filter available ingredients.
  * @returns An sRGB colour suitable as a client's target.
  */
-export function generateTargetColor(difficulty: number): RGB {
+export function generateTargetColor(difficulty: number, wave: number = 1): RGB {
   const diff = clamp(Math.round(difficulty), 1, 3);
+
+  // Filter ingredients to only those unlocked in the current wave
+  const unlockedIngredients = BASE_INGREDIENTS.filter(
+    (ing) => (ing.unlockWave ?? 1) <= wave
+  );
 
   // Number of ingredients based on difficulty
   let ingredientCount: number;
   switch (diff) {
     case 1:
-      ingredientCount = 2;
+      ingredientCount = Math.min(2, unlockedIngredients.length);
       break;
     case 2:
-      ingredientCount = randomInt(2, 3);
+      ingredientCount = clamp(randomInt(2, 3), 1, unlockedIngredients.length);
       break;
     case 3:
     default:
-      ingredientCount = randomInt(3, 4);
+      ingredientCount = clamp(randomInt(3, 4), 1, unlockedIngredients.length);
       break;
   }
 
   // Pick distinct random ingredients (avoid duplicates)
   const availableIndices = Array.from(
-    { length: BASE_INGREDIENTS.length },
+    { length: unlockedIngredients.length },
     (_, i) => i,
   );
   const chosen: { ingredient: Ingredient; amount: number }[] = [];
@@ -391,7 +437,7 @@ export function generateTargetColor(difficulty: number): RGB {
   for (let i = 0; i < ingredientCount && availableIndices.length > 0; i++) {
     const pickIdx = randomInt(0, availableIndices.length - 1);
     const ingredientIdx = availableIndices.splice(pickIdx, 1)[0];
-    const ingredient = BASE_INGREDIENTS[ingredientIdx];
+    const ingredient = unlockedIngredients[ingredientIdx];
 
     // Amount range shrinks with difficulty for subtler mixes
     let amount: number;
@@ -413,3 +459,4 @@ export function generateTargetColor(difficulty: number): RGB {
 
   return mixColorsKM(chosen);
 }
+

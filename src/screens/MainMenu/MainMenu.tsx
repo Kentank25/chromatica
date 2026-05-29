@@ -54,6 +54,9 @@ export const MainMenu: React.FC = () => {
           <Button variant="primary" size="lg" onClick={() => navigate('/game')} id="btn-play">
             ⚗️ Begin Brewing
           </Button>
+          <Button variant="secondary" size="md" onClick={() => navigate('/leaderboard')} id="btn-leaderboard">
+            🏆 Leaderboard
+          </Button>
           <Button variant="secondary" size="md" onClick={() => setShowSettings(true)} id="btn-settings">
             ⚙️ Settings
           </Button>

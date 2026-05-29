@@ -168,7 +168,7 @@ export function generateClient(
 
   // Difficulty scales with wave: wave 1-2 → 1, wave 3-4 → 2, wave 5+ → 3
   const difficulty = clamp(Math.ceil(wave / 2), 1, 3);
-  const targetColor = generateTargetColor(difficulty);
+  const targetColor = generateTargetColor(difficulty, wave);
 
   clientIdCounter += 1;
 
