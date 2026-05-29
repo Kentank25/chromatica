@@ -14,7 +14,7 @@ interface PotionVialProps {
 
 const SIZE_MAP = { sm: 80, md: 120, lg: 160 };
 
-export const PotionVial: React.FC<PotionVialProps> = ({
+export const PotionVial = React.memo<PotionVialProps>(({
   color,
   fillLevel = 0.7,
   size = 'md',
@@ -82,4 +82,4 @@ export const PotionVial: React.FC<PotionVialProps> = ({
       {label && <span className="potion-vial__label">{label}</span>}
     </div>
   );
-};
+});

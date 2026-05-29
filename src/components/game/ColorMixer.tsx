@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useGameStore } from '../../store/gameStore';
 import { BASE_INGREDIENTS, mixColorsKM } from '../../engine/colorScience';
+import { rgbToHex } from '../../utils/colorUtils';
 import type { RGB, Ingredient } from '../../types/color.types';
 import Button from '../common/Button';
 import './ColorMixer.css';
@@ -8,14 +9,14 @@ import './ColorMixer.css';
 interface ColorMixerProps {
   onSubmit: () => void;
   disabled?: boolean;
+  resetKey?: string;
 }
 
-function rgbToHex(c: RGB): string {
-  const toHex = (n: number) => Math.round(Math.max(0, Math.min(255, n))).toString(16).padStart(2, '0');
-  return `#${toHex(c.r)}${toHex(c.g)}${toHex(c.b)}`;
-}
-
-const ColorMixer: React.FC<ColorMixerProps> = ({ onSubmit, disabled = false }) => {
+const ColorMixerComponent: React.FC<ColorMixerProps> = ({
+  onSubmit,
+  disabled = false,
+  resetKey,
+}) => {
   const setPlayerMix = useGameStore((s) => s.setPlayerMix);
 
   // Track amount per ingredient by ingredient id
@@ -73,6 +74,11 @@ const ColorMixer: React.FC<ColorMixerProps> = ({ onSubmit, disabled = false }) =
     });
     setAmounts(cleared);
   }, []);
+
+  // Reset mixer when resetKey changes (e.g. client changes)
+  useEffect(() => {
+    resetAll();
+  }, [resetKey, resetAll]);
 
   const hex = rgbToHex(mixedColor);
 
@@ -166,4 +172,4 @@ const ColorMixer: React.FC<ColorMixerProps> = ({ onSubmit, disabled = false }) =
   );
 };
 
-export default ColorMixer;
+export default React.memo(ColorMixerComponent);

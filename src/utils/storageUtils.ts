@@ -3,10 +3,7 @@
  * LocalStorage persistence helpers for Chromatica v2.
  */
 
-import type { AudioSettings } from '../types/audio.types';
-
 const HIGH_SCORES_KEY = 'chromatica_v2_high_scores';
-const SETTINGS_KEY = 'chromatica_v2_settings';
 const MAX_HIGH_SCORES = 10;
 
 /**
@@ -40,39 +37,5 @@ export function getHighScores(): number[] {
       .slice(0, MAX_HIGH_SCORES);
   } catch {
     return [];
-  }
-}
-
-/**
- * Persists audio settings to localStorage.
- */
-export function saveSettings(settings: AudioSettings): void {
-  try {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-  } catch {
-    // Silently degrade.
-  }
-}
-
-/**
- * Loads previously saved audio settings, or `null` if none exist.
- */
-export function loadSettings(): AudioSettings | null {
-  try {
-    const raw = localStorage.getItem(SETTINGS_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as AudioSettings;
-    // Basic validation
-    if (
-      typeof parsed.masterVolume !== 'number' ||
-      typeof parsed.bgmVolume !== 'number' ||
-      typeof parsed.sfxVolume !== 'number' ||
-      typeof parsed.muted !== 'boolean'
-    ) {
-      return null;
-    }
-    return parsed;
-  } catch {
-    return null;
   }
 }

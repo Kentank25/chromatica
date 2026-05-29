@@ -39,7 +39,7 @@ npm run preview  # Preview production build
 
 ### Build Status
 - `tsc --noEmit`: **0 errors** (verified)
-- `vite build`: **76 modules, 2.88s** — 265 KB JS (84 KB gzip), 39 KB CSS (7.6 KB gzip)
+- `vite build`: **76 modules, 1.46s** — 266.90 KB JS (84.76 KB gzip), 39.18 KB CSS (7.63 KB gzip)
 
 ---
 
@@ -303,10 +303,10 @@ border-radius: var(--radius-lg);     /* 12px */
 
 | Component | Key Props | Notes |
 |-----------|-----------|-------|
-| `ColorMixer` | `onSubmit: () => void`, `disabled` | Reads `BASE_INGREDIENTS`, calls `mixColorsKM`, syncs via `setPlayerMix` |
-| `PotionVial` | `color: RGB`, `fillLevel: 0-1`, `size: 'sm'│'md'│'lg'`, `label`, `animated` | SVG bottle with bubbles, named export |
-| `ClientCard` | `client: Client│null`, `timeRemaining: number`, `maxTime: number` | Emoji avatars, patience bar, entrance animation |
-| `ComboCounter` | (none — reads from store) | Hidden at combo 0, tiered glow colors |
+| `ColorMixer` | `onSubmit: () => void`, `disabled`, `resetKey` | Reads `BASE_INGREDIENTS`, calls `mixColorsKM`, resets on client change, memoized |
+| `PotionVial` | `color: RGB`, `fillLevel: 0-1`, `size: 'sm'│'md'│'lg'`, `label`, `animated` | SVG bottle with bubbles, named export, memoized |
+| `ClientCard` | `client: Client│null`, `timeRemaining: number`, `maxTime: number`, `phase`, `feedback` | Dynamic expressions (😐/😤/😡/😊/🤩), low patience border/shaking cues, memoized |
+| `ComboCounter` | (none — reads from store) | Hidden at combo 0, next threshold reward info, memoized |
 
 ### HUD Components (all use named `export`)
 
@@ -395,8 +395,7 @@ Navigation is via `useNavigate()` from React Router. No hash routing.
 4. **Mobile touch optimization** — Layout works responsively but ingredient buttons could use larger touch targets
 5. **Persistent high score leaderboard** — Currently saves to localStorage, could add cloud sync
 6. **Wave clear celebration screen** — `'waveClear'` phase exists but no dedicated transition animation between waves
-7. **Client expression changes** — Expression field exists on Client type but isn't dynamically updated based on timer/accuracy
-8. **More ingredients** — System supports arbitrary ingredients; can add Teal, Magenta, Brown, Gold etc.
+7. **More ingredients** — System supports arbitrary ingredients; can add Teal, Magenta, Brown, Gold etc.
 
 ---
 

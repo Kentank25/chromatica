@@ -7,183 +7,34 @@
   flex-direction: column;
   align-items: center;
   gap: var(--space-sm);
-}
-
-/* ── Bottle Container ──────────────────────── */
-.potion-vial__container {
   position: relative;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-}
-
-/* ── Bottle Shape ──────────────────────────── */
-.potion-vial__bottle {
-  position: relative;
-  overflow: hidden;
-  border: 2px solid rgba(197, 198, 199, 0.12);
-  transition: box-shadow var(--transition-normal);
-}
-
-/* ── Size Variants ─────────────────────────── */
-.potion-vial--sm .potion-vial__bottle {
-  width: 48px;
-  height: 72px;
-  border-radius: 8px 8px 16px 16px;
-}
-
-.potion-vial--sm .potion-vial__neck {
-  width: 20px;
-  height: 12px;
-}
-
-.potion-vial--md .potion-vial__bottle {
-  width: 72px;
-  height: 110px;
-  border-radius: 10px 10px 24px 24px;
-}
-
-.potion-vial--md .potion-vial__neck {
-  width: 28px;
-  height: 16px;
-}
-
-.potion-vial--lg .potion-vial__bottle {
-  width: 100px;
-  height: 150px;
-  border-radius: 12px 12px 32px 32px;
-}
-
-.potion-vial--lg .potion-vial__neck {
-  width: 36px;
-  height: 20px;
-}
-
-/* ── Neck ──────────────────────────────────── */
-.potion-vial__neck {
-  position: relative;
-  background: rgba(197, 198, 199, 0.06);
-  border: 2px solid rgba(197, 198, 199, 0.12);
-  border-bottom: none;
-  border-radius: 4px 4px 0 0;
-  margin-bottom: -2px;
-  z-index: 1;
-}
-
-.potion-vial__neck::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80%;
-  height: 3px;
-  background: rgba(197, 198, 199, 0.15);
-  border-radius: 2px;
-}
-
-/* ── Glass Body ────────────────────────────── */
-.potion-vial__glass {
-  position: absolute;
-  inset: 0;
-  background: rgba(197, 198, 199, 0.03);
-  pointer-events: none;
-}
-
-/* Glass highlight */
-.potion-vial__glass::before {
-  content: '';
-  position: absolute;
-  top: 8%;
-  left: 10%;
-  width: 20%;
-  height: 60%;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.06) 0%,
-    transparent 100%
-  );
-  border-radius: 50%;
-  pointer-events: none;
-}
-
-/* ── Liquid Fill ───────────────────────────── */
-.potion-vial__liquid {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  transition: height 0.6s var(--spring), background 0.5s ease;
-  border-radius: 0 0 inherit inherit;
-}
-
-/* Liquid surface wave */
-.potion-vial__liquid::before {
-  content: '';
-  position: absolute;
-  top: -4px;
-  left: -5%;
-  right: -5%;
-  height: 8px;
-  background: inherit;
-  filter: brightness(1.15);
-  border-radius: 50%;
-  opacity: 0.6;
-}
-
-.potion-vial__liquid--animated {
-  animation: boil 2s ease-in-out infinite;
 }
 
 /* ── Bubbles ───────────────────────────────── */
 .potion-vial__bubble {
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.12);
+  transform-origin: center;
   animation: liquidBubble 2.5s ease-in-out infinite;
-  pointer-events: none;
 }
 
-.potion-vial__bubble:nth-child(1) {
-  width: 6px;
-  height: 6px;
-  left: 25%;
-  bottom: 15%;
+.potion-vial__bubble--1 {
   animation-delay: 0s;
   animation-duration: 2s;
 }
 
-.potion-vial__bubble:nth-child(2) {
-  width: 4px;
-  height: 4px;
-  left: 55%;
-  bottom: 25%;
+.potion-vial__bubble--2 {
   animation-delay: 0.7s;
   animation-duration: 2.3s;
 }
 
-.potion-vial__bubble:nth-child(3) {
-  width: 5px;
-  height: 5px;
-  left: 70%;
-  bottom: 10%;
+.potion-vial__bubble--3 {
   animation-delay: 1.3s;
   animation-duration: 1.8s;
-}
-
-.potion-vial__bubble:nth-child(4) {
-  width: 3px;
-  height: 3px;
-  left: 40%;
-  bottom: 30%;
-  animation-delay: 0.4s;
-  animation-duration: 2.6s;
 }
 
 /* ── Glow ──────────────────────────────────── */
 .potion-vial__glow {
   position: absolute;
-  bottom: -8px;
+  bottom: 0px;
   left: 50%;
   transform: translateX(-50%);
   width: 80%;

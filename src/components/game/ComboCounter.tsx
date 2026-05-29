@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useGameStore } from '../../store/gameStore';
 import './ComboCounter.css';
 
-const COMBO_TOKEN_THRESHOLDS = [3, 5, 8, 12];
+const COMBO_TOKEN_THRESHOLDS = [3, 5, 7];
 
 const ComboCounter: React.FC = () => {
   const comboStreak = useGameStore((s) => s.comboStreak);
@@ -24,8 +24,8 @@ const ComboCounter: React.FC = () => {
   }
 
   // Determine tier
-  const tier = comboStreak >= 8 ? 'tier3' : comboStreak >= 4 ? 'tier2' : 'tier1';
-  const icon = comboStreak >= 8 ? '⚡' : comboStreak >= 4 ? '🔥' : '✨';
+  const tier = comboStreak >= 7 ? 'tier3' : comboStreak >= 4 ? 'tier2' : 'tier1';
+  const icon = comboStreak >= 7 ? '⚡' : comboStreak >= 4 ? '🔥' : '✨';
 
   // Next token threshold
   const nextThreshold = COMBO_TOKEN_THRESHOLDS.find((t) => t > comboStreak);
@@ -47,4 +47,4 @@ const ComboCounter: React.FC = () => {
   );
 };
 
-export default ComboCounter;
+export default React.memo(ComboCounter);

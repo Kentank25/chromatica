@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import type { Client } from '../../types/game.types';
-import type { RGB } from '../../types/color.types';
+import type { Client, GamePhase, ClientExpression } from '../../types/game.types';
+import { rgbToHex } from '../../utils/colorUtils';
 import ProgressBar from '../common/ProgressBar';
 import './ClientCard.css';
 
@@ -8,6 +8,11 @@ interface ClientCardProps {
   client: Client | null;
   timeRemaining: number;
   maxTime: number;
+  phase?: GamePhase;
+  feedback?: {
+    passed: boolean;
+    accuracy: number;
+  } | null;
 }
 
 const CLIENT_EMOJIS: Record<string, string> = {
@@ -18,22 +23,35 @@ const CLIENT_EMOJIS: Record<string, string> = {
   alchemist: '⚗️',
 };
 
-const EXPRESSION_EMOJIS: Record<string, string> = {
+const EXPRESSION_EMOJIS: Record<ClientExpression, string> = {
   neutral: '😐',
   happy: '😊',
-  excited: '🤩',
-  impatient: '😤',
-  angry: '😡',
-  sad: '😢',
+  ecstatic: '🤩',
+  annoyed: '😤',
+  enraged: '😡',
 };
 
-function rgbToHex(c: RGB): string {
-  const toHex = (n: number) => Math.round(Math.max(0, Math.min(255, n))).toString(16).padStart(2, '0');
-  return `#${toHex(c.r)}${toHex(c.g)}${toHex(c.b)}`;
-}
-
-const ClientCard: React.FC<ClientCardProps> = ({ client, timeRemaining, maxTime }) => {
+const ClientCardComponent: React.FC<ClientCardProps> = ({
+  client,
+  timeRemaining,
+  maxTime,
+  phase = 'idle',
+  feedback = null,
+}) => {
   const timePct = maxTime > 0 ? (timeRemaining / maxTime) * 100 : 0;
+
+  const dynamicExpression = useMemo<ClientExpression>(() => {
+    if (phase === 'evaluating' && feedback) {
+      if (feedback.passed) {
+        return feedback.accuracy >= 90 ? 'ecstatic' : 'happy';
+      } else {
+        return 'enraged';
+      }
+    }
+    if (timePct > 70) return 'neutral';
+    if (timePct > 40) return 'annoyed';
+    return 'enraged';
+  }, [timePct, phase, feedback]);
 
   const typeClass = useMemo(() => {
     if (!client) return '';
@@ -49,14 +67,27 @@ const ClientCard: React.FC<ClientCardProps> = ({ client, timeRemaining, maxTime 
   }
 
   const avatar = CLIENT_EMOJIS[client.type] || '👤';
-  const expression = EXPRESSION_EMOJIS[client.expression] || '😐';
+  const expressionEmoji = EXPRESSION_EMOJIS[dynamicExpression] || '😐';
   const hex = rgbToHex(client.targetColor);
 
+  const urgencyClass =
+    phase === 'playing'
+      ? timePct < 10
+        ? 'client-card--critical'
+        : timePct < 25
+          ? 'client-card--urgent'
+          : ''
+      : '';
+
   return (
-    <article className="client-card client-card--entering" key={client.id}>
-      {/* Expression */}
-      <span className="client-card__expression" title={`Feeling: ${client.expression}`}>
-        {expression}
+    <article className={`client-card client-card--entering ${urgencyClass}`} key={client.id}>
+      {/* Expression with key to trigger CSS pop animation on change */}
+      <span
+        key={dynamicExpression}
+        className="client-card__expression"
+        title={`Feeling: ${dynamicExpression}`}
+      >
+        {expressionEmoji}
       </span>
 
       {/* Header */}
@@ -98,4 +129,4 @@ const ClientCard: React.FC<ClientCardProps> = ({ client, timeRemaining, maxTime 
   );
 };
 
-export default ClientCard;
+export default React.memo(ClientCardComponent);

@@ -3,7 +3,7 @@
  * Game-session, client, and evaluation type definitions for Chromatica v2.
  */
 
-import { RGB } from './color.types';
+import type { RGB } from './color.types';
 
 /** The archetype of a visiting client. */
 export type ClientType = 'villager' | 'wizard' | 'zombie' | 'noble';

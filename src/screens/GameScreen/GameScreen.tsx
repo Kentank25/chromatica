@@ -16,80 +16,198 @@ import './GameScreen.css';
 
 export const GameScreen: React.FC = () => {
   const navigate = useNavigate();
-  const store = useGameStore();
+
+  // Granular State Subscriptions
+  const phase = useGameStore((s) => s.phase);
+  const timeRemaining = useGameStore((s) => s.timeRemaining);
+  const currentClient = useGameStore((s) => s.currentClient);
+  const satisfaction = useGameStore((s) => s.satisfaction);
+  const currentWave = useGameStore((s) => s.currentWave);
+  const clientsServedThisWave = useGameStore((s) => s.clientsServedThisWave);
+  const waveScore = useGameStore((s) => s.waveScore);
+  const playerMix = useGameStore((s) => s.playerMix);
+  const comboStreak = useGameStore((s) => s.comboStreak);
+
+  // Stable Action References
+  const startGame = useGameStore((s) => s.startGame);
+  const setPlayerMix = useGameStore((s) => s.setPlayerMix);
+  const setCurrentClient = useGameStore((s) => s.setCurrentClient);
+  const updateScore = useGameStore((s) => s.updateScore);
+  const updateSatisfaction = useGameStore((s) => s.updateSatisfaction);
+  const incrementCombo = useGameStore((s) => s.incrementCombo);
+  const resetCombo = useGameStore((s) => s.resetCombo);
+  const addToken = useGameStore((s) => s.addToken);
+  const useToken = useGameStore((s) => s.useToken);
+  const setPhase = useGameStore((s) => s.setPhase);
+  const setTimeRemaining = useGameStore((s) => s.setTimeRemaining);
+  const addWaveResult = useGameStore((s) => s.addWaveResult);
+  const nextWave = useGameStore((s) => s.nextWave);
+  const incrementPotionsCompleted = useGameStore((s) => s.incrementPotionsCompleted);
+  const incrementPotionsFailed = useGameStore((s) => s.incrementPotionsFailed);
+  const incrementClientsServed = useGameStore((s) => s.incrementClientsServed);
+  const addWaveScore = useGameStore((s) => s.addWaveScore);
+
   const [showPause, setShowPause] = useState(false);
   const [feedback, setFeedback] = useState<EvaluationResult | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [hintChannel, setHintChannel] = useState<'r' | 'g' | 'b' | null>(null);
-  const feedbackTimer = useRef<ReturnType<typeof setTimeout>>();
+
+  // Timers and Refs
+  const feedbackTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const localTimeRef = useRef(0);
+  const lastStoreUpdate = useRef(0);
 
   // Initialize game on mount
   useEffect(() => {
-    store.startGame();
+    startGame();
     const client = generateClient(1);
-    store.setCurrentClient(client);
-    store.setTimeRemaining(client.modifiers.patience);
+    setCurrentClient(client);
+    localTimeRef.current = client.modifiers.patience;
+    setTimeRemaining(client.modifiers.patience);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Timer countdown
+  // Synchronize local timer reference when currentClient changes
+  useEffect(() => {
+    if (currentClient) {
+      localTimeRef.current = currentClient.modifiers.patience;
+      setTimeRemaining(currentClient.modifiers.patience);
+    }
+  }, [currentClient, setTimeRemaining]);
+
+  // Hint token auto-dismiss after 5 seconds
+  useEffect(() => {
+    if (hintChannel) {
+      const timer = setTimeout(() => {
+        setHintChannel(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [hintChannel]);
+
+  // Stable check and advance logic
+  const checkAndAdvance = useCallback(() => {
+    if (satisfaction <= 0) {
+      setPhase('gameOver');
+      setTimeout(() => navigate('/results'), 500);
+      return;
+    }
+
+    const waveConfig = getWaveConfig(currentWave);
+    let waveToUse = currentWave;
+    if (isWaveClear(clientsServedThisWave, waveScore, waveConfig)) {
+      addWaveResult({
+        waveNumber: currentWave,
+        clientsServed: clientsServedThisWave,
+        averageAccuracy: 0,
+        pointsEarned: waveScore,
+      });
+      nextWave();
+      waveToUse = currentWave + 1;
+    }
+
+    // Spawn next client
+    const newClient = generateClient(waveToUse);
+    setCurrentClient(newClient);
+    localTimeRef.current = newClient.modifiers.patience;
+    setTimeRemaining(newClient.modifiers.patience);
+    setPhase('playing');
+  }, [
+    satisfaction,
+    currentWave,
+    clientsServedThisWave,
+    waveScore,
+    addWaveResult,
+    nextWave,
+    setCurrentClient,
+    setTimeRemaining,
+    setPhase,
+    navigate,
+  ]);
+
+  // Stable timeout logic
+  const handleTimeout = useCallback(() => {
+    if (!currentClient) return;
+    updateSatisfaction(-currentClient.modifiers.penaltySeverity);
+    resetCombo();
+    incrementPotionsFailed();
+    incrementClientsServed();
+    checkAndAdvance();
+  }, [currentClient, updateSatisfaction, resetCombo, incrementPotionsFailed, incrementClientsServed, checkAndAdvance]);
+
+  // Timer countdown with throttled store updates
   useGameLoop({
     onTick: (dt) => {
-      if (store.phase !== 'playing' || showPause || showFeedback) return;
-      const newTime = store.timeRemaining - dt;
-      if (newTime <= 0) {
+      if (phase !== 'playing' || showPause || showFeedback) return;
+      localTimeRef.current -= dt;
+      if (localTimeRef.current <= 0) {
+        localTimeRef.current = 0;
+        setTimeRemaining(0);
         handleTimeout();
       } else {
-        store.setTimeRemaining(newTime);
+        // Throttle store writes to 10fps
+        const now = performance.now();
+        if (now - lastStoreUpdate.current >= 100) {
+          setTimeRemaining(localTimeRef.current);
+          lastStoreUpdate.current = now;
+        }
       }
     },
-    running: store.phase === 'playing' && !showPause && !showFeedback,
+    running: phase === 'playing' && !showPause && !showFeedback,
   });
+
+  // Stable pause handler
+  const handlePause = useCallback(() => {
+    if (phase === 'playing') {
+      setTimeRemaining(localTimeRef.current);
+      setShowPause(true);
+    }
+  }, [phase, setTimeRemaining]);
 
   useEscapeKey(() => {
-    if (store.phase === 'playing') setShowPause((p) => !p);
+    if (phase === 'playing') {
+      if (showPause) {
+        setShowPause(false);
+      } else {
+        handlePause();
+      }
+    }
   });
 
-  const handleTimeout = useCallback(() => {
-    // Auto-fail on timeout
-    if (!store.currentClient) return;
-    store.updateSatisfaction(-store.currentClient.modifiers.penaltySeverity);
-    store.resetCombo();
-    store.incrementPotionsFailed();
-    store.incrementClientsServed();
-    checkAndAdvance();
-  }, [store]);
-
+  // Stable submit handler
   const handleSubmit = useCallback(() => {
-    if (!store.currentClient || store.phase !== 'playing') return;
+    if (!currentClient || phase !== 'playing') return;
+
+    // Sync exact remaining time to store before evaluation
+    setTimeRemaining(localTimeRef.current);
 
     const result = evaluatePotion(
-      store.currentClient.targetColor,
-      store.playerMix,
-      store.currentClient,
-      store.timeRemaining,
-      store.comboStreak
+      currentClient.targetColor,
+      playerMix,
+      currentClient,
+      localTimeRef.current,
+      comboStreak
     );
 
     setFeedback(result);
     setShowFeedback(true);
-    store.setPhase('evaluating');
+    setPhase('evaluating');
 
     if (result.passed) {
-      store.updateScore(result.pointsEarned);
-      store.addWaveScore(result.pointsEarned);
-      store.incrementCombo();
-      store.incrementPotionsCompleted();
+      updateScore(result.pointsEarned);
+      addWaveScore(result.pointsEarned);
+      incrementCombo();
+      incrementPotionsCompleted();
 
-      const reward = getComboReward(store.comboStreak + 1);
-      if (reward) store.addToken(reward);
+      const reward = getComboReward(comboStreak + 1);
+      if (reward) addToken(reward);
     } else {
-      store.updateSatisfaction(-store.currentClient.modifiers.penaltySeverity);
-      store.resetCombo();
-      store.incrementPotionsFailed();
+      updateSatisfaction(-currentClient.modifiers.penaltySeverity);
+      resetCombo();
+      incrementPotionsFailed();
     }
 
-    store.incrementClientsServed();
+    incrementClientsServed();
 
     feedbackTimer.current = setTimeout(() => {
       setShowFeedback(false);
@@ -97,86 +215,117 @@ export const GameScreen: React.FC = () => {
       setHintChannel(null);
       checkAndAdvance();
     }, 1800);
-  }, [store]);
+  }, [
+    currentClient,
+    phase,
+    playerMix,
+    comboStreak,
+    setTimeRemaining,
+    updateScore,
+    addWaveScore,
+    incrementCombo,
+    incrementPotionsCompleted,
+    addToken,
+    updateSatisfaction,
+    resetCombo,
+    incrementPotionsFailed,
+    incrementClientsServed,
+    checkAndAdvance,
+  ]);
 
-  const checkAndAdvance = useCallback(() => {
-    if (store.satisfaction <= 0) {
-      store.setPhase('gameOver');
-      setTimeout(() => navigate('/results'), 500);
-      return;
-    }
-
-    const waveConfig = getWaveConfig(store.currentWave);
-    if (isWaveClear(store.clientsServedThisWave, store.waveScore, waveConfig)) {
-      store.addWaveResult({
-        waveNumber: store.currentWave,
-        clientsServed: store.clientsServedThisWave,
-        averageAccuracy: 0,
-        pointsEarned: store.waveScore,
-      });
-      store.nextWave();
-    }
-
-    // Spawn next client
-    const newClient = generateClient(store.currentWave);
-    store.setCurrentClient(newClient);
-    store.setTimeRemaining(newClient.modifiers.patience);
-    store.setPhase('playing');
-  }, [store, navigate]);
-
+  // Stable token use handler
   const handleUseToken = useCallback((type: 'skip' | 'hint' | 'autoCorrect') => {
-    if (!store.currentClient) return;
-    const used = store.useToken(type);
+    if (!currentClient) return;
+    const used = useToken(type);
     if (!used) return;
 
     if (type === 'skip') {
-      store.incrementClientsServed();
-      const newClient = generateClient(store.currentWave);
-      store.setCurrentClient(newClient);
-      store.setTimeRemaining(newClient.modifiers.patience);
+      incrementClientsServed();
+      const newClient = generateClient(currentWave);
+      setCurrentClient(newClient);
+      localTimeRef.current = newClient.modifiers.patience;
+      setTimeRemaining(newClient.modifiers.patience);
       setHintChannel(null);
     } else if (type === 'hint') {
       const channels: Array<'r' | 'g' | 'b'> = ['r', 'g', 'b'];
       setHintChannel(channels[Math.floor(Math.random() * 3)]);
     } else if (type === 'autoCorrect') {
-      if (store.currentClient) {
-        const channels: Array<'r' | 'g' | 'b'> = ['r', 'g', 'b'];
-        const ch = channels[Math.floor(Math.random() * 3)];
-        store.setPlayerMix({ ...store.playerMix, [ch]: store.currentClient.targetColor[ch] });
-      }
+      const channels: Array<'r' | 'g' | 'b'> = ['r', 'g', 'b'];
+      const ch = channels[Math.floor(Math.random() * 3)];
+      setPlayerMix({ ...playerMix, [ch]: currentClient.targetColor[ch] });
     }
-  }, [store]);
+  }, [
+    currentClient,
+    useToken,
+    incrementClientsServed,
+    currentWave,
+    setCurrentClient,
+    setTimeRemaining,
+    playerMix,
+    setPlayerMix,
+  ]);
 
+  // Stable restart handler
   const handleRestart = useCallback(() => {
     setShowPause(false);
-    store.startGame();
+    startGame();
     const client = generateClient(1);
-    store.setCurrentClient(client);
-    store.setTimeRemaining(client.modifiers.patience);
-  }, [store]);
+    setCurrentClient(client);
+    localTimeRef.current = client.modifiers.patience;
+    setTimeRemaining(client.modifiers.patience);
+  }, [startGame, setCurrentClient, setTimeRemaining]);
 
-  const timerRatio = store.currentClient
-    ? store.timeRemaining / store.currentClient.modifiers.patience
+  const timerRatio = currentClient && currentClient.modifiers.patience > 0
+    ? timeRemaining / currentClient.modifiers.patience
     : 1;
 
+  const isUrgent = timerRatio < 0.25 && phase === 'playing' && !showPause && !showFeedback;
+  const isCritical = timerRatio < 0.10 && phase === 'playing' && !showPause && !showFeedback;
+
+  const gameScreenClass = `game-screen ${isCritical ? 'game-screen--critical' : isUrgent ? 'game-screen--urgent' : ''}`;
+
   return (
-    <div className="game-screen" id="game-screen">
-      <GameHUD onUseToken={handleUseToken} onPause={() => setShowPause(true)} />
+    <div className={gameScreenClass} id="game-screen">
+      <GameHUD onUseToken={handleUseToken} onPause={handlePause} />
 
       <div className="game-screen__main">
         <div className="game-screen__left">
-          {store.currentClient && (
-            <ClientCard client={store.currentClient} timeRemaining={store.timeRemaining} maxTime={store.currentClient.modifiers.patience} />
+          {currentClient && (
+            <ClientCard
+              client={currentClient}
+              timeRemaining={timeRemaining}
+              maxTime={currentClient.modifiers.patience}
+              phase={phase}
+              feedback={feedback}
+            />
           )}
         </div>
 
         <div className="game-screen__center">
           <div className="game-screen__vials">
-            <PotionVial color={store.playerMix} label="Your Mix" size="lg" />
-            {store.currentClient && (
-              <PotionVial color={store.currentClient.targetColor} label="Target" size="lg" animated={false} />
+            <PotionVial color={playerMix} label="Your Mix" size="lg" />
+            {currentClient && (
+              <PotionVial color={currentClient.targetColor} label="Target" size="lg" animated={false} />
             )}
           </div>
+
+          {/* Hint Overlay Panel */}
+          {hintChannel && currentClient && (
+            <div className="game-screen__hint-panel">
+              <span className="game-screen__hint-title">
+                🔮 {hintChannel === 'r' ? 'Red' : hintChannel === 'g' ? 'Green' : 'Blue'} Channel Target: <strong>{currentClient.targetColor[hintChannel]}</strong>
+              </span>
+              <span className="game-screen__hint-direction">
+                {playerMix[hintChannel] < currentClient.targetColor[hintChannel] ? (
+                  <span className="game-screen__hint-direction--more">Needs MORE {hintChannel === 'r' ? 'red' : hintChannel === 'g' ? 'green' : 'blue'} ▲</span>
+                ) : playerMix[hintChannel] > currentClient.targetColor[hintChannel] ? (
+                  <span className="game-screen__hint-direction--less">Needs LESS {hintChannel === 'r' ? 'red' : hintChannel === 'g' ? 'green' : 'blue'} ▼</span>
+                ) : (
+                  <span className="game-screen__hint-direction--perfect">Perfect match! ✨</span>
+                )}
+              </span>
+            </div>
+          )}
 
           {/* Feedback overlay */}
           {showFeedback && feedback && (
@@ -189,7 +338,11 @@ export const GameScreen: React.FC = () => {
         </div>
 
         <div className="game-screen__right">
-          <ColorMixer onSubmit={handleSubmit} disabled={store.phase !== 'playing' || showPause} />
+          <ColorMixer
+            onSubmit={handleSubmit}
+            disabled={phase !== 'playing' || showPause}
+            resetKey={currentClient?.id}
+          />
         </div>
       </div>
 
