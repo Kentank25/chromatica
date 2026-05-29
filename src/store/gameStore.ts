@@ -5,8 +5,9 @@
  * current client, wave progression, and game phase.
  */
 import { create } from 'zustand';
-import type { RGB } from '../types/color.types';
+import type { RGB, Ingredient } from '../types/color.types';
 import type { Client, GamePhase, WaveResult } from '../types/game.types';
+import { mixColorsKM } from '../engine/colorScience';
 
 interface GameState {
   // Session state
@@ -26,6 +27,7 @@ interface GameState {
   clientsServedThisWave: number;
   waveScore: number;
   difficulty: 'apprentice' | 'journeyman' | 'master';
+  mixerAmounts: Record<string, number>;
 
   // Actions
   startGame: () => void;
@@ -46,6 +48,10 @@ interface GameState {
   incrementPotionsFailed: () => void;
   incrementClientsServed: () => void;
   addWaveScore: (points: number) => void;
+  setMixerAmount: (id: string, amount: number) => void;
+  setMixerAmounts: (amounts: Record<string, number>) => void;
+  resetMixerAmounts: () => void;
+  autoCorrectMixer: (targetColor: RGB, unlockedIngredients: Ingredient[]) => void;
 }
 
 const INITIAL_STATE = {
@@ -65,6 +71,20 @@ const INITIAL_STATE = {
   clientsServedThisWave: 0,
   waveScore: 0,
   difficulty: 'journeyman' as 'apprentice' | 'journeyman' | 'master',
+  mixerAmounts: {
+    red: 0,
+    blue: 0,
+    yellow: 0,
+    green: 0,
+    white: 0,
+    black: 0,
+    orange: 0,
+    purple: 0,
+    teal: 0,
+    magenta: 0,
+    ochre: 0,
+    silver: 0,
+  } as Record<string, number>,
 };
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -122,6 +142,21 @@ export const useGameStore = create<GameState>((set, get) => ({
       clientsServedThisWave: 0,
       waveScore: 0,
       phase: 'playing',
+      mixerAmounts: {
+        red: 0,
+        blue: 0,
+        yellow: 0,
+        green: 0,
+        white: 0,
+        black: 0,
+        orange: 0,
+        purple: 0,
+        teal: 0,
+        magenta: 0,
+        ochre: 0,
+        silver: 0,
+      },
+      playerMix: { r: 40, g: 40, b: 50 },
     })),
 
   incrementPotionsCompleted: () =>
@@ -135,4 +170,77 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   addWaveScore: (points) =>
     set((s) => ({ waveScore: s.waveScore + points })),
+
+  setMixerAmount: (id, amount) =>
+    set((s) => ({
+      mixerAmounts: { ...s.mixerAmounts, [id]: amount },
+    })),
+
+  setMixerAmounts: (amounts) => set({ mixerAmounts: amounts }),
+
+  resetMixerAmounts: () =>
+    set((s) => {
+      const cleared: Record<string, number> = {};
+      Object.keys(s.mixerAmounts).forEach((k) => {
+        cleared[k] = 0;
+      });
+      return { mixerAmounts: cleared, playerMix: { r: 40, g: 40, b: 50 } };
+    }),
+
+  autoCorrectMixer: (targetColor, unlockedIngredients) => {
+    const state = get();
+    const currentAmounts = { ...state.mixerAmounts };
+    const channels: Array<'r' | 'g' | 'b'> = ['r', 'g', 'b'];
+    const targetChannel = channels[Math.floor(Math.random() * 3)];
+
+    let bestAmounts = { ...currentAmounts };
+
+    const getChannelValue = (amounts: Record<string, number>) => {
+      const entries: Array<{ ingredient: Ingredient; amount: number }> = [];
+      unlockedIngredients.forEach((ing) => {
+        const amt = amounts[ing.id] || 0;
+        if (amt > 0) {
+          entries.push({ ingredient: ing, amount: amt });
+        }
+      });
+      if (entries.length === 0) return 40;
+      const mixed = mixColorsKM(entries);
+      return mixed[targetChannel];
+    };
+
+    let bestDiff = Math.abs(getChannelValue(bestAmounts) - targetColor[targetChannel]);
+
+    // Hill climbing search for optimal ingredient amounts to match the selected channel
+    for (let i = 0; i < 200; i++) {
+      const randomIng = unlockedIngredients[Math.floor(Math.random() * unlockedIngredients.length)];
+      const currentAmt = bestAmounts[randomIng.id] || 0;
+
+      const dir = Math.random() < 0.5 ? 1 : -1;
+      const nextAmt = Math.max(0, Math.min(10, currentAmt + dir));
+
+      if (nextAmt === currentAmt) continue;
+
+      const testAmounts = { ...bestAmounts, [randomIng.id]: nextAmt };
+      const testDiff = Math.abs(getChannelValue(testAmounts) - targetColor[targetChannel]);
+
+      if (testDiff < bestDiff) {
+        bestDiff = testDiff;
+        bestAmounts = testAmounts;
+      }
+    }
+
+    const finalEntries: Array<{ ingredient: Ingredient; amount: number }> = [];
+    unlockedIngredients.forEach((ing) => {
+      const amt = bestAmounts[ing.id] || 0;
+      if (amt > 0) {
+        finalEntries.push({ ingredient: ing, amount: amt });
+      }
+    });
+    const finalColor = finalEntries.length > 0 ? mixColorsKM(finalEntries) : { r: 40, g: 40, b: 50 };
+
+    set({
+      mixerAmounts: bestAmounts,
+      playerMix: finalColor,
+    });
+  },
 }));

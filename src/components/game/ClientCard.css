@@ -15,7 +15,7 @@
   position: relative;
   overflow: visible;
   animation: slideInLeft 0.5s var(--spring) forwards;
-  max-width: 320px;
+  max-width: 360px;
   width: 100%;
 }
 

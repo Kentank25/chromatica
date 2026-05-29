@@ -21,15 +21,9 @@ const ColorMixerComponent: React.FC<ColorMixerProps> = ({
 }) => {
   const setPlayerMix = useGameStore((s) => s.setPlayerMix);
   const currentWave = useGameStore((s) => s.currentWave);
-
-  // Track amount per ingredient by ingredient id
-  const [amounts, setAmounts] = useState<Record<string, number>>(() => {
-    const initial: Record<string, number> = {};
-    BASE_INGREDIENTS.forEach((ing: Ingredient) => {
-      initial[ing.id] = 0;
-    });
-    return initial;
-  });
+  const mixerAmounts = useGameStore((s) => s.mixerAmounts);
+  const setMixerAmount = useGameStore((s) => s.setMixerAmount);
+  const resetMixerAmounts = useGameStore((s) => s.resetMixerAmounts);
 
   // Toast notifications for newly unlocked ingredients
   const [toastMessage, setToastMessage] = useState('');
@@ -68,7 +62,7 @@ const ColorMixerComponent: React.FC<ColorMixerProps> = ({
   const mixedColor: RGB = useMemo(() => {
     const entries: Array<{ ingredient: Ingredient; amount: number }> = [];
     visibleIngredients.forEach((ing: Ingredient) => {
-      const amt = amounts[ing.id] || 0;
+      const amt = mixerAmounts[ing.id] || 0;
       if (amt > 0) {
         entries.push({ ingredient: ing, amount: amt });
       }
@@ -77,7 +71,7 @@ const ColorMixerComponent: React.FC<ColorMixerProps> = ({
       return { r: 40, g: 40, b: 50 }; // empty dark
     }
     return mixColorsKM(entries);
-  }, [amounts, visibleIngredients]);
+  }, [mixerAmounts, visibleIngredients]);
 
   // Sync to store
   useEffect(() => {
@@ -85,33 +79,25 @@ const ColorMixerComponent: React.FC<ColorMixerProps> = ({
   }, [mixedColor, setPlayerMix]);
 
   const totalAmount = useMemo(
-    () => Object.values(amounts).reduce((s, v) => s + v, 0),
-    [amounts],
+    () => Object.values(mixerAmounts).reduce((s, v) => s + v, 0),
+    [mixerAmounts],
   );
 
   const increment = useCallback((id: string) => {
     audioManager.playSFX('pour');
-    setAmounts((prev) => ({
-      ...prev,
-      [id]: Math.min(10, (prev[id] || 0) + 1),
-    }));
-  }, []);
+    const current = mixerAmounts[id] || 0;
+    setMixerAmount(id, Math.min(10, current + 1));
+  }, [mixerAmounts, setMixerAmount]);
 
   const decrement = useCallback((id: string) => {
     audioManager.playSFX('pour');
-    setAmounts((prev) => ({
-      ...prev,
-      [id]: Math.max(0, (prev[id] || 0) - 1),
-    }));
-  }, []);
+    const current = mixerAmounts[id] || 0;
+    setMixerAmount(id, Math.max(0, current - 1));
+  }, [mixerAmounts, setMixerAmount]);
 
   const resetAll = useCallback(() => {
-    const cleared: Record<string, number> = {};
-    BASE_INGREDIENTS.forEach((ing: Ingredient) => {
-      cleared[ing.id] = 0;
-    });
-    setAmounts(cleared);
-  }, []);
+    resetMixerAmounts();
+  }, [resetMixerAmounts]);
 
   // Reset mixer when resetKey changes (e.g. client changes)
   useEffect(() => {
@@ -164,7 +150,7 @@ const ColorMixerComponent: React.FC<ColorMixerProps> = ({
       {/* Ingredients */}
       <div className="color-mixer__ingredients">
         {visibleIngredients.map((ing: Ingredient) => {
-          const amt = amounts[ing.id] || 0;
+          const amt = mixerAmounts[ing.id] || 0;
           return (
             <div
               key={ing.id}

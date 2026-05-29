@@ -47,8 +47,7 @@
   color: var(--text-primary);
   letter-spacing: 14px;
   margin: 0 0 12px;
-  text-shadow: 0 0 50px rgba(69, 182, 254, 0.3), 0 0 100px rgba(69, 182, 254, 0.15);
-  animation: glow 4s ease-in-out infinite;
+  animation: textGlow 4s ease-in-out infinite;
 }
 
 .main-menu__tagline {

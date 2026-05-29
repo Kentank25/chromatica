@@ -18,6 +18,7 @@ import type { EvaluationResult } from '../../types/game.types';
 import { audioManager } from '../../audio/AudioManager';
 import { musicManager } from '../../audio/MusicManager';
 import { HintTokenIcon, MoreIcon, LessIcon, SparkleIcon, FailIcon } from '../../utils/icons';
+import { BASE_INGREDIENTS } from '../../engine/colorScience';
 import './GameScreen.css';
 
 export const GameScreen: React.FC = () => {
@@ -37,14 +38,14 @@ export const GameScreen: React.FC = () => {
 
   // Stable Action References
   const startGame = useGameStore((s) => s.startGame);
-  const setPlayerMix = useGameStore((s) => s.setPlayerMix);
+  const autoCorrectMixer = useGameStore((s) => s.autoCorrectMixer);
   const setCurrentClient = useGameStore((s) => s.setCurrentClient);
   const updateScore = useGameStore((s) => s.updateScore);
   const updateSatisfaction = useGameStore((s) => s.updateSatisfaction);
   const incrementCombo = useGameStore((s) => s.incrementCombo);
   const resetCombo = useGameStore((s) => s.resetCombo);
   const addToken = useGameStore((s) => s.addToken);
-  const useToken = useGameStore((s) => s.useToken);
+  const consumeToken = useGameStore((s) => s.useToken);
   const setPhase = useGameStore((s) => s.setPhase);
   const setTimeRemaining = useGameStore((s) => s.setTimeRemaining);
   const addWaveResult = useGameStore((s) => s.addWaveResult);
@@ -74,20 +75,17 @@ export const GameScreen: React.FC = () => {
   const localTimeRef = useRef(0);
   const lastStoreUpdate = useRef(0);
 
-  const [showTutorial, setShowTutorial] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(() => {
+    return !localStorage.getItem('chromatica-tutorial');
+  });
 
   // Initialize game on mount
   useEffect(() => {
     startGame();
-    setWaveAccuracies([]);
     const client = generateClient(1, useGameStore.getState().difficulty);
     setCurrentClient(client);
     localTimeRef.current = client.modifiers.patience;
     setTimeRemaining(client.modifiers.patience);
-
-    if (!localStorage.getItem('chromatica-tutorial')) {
-      setShowTutorial(true);
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -146,7 +144,7 @@ export const GameScreen: React.FC = () => {
         audioManager.playSFX('clientArriveVillager');
       }
     }
-  }, [currentClient?.id, phase]);
+  }, [currentClient, phase]);
 
   // Stable check and advance logic
   const checkAndAdvance = useCallback(() => {
@@ -357,12 +355,13 @@ export const GameScreen: React.FC = () => {
     incrementPotionsFailed,
     incrementClientsServed,
     checkAndAdvance,
+    setPhase,
   ]);
 
   // Stable token use handler
   const handleUseToken = useCallback((type: 'skip' | 'hint' | 'autoCorrect') => {
     if (!currentClient) return;
-    const used = useToken(type);
+    const used = consumeToken(type);
     if (!used) return;
 
     if (type === 'skip') {
@@ -376,19 +375,17 @@ export const GameScreen: React.FC = () => {
       const channels: Array<'r' | 'g' | 'b'> = ['r', 'g', 'b'];
       setHintChannel(channels[Math.floor(Math.random() * 3)]);
     } else if (type === 'autoCorrect') {
-      const channels: Array<'r' | 'g' | 'b'> = ['r', 'g', 'b'];
-      const ch = channels[Math.floor(Math.random() * 3)];
-      setPlayerMix({ ...playerMix, [ch]: currentClient.targetColor[ch] });
+      const visibleIngredients = BASE_INGREDIENTS.filter((ing) => (ing.unlockWave ?? 1) <= currentWave);
+      autoCorrectMixer(currentClient.targetColor, visibleIngredients);
     }
   }, [
     currentClient,
-    useToken,
+    consumeToken,
     incrementClientsServed,
     currentWave,
     setCurrentClient,
     setTimeRemaining,
-    playerMix,
-    setPlayerMix,
+    autoCorrectMixer,
     difficulty,
   ]);
 
