@@ -25,9 +25,11 @@ interface GameState {
   phase: GamePhase;
   clientsServedThisWave: number;
   waveScore: number;
+  difficulty: 'apprentice' | 'journeyman' | 'master';
 
   // Actions
   startGame: () => void;
+  setDifficulty: (difficulty: 'apprentice' | 'journeyman' | 'master') => void;
   setPlayerMix: (color: RGB) => void;
   setCurrentClient: (client: Client | null) => void;
   updateScore: (points: number) => void;
@@ -62,12 +64,15 @@ const INITIAL_STATE = {
   phase: 'idle' as GamePhase,
   clientsServedThisWave: 0,
   waveScore: 0,
+  difficulty: 'journeyman' as 'apprentice' | 'journeyman' | 'master',
 };
 
 export const useGameStore = create<GameState>((set, get) => ({
   ...INITIAL_STATE,
 
-  startGame: () => set({ ...INITIAL_STATE, phase: 'playing' }),
+  startGame: () => set((s) => ({ ...INITIAL_STATE, difficulty: s.difficulty, phase: 'playing' })),
+
+  setDifficulty: (difficulty) => set({ difficulty }),
 
   setPlayerMix: (color) => set({ playerMix: color }),
 

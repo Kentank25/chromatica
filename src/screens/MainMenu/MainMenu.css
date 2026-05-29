@@ -148,3 +148,88 @@
   font-family: var(--font-body);
   line-height: 1.6;
 }
+
+/* Difficulty selector */
+.main-menu__difficulty {
+  margin-bottom: var(--space-xl);
+  animation: slideUp 0.8s ease-out 0.15s both;
+}
+
+.main-menu__difficulty-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: var(--space-md);
+}
+
+.main-menu__difficulty-cards {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-md);
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.main-menu__difficulty-card {
+  flex: 1;
+  background: rgba(197, 198, 199, 0.04);
+  border: 1px solid rgba(197, 198, 199, 0.08);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md) var(--space-sm);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-width: 140px;
+  max-width: 180px;
+}
+
+.main-menu__difficulty-card:hover {
+  background: rgba(197, 198, 199, 0.08);
+  border-color: rgba(197, 198, 199, 0.2);
+  transform: translateY(-2px);
+}
+
+.main-menu__difficulty-card--selected {
+  background: rgba(69, 182, 254, 0.08);
+  border-color: var(--accent-success);
+  box-shadow: 0 0 15px rgba(69, 182, 254, 0.2);
+}
+
+.main-menu__difficulty-card--apprentice.main-menu__difficulty-card--selected {
+  background: rgba(46, 204, 113, 0.08);
+  border-color: #2ecc71;
+  box-shadow: 0 0 15px rgba(46, 204, 113, 0.2);
+}
+
+.main-menu__difficulty-card--master.main-menu__difficulty-card--selected {
+  background: rgba(255, 74, 74, 0.08);
+  border-color: var(--accent-failure);
+  box-shadow: 0 0 15px rgba(255, 74, 74, 0.25);
+}
+
+.main-menu__difficulty-icon {
+  font-size: 1.5rem;
+  margin-bottom: var(--space-xs);
+}
+
+.main-menu__difficulty-name {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+
+.main-menu__difficulty-desc {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}

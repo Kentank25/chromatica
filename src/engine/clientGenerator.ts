@@ -158,7 +158,10 @@ let clientIdCounter = 0;
  *               target colour difficulty.
  * @returns A fully-formed {@link Client} ready to present to the player.
  */
-export function generateClient(wave: number): Client {
+export function generateClient(
+  wave: number,
+  difficultyMode: 'apprentice' | 'journeyman' | 'master' = 'journeyman',
+): Client {
   const type = pickClientType(wave);
   const names = NAME_POOLS[type];
   const name = names[randomInt(0, names.length - 1)];
@@ -169,12 +172,23 @@ export function generateClient(wave: number): Client {
 
   clientIdCounter += 1;
 
+  const baseModifiers = { ...MODIFIERS[type] };
+
+  if (difficultyMode === 'apprentice') {
+    baseModifiers.patience += 15;
+    baseModifiers.accuracyThreshold = 0.60;
+  } else if (difficultyMode === 'master') {
+    baseModifiers.patience = Math.max(5, baseModifiers.patience - 5);
+    baseModifiers.accuracyThreshold = 0.80;
+    baseModifiers.penaltySeverity = Math.round(baseModifiers.penaltySeverity * 1.5);
+  }
+
   return {
     id: `client_${clientIdCounter}_${Date.now()}`,
     type,
     name,
     targetColor,
-    modifiers: { ...MODIFIERS[type] },
+    modifiers: baseModifiers,
     expression: 'neutral',
   };
 }

@@ -41,28 +41,43 @@ export interface WaveConfig {
  *
  * @param waveNumber - 1-based wave index.
  */
-export function getWaveConfig(waveNumber: number): WaveConfig {
+export function getWaveConfig(
+  waveNumber: number,
+  difficultyMode: 'apprentice' | 'journeyman' | 'master' = 'journeyman',
+): WaveConfig {
   const w = Math.max(1, Math.round(waveNumber));
+  let config: WaveConfig;
 
   switch (w) {
     case 1:
-      return { clientCount: 5, difficultyLevel: 1.0, targetScore: 200 };
+      config = { clientCount: 5, difficultyLevel: 1.0, targetScore: 200 };
+      break;
     case 2:
-      return { clientCount: 7, difficultyLevel: 1.5, targetScore: 400 };
+      config = { clientCount: 7, difficultyLevel: 1.5, targetScore: 400 };
+      break;
     case 3:
-      return { clientCount: 8, difficultyLevel: 2.0, targetScore: 650 };
+      config = { clientCount: 8, difficultyLevel: 2.0, targetScore: 650 };
+      break;
     case 4:
-      return { clientCount: 9, difficultyLevel: 2.3, targetScore: 900 };
+      config = { clientCount: 9, difficultyLevel: 2.3, targetScore: 900 };
+      break;
     case 5:
-      return { clientCount: 10, difficultyLevel: 2.5, targetScore: 1200 };
+      config = { clientCount: 10, difficultyLevel: 2.5, targetScore: 1200 };
+      break;
     default: {
       // Waves 6+: gradual scaling
       const clientCount = clamp(10 + Math.floor((w - 5) / 2), 10, 15);
       const difficultyLevel = clamp(2.5 + (w - 5) * 0.1, 2.5, 3.0);
       const targetScore = 1200 + (w - 5) * 300;
-      return { clientCount, difficultyLevel, targetScore };
+      config = { clientCount, difficultyLevel, targetScore };
     }
   }
+
+  if (difficultyMode === 'apprentice') {
+    config.targetScore = Math.round(config.targetScore / 2);
+  }
+
+  return config;
 }
 
 // ---------------------------------------------------------------------------

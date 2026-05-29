@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
 import { useSettingsStore } from '../../store/settingsStore';
+import { useGameStore } from '../../store/gameStore';
 import './MainMenu.css';
 
 export const MainMenu: React.FC = () => {
@@ -10,6 +11,7 @@ export const MainMenu: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showCredits, setShowCredits] = useState(false);
   const { bgmVolume, sfxVolume, setVolume, muted, toggleMute } = useSettingsStore();
+  const { difficulty, setDifficulty } = useGameStore();
 
   return (
     <div className="main-menu" id="main-menu">
@@ -20,6 +22,32 @@ export const MainMenu: React.FC = () => {
         <div className="main-menu__header">
           <h1 className="main-menu__title">CHROMATICA</h1>
           <p className="main-menu__tagline">Master the art of color alchemy</p>
+        </div>
+
+        {/* Difficulty Selection */}
+        <div className="main-menu__difficulty">
+          <h3 className="main-menu__difficulty-title">Select Difficulty</h3>
+          <div className="main-menu__difficulty-cards">
+            {(['apprentice', 'journeyman', 'master'] as const).map((mode) => (
+              <div
+                key={mode}
+                className={`main-menu__difficulty-card main-menu__difficulty-card--${mode} ${
+                  difficulty === mode ? 'main-menu__difficulty-card--selected' : ''
+                }`}
+                onClick={() => setDifficulty(mode)}
+              >
+                <div className="main-menu__difficulty-icon">
+                  {mode === 'apprentice' ? '🌱' : mode === 'journeyman' ? '⚗️' : '🧙'}
+                </div>
+                <div className="main-menu__difficulty-name">{mode}</div>
+                <div className="main-menu__difficulty-desc">
+                  {mode === 'apprentice' && 'Relaxed pacing & low requirements.'}
+                  {mode === 'journeyman' && 'Standard color recipe testing.'}
+                  {mode === 'master' && 'Severe time pressure & strict demands.'}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="main-menu__actions">

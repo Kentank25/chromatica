@@ -12,6 +12,7 @@ import { useGameLoop } from '../../hooks/useGameLoop';
 import { useEscapeKey } from '../../hooks/useInput';
 import { PauseOverlay } from '../PauseOverlay/PauseOverlay';
 import { WaveTransition } from '../WaveTransition/WaveTransition';
+import { TutorialOverlay } from '../../components/game/TutorialOverlay';
 import type { EvaluationResult } from '../../types/game.types';
 import './GameScreen.css';
 
@@ -28,6 +29,7 @@ export const GameScreen: React.FC = () => {
   const waveScore = useGameStore((s) => s.waveScore);
   const playerMix = useGameStore((s) => s.playerMix);
   const comboStreak = useGameStore((s) => s.comboStreak);
+  const difficulty = useGameStore((s) => s.difficulty);
 
   // Stable Action References
   const startGame = useGameStore((s) => s.startGame);
@@ -68,14 +70,20 @@ export const GameScreen: React.FC = () => {
   const localTimeRef = useRef(0);
   const lastStoreUpdate = useRef(0);
 
+  const [showTutorial, setShowTutorial] = useState(false);
+
   // Initialize game on mount
   useEffect(() => {
     startGame();
     setWaveAccuracies([]);
-    const client = generateClient(1);
+    const client = generateClient(1, useGameStore.getState().difficulty);
     setCurrentClient(client);
     localTimeRef.current = client.modifiers.patience;
     setTimeRemaining(client.modifiers.patience);
+
+    if (!localStorage.getItem('chromatica-tutorial')) {
+      setShowTutorial(true);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -105,7 +113,7 @@ export const GameScreen: React.FC = () => {
       return;
     }
 
-    const waveConfig = getWaveConfig(currentWave);
+    const waveConfig = getWaveConfig(currentWave, difficulty);
     if (isWaveClear(clientsServedThisWave, waveScore, waveConfig)) {
       // Calculate average accuracy of the wave
       const avgAccuracy = waveAccuracies.length > 0
@@ -124,7 +132,7 @@ export const GameScreen: React.FC = () => {
     }
 
     // Spawn next client
-    const newClient = generateClient(currentWave);
+    const newClient = generateClient(currentWave, difficulty);
     setCurrentClient(newClient);
     localTimeRef.current = newClient.modifiers.patience;
     setTimeRemaining(newClient.modifiers.patience);
@@ -135,6 +143,7 @@ export const GameScreen: React.FC = () => {
     clientsServedThisWave,
     waveScore,
     waveAccuracies,
+    difficulty,
     setPhase,
     setCurrentClient,
     setTimeRemaining,
@@ -159,7 +168,7 @@ export const GameScreen: React.FC = () => {
 
     // Spawn first client of the next wave
     const nextWaveNumber = transitionStats.waveNumber + 1;
-    const newClient = generateClient(nextWaveNumber);
+    const newClient = generateClient(nextWaveNumber, difficulty);
     setCurrentClient(newClient);
     localTimeRef.current = newClient.modifiers.patience;
     setTimeRemaining(newClient.modifiers.patience);
@@ -171,6 +180,7 @@ export const GameScreen: React.FC = () => {
     setCurrentClient,
     setTimeRemaining,
     setPhase,
+    difficulty,
   ]);
 
   // Stable timeout logic
@@ -186,7 +196,7 @@ export const GameScreen: React.FC = () => {
   // Timer countdown with throttled store updates
   useGameLoop({
     onTick: (dt) => {
-      if (phase !== 'playing' || showPause || showFeedback) return;
+      if (phase !== 'playing' || showPause || showFeedback || showTutorial) return;
       localTimeRef.current -= dt;
       if (localTimeRef.current <= 0) {
         localTimeRef.current = 0;
@@ -201,7 +211,7 @@ export const GameScreen: React.FC = () => {
         }
       }
     },
-    running: phase === 'playing' && !showPause && !showFeedback,
+    running: phase === 'playing' && !showPause && !showFeedback && !showTutorial,
   });
 
   // Stable pause handler
@@ -292,7 +302,7 @@ export const GameScreen: React.FC = () => {
 
     if (type === 'skip') {
       incrementClientsServed();
-      const newClient = generateClient(currentWave);
+      const newClient = generateClient(currentWave, difficulty);
       setCurrentClient(newClient);
       localTimeRef.current = newClient.modifiers.patience;
       setTimeRemaining(newClient.modifiers.patience);
@@ -314,6 +324,7 @@ export const GameScreen: React.FC = () => {
     setTimeRemaining,
     playerMix,
     setPlayerMix,
+    difficulty,
   ]);
 
   // Stable restart handler
@@ -322,11 +333,11 @@ export const GameScreen: React.FC = () => {
     setShowWaveTransition(false);
     setWaveAccuracies([]);
     startGame();
-    const client = generateClient(1);
+    const client = generateClient(1, difficulty);
     setCurrentClient(client);
     localTimeRef.current = client.modifiers.patience;
     setTimeRemaining(client.modifiers.patience);
-  }, [startGame, setCurrentClient, setTimeRemaining]);
+  }, [startGame, setCurrentClient, setTimeRemaining, difficulty]);
 
   const timerRatio = currentClient && currentClient.modifiers.patience > 0
     ? timeRemaining / currentClient.modifiers.patience
@@ -414,6 +425,10 @@ export const GameScreen: React.FC = () => {
           pointsEarned={transitionStats.pointsEarned}
           onClose={handleTransitionClose}
         />
+      )}
+
+      {showTutorial && (
+        <TutorialOverlay onClose={() => setShowTutorial(false)} />
       )}
     </div>
   );

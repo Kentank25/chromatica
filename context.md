@@ -39,7 +39,7 @@ npm run preview  # Preview production build
 
 ### Build Status
 - `tsc --noEmit`: **0 errors** (verified)
-- `vite build`: **76 modules, 1.46s** — 266.90 KB JS (84.76 KB gzip), 39.18 KB CSS (7.63 KB gzip)
+- `vite build`: **80 modules, 252ms** — 273.76 KB JS (86.75 KB gzip), 46.58 KB CSS (8.73 KB gzip)
 
 ---
 
@@ -87,7 +87,8 @@ src/
 │   │   ├── ColorMixer.tsx + .css   # 8-ingredient mixer with K-M preview (CORE)
 │   │   ├── PotionVial.tsx + .css   # SVG bottle with bubbles + glow
 │   │   ├── ClientCard.tsx + .css   # Client info, target swatch, patience bar
-│   │   └── ComboCounter.tsx + .css # Tiered combo display, next-reward hint
+│   │   ├── ComboCounter.tsx + .css # Tiered combo display, next-reward hint
+│   │   └── TutorialOverlay.tsx + .css # Spotlight tutorial guide (NEW)
 │   │
 │   └── hud/            # Heads-up display components
 │       ├── GameHUD.tsx + .css      # Composite overlay: wave, score, tokens, satisfaction
