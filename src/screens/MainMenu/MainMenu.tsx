@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
 import { useSettingsStore } from '../../store/settingsStore';
 import { useGameStore } from '../../store/gameStore';
+import { audioManager } from '../../audio/AudioManager';
 import './MainMenu.css';
 
 export const MainMenu: React.FC = () => {
@@ -12,6 +13,12 @@ export const MainMenu: React.FC = () => {
   const [showCredits, setShowCredits] = useState(false);
   const { bgmVolume, sfxVolume, setVolume, muted, toggleMute } = useSettingsStore();
   const { difficulty, setDifficulty } = useGameStore();
+
+  useEffect(() => {
+    // Initialize audio system and start ambient drone
+    audioManager.init();
+    audioManager.setBGMState('ambient');
+  }, []);
 
   return (
     <div className="main-menu" id="main-menu">
@@ -34,7 +41,10 @@ export const MainMenu: React.FC = () => {
                 className={`main-menu__difficulty-card main-menu__difficulty-card--${mode} ${
                   difficulty === mode ? 'main-menu__difficulty-card--selected' : ''
                 }`}
-                onClick={() => setDifficulty(mode)}
+                onClick={() => {
+                  audioManager.playSFX('uiClick');
+                  setDifficulty(mode);
+                }}
               >
                 <div className="main-menu__difficulty-icon">
                   {mode === 'apprentice' ? '🌱' : mode === 'journeyman' ? '⚗️' : '🧙'}

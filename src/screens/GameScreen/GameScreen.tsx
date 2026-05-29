@@ -14,6 +14,7 @@ import { PauseOverlay } from '../PauseOverlay/PauseOverlay';
 import { WaveTransition } from '../WaveTransition/WaveTransition';
 import { TutorialOverlay } from '../../components/game/TutorialOverlay';
 import type { EvaluationResult } from '../../types/game.types';
+import { audioManager } from '../../audio/AudioManager';
 import './GameScreen.css';
 
 export const GameScreen: React.FC = () => {
@@ -105,6 +106,36 @@ export const GameScreen: React.FC = () => {
     }
   }, [hintChannel]);
 
+  // Synchronize BGM state based on game phase and timer
+  useEffect(() => {
+    if (phase === 'playing') {
+      if (timeRemaining <= 15) {
+        audioManager.setBGMState('tension');
+      } else {
+        audioManager.setBGMState('driving');
+      }
+    } else if (phase === 'waveClear') {
+      audioManager.setBGMState('ambient');
+    } else if (phase === 'idle') {
+      audioManager.setBGMState('ambient');
+    } else if (phase === 'gameOver' || phase === 'result') {
+      audioManager.setBGMState('silent');
+    }
+  }, [phase, timeRemaining]);
+
+  // Trigger client arrival sounds
+  useEffect(() => {
+    if (currentClient && phase === 'playing') {
+      if (currentClient.type === 'wizard') {
+        audioManager.playSFX('clientArriveWizard');
+      } else if (currentClient.type === 'zombie') {
+        audioManager.playSFX('clientArriveZombie');
+      } else if (currentClient.type === 'villager' || currentClient.type === 'noble') {
+        audioManager.playSFX('clientArriveVillager');
+      }
+    }
+  }, [currentClient?.id, phase]);
+
   // Stable check and advance logic
   const checkAndAdvance = useCallback(() => {
     if (satisfaction <= 0) {
@@ -128,6 +159,7 @@ export const GameScreen: React.FC = () => {
       });
       setShowWaveTransition(true);
       setPhase('waveClear');
+      audioManager.playSFX('waveClear');
       return;
     }
 
@@ -252,6 +284,7 @@ export const GameScreen: React.FC = () => {
     setPhase('evaluating');
 
     if (result.passed) {
+      audioManager.playSFX('success');
       updateScore(result.pointsEarned);
       addWaveScore(result.pointsEarned);
       incrementCombo();
@@ -259,7 +292,14 @@ export const GameScreen: React.FC = () => {
 
       const reward = getComboReward(comboStreak + 1);
       if (reward) addToken(reward);
+
+      // Play comboMilestone if streak reaches 3, 5, 7
+      const newStreak = comboStreak + 1;
+      if (newStreak === 3 || newStreak === 5 || newStreak === 7) {
+        audioManager.playSFX('comboMilestone');
+      }
     } else {
+      audioManager.playSFX('failure');
       updateSatisfaction(-currentClient.modifiers.penaltySeverity);
       resetCombo();
       incrementPotionsFailed();

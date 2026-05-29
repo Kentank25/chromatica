@@ -4,6 +4,7 @@ import { BASE_INGREDIENTS, mixColorsKM } from '../../engine/colorScience';
 import { rgbToHex } from '../../utils/colorUtils';
 import type { RGB, Ingredient } from '../../types/color.types';
 import Button from '../common/Button';
+import { audioManager } from '../../audio/AudioManager';
 import './ColorMixer.css';
 
 interface ColorMixerProps {
@@ -85,6 +86,7 @@ const ColorMixerComponent: React.FC<ColorMixerProps> = ({
   );
 
   const increment = useCallback((id: string) => {
+    audioManager.playSFX('pour');
     setAmounts((prev) => ({
       ...prev,
       [id]: Math.min(10, (prev[id] || 0) + 1),
@@ -92,6 +94,7 @@ const ColorMixerComponent: React.FC<ColorMixerProps> = ({
   }, []);
 
   const decrement = useCallback((id: string) => {
+    audioManager.playSFX('pour');
     setAmounts((prev) => ({
       ...prev,
       [id]: Math.max(0, (prev[id] || 0) - 1),

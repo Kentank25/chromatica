@@ -25,7 +25,7 @@
 | **Bundler** | Vite | 8.0.x | Dev server + production builds |
 | **State** | Zustand | 5.0.x | Global state management (no Redux boilerplate) |
 | **Routing** | React Router DOM | 7.15.x | Client-side navigation (SPA) |
-| **Audio** | Howler.js | 2.2.x | SFX playback with voice limiting |
+| **Audio** | Web Audio API | — | Procedural synthesis for SFX and BGM |
 | **Styling** | Vanilla CSS | — | CSS custom properties, no Tailwind |
 | **Fonts** | Google Fonts | — | Cinzel (display), JetBrains Mono (data), Inter (body) |
 
@@ -70,7 +70,9 @@ src/
 │   └── useInput.ts     # Keyboard handling, useEscapeKey
 │
 ├── audio/
-│   └── AudioManager.ts # Howler.js singleton, voice limiting, bus routing
+│   ├── AudioManager.ts # Web Audio API manager, gain node staging, BGM crossfades
+│   └── SynthSFX.ts     # Stateless procedural synthesizer (NEW)
+
 │
 ├── utils/
 │   ├── mathUtils.ts    # clamp, lerp, randomInt, randomFloat, easing functions
@@ -378,12 +380,16 @@ Navigation is via `useNavigate()` from React Router. No hash routing.
 
 ## 10. Audio System
 
-- **AudioManager** (`src/audio/AudioManager.ts`) — Howler.js-backed singleton
-- **Voice limiting** per SFX event type (prevents audio overload)
-- **Bus architecture:** Master → BGM + SFX, each with independent volume
-- **Current state:** Placeholder silent stubs — real `.mp3`/`.ogg` files not yet added
-- **SFX events:** `pour`, `success`, `failure`, `clientArriveWizard/Zombie/Villager`, `uiClick`, `uiHover`, `comboMilestone`, `waveClear`
-- **BGM states:** `ambient`, `driving`, `tension`, `silent` (crossfade not yet implemented)
+- **AudioManager** (`src/audio/AudioManager.ts`) — Native Web Audio API manager with context suspension/resume cycles
+- **SynthSFX** (`src/audio/SynthSFX.ts`) — Stateless static procedural synth classes using sines, triangles, saws, and white noise sweeps
+- **Bus architecture:** sfxGain + bgmGain → masterGain → destination, synced directly to settings volume adjustments
+- **BGM States & Crossfades:** 2-second linear crossfades between:
+  - `ambient`: detuned C2 + G2 sines, slow 0.1 Hz LFO modulation, -36 dB filtered noise texture hum
+  - `driving`: adds a rhythmic 120 bpm (2.0 Hz LFO) triangle heartbeat pulse
+  - `tension`: adds Db2 (69.30 Hz) dissonance to create beating tension
+  - `silent`: ramps down and suspends context after 2.1 seconds to save CPU cycles
+- **Triggers:** uiClick, uiHover, pour (80ms click debounce), success, failure, comboMilestone, waveClear, and Wizard/Zombie/Villager arrivals
+
 
 ---
 

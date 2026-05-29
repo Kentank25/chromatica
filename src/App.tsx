@@ -4,8 +4,11 @@ import { MainMenu } from './screens/MainMenu/MainMenu';
 import { GameScreen } from './screens/GameScreen/GameScreen';
 import { ResultsScreen } from './screens/ResultsScreen/ResultsScreen';
 import { LeaderboardScreen } from './screens/LeaderboardScreen/LeaderboardScreen';
+import { useAudio } from './hooks/useAudio';
 
 function App() {
+  useAudio(); // Synchronizes volume settings globally from the settingsStore
+
   return (
     <BrowserRouter>
       <Routes>

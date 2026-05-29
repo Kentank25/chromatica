@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { audioManager } from '../../audio/AudioManager';
 import './Button.css';
 
 type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
@@ -32,12 +33,19 @@ const Button: React.FC<ButtonProps> = ({
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
       if (disabled) return;
+      audioManager.playSFX('uiClick');
       setSpringActive(true);
       setTimeout(() => setSpringActive(false), 400);
       onClick?.(e);
     },
     [disabled, onClick],
   );
+
+  const handleMouseEnter = useCallback(() => {
+    if (!disabled) {
+      audioManager.playSFX('uiHover');
+    }
+  }, [disabled]);
 
   const classes = [
     'btn',
@@ -56,6 +64,7 @@ const Button: React.FC<ButtonProps> = ({
       type={type}
       className={classes}
       onClick={handleClick}
+      onMouseEnter={handleMouseEnter}
       disabled={disabled}
       aria-disabled={disabled}
     >
@@ -66,3 +75,4 @@ const Button: React.FC<ButtonProps> = ({
 };
 
 export default Button;
+
