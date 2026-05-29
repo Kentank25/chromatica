@@ -234,7 +234,7 @@ export const useAchievementStore = create<AchievementState>((set, get) => ({
     set({
       achievements: updatedAchievements,
       sessionRecap: [...state.sessionRecap, id],
-      toasts: [...state.toasts, newToast],
+      toasts: [newToast, ...state.toasts],
     });
 
     saveState(updatedAchievements, state.lifetimeStats);
