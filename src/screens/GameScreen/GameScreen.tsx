@@ -10,6 +10,7 @@ import { evaluatePotion, getComboReward } from '../../engine/scoring';
 import { getWaveConfig, isWaveClear } from '../../engine/waveManager';
 import { useGameLoop } from '../../hooks/useGameLoop';
 import { useEscapeKey } from '../../hooks/useInput';
+import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import { PauseOverlay } from '../PauseOverlay/PauseOverlay';
 import { WaveTransition } from '../WaveTransition/WaveTransition';
 import { TutorialOverlay } from '../../components/game/TutorialOverlay';
@@ -255,13 +256,26 @@ export const GameScreen: React.FC = () => {
   }, [phase, setTimeRemaining]);
 
   useEscapeKey(() => {
-    if (phase === 'playing') {
-      if (showPause) {
-        setShowPause(false);
-      } else {
-        handlePause();
-      }
+    if (phase === 'playing' && showPause) {
+      setShowPause(false);
     }
+  });
+
+  const skipFeedback = useCallback(() => {
+    if (feedbackTimer.current) {
+      clearTimeout(feedbackTimer.current);
+      feedbackTimer.current = undefined;
+      setShowFeedback(false);
+      setFeedback(null);
+      setHintChannel(null);
+      checkAndAdvance();
+    }
+  }, [checkAndAdvance]);
+
+  useKeyboardShortcuts({
+    enabled: (phase === 'playing' || phase === 'evaluating') && !showPause && !showTutorial,
+    onPause: handlePause,
+    onSkipFeedback: skipFeedback,
   });
 
   // Stable submit handler
@@ -392,7 +406,7 @@ export const GameScreen: React.FC = () => {
     <div className={gameScreenClass} id="game-screen">
       <GameHUD onUseToken={handleUseToken} onPause={handlePause} />
 
-      <div className="game-screen__main">
+      <div className="game-screen__main" role="main">
         <div className="game-screen__left">
           {currentClient && (
             <ClientCard
@@ -432,7 +446,10 @@ export const GameScreen: React.FC = () => {
 
           {/* Feedback overlay */}
           {showFeedback && feedback && (
-            <div className={`game-screen__feedback ${feedback.passed ? 'game-screen__feedback--success' : 'game-screen__feedback--fail'}`}>
+            <div
+              className={`game-screen__feedback ${feedback.passed ? 'game-screen__feedback--success' : 'game-screen__feedback--fail'}`}
+              aria-live="polite"
+            >
               <span className="game-screen__feedback-icon">{feedback.passed ? '✨' : '💨'}</span>
               <span className="game-screen__feedback-accuracy">{feedback.accuracy.toFixed(1)}%</span>
               {feedback.passed && <span className="game-screen__feedback-points">+{feedback.pointsEarned}</span>}

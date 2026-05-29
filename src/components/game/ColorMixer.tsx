@@ -35,6 +35,9 @@ const ColorMixerComponent: React.FC<ColorMixerProps> = ({
   const [showToast, setShowToast] = useState(false);
   const prevWaveRef = useRef<number | null>(null);
 
+  const lastAnnouncedColorRef = useRef<RGB>({ r: 40, g: 40, b: 50 });
+  const [ariaAnnouncement, setAriaAnnouncement] = useState('');
+
   useEffect(() => {
     if (prevWaveRef.current === null) {
       prevWaveRef.current = currentWave;
@@ -112,12 +115,28 @@ const ColorMixerComponent: React.FC<ColorMixerProps> = ({
   // Reset mixer when resetKey changes (e.g. client changes)
   useEffect(() => {
     resetAll();
+    lastAnnouncedColorRef.current = { r: 40, g: 40, b: 50 };
   }, [resetKey, resetAll]);
 
   const hex = rgbToHex(mixedColor);
 
+  // Announce mix color change via aria-live when RGB delta > 20
+  useEffect(() => {
+    const last = lastAnnouncedColorRef.current;
+    const distance = Math.sqrt(
+      Math.pow(mixedColor.r - last.r, 2) +
+      Math.pow(mixedColor.g - last.g, 2) +
+      Math.pow(mixedColor.b - last.b, 2)
+    );
+    if (distance > 20) {
+      setAriaAnnouncement(`Potion color updated to ${hex}`);
+      lastAnnouncedColorRef.current = mixedColor;
+    }
+  }, [mixedColor, hex]);
+
   return (
     <section className="color-mixer" aria-label="Color Mixer">
+      <div className="sr-only" aria-live="polite">{ariaAnnouncement}</div>
       {/* Toast Alert */}
       {showToast && (
         <div className="color-mixer__toast" role="alert">
@@ -149,6 +168,12 @@ const ColorMixerComponent: React.FC<ColorMixerProps> = ({
             <div
               key={ing.id}
               className={`color-mixer__ingredient ${amt > 0 ? 'color-mixer__ingredient--active' : ''}`}
+              role="slider"
+              aria-valuenow={amt}
+              aria-valuemin={0}
+              aria-valuemax={10}
+              aria-label={ing.name}
+              tabIndex={0}
             >
               <div
                 className="color-mixer__ingredient-orb"

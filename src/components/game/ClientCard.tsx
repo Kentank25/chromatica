@@ -141,12 +141,13 @@ const ClientCardComponent: React.FC<ClientCardProps> = ({
             background: `rgb(${client.targetColor.r}, ${client.targetColor.g}, ${client.targetColor.b})`,
             boxShadow: `0 4px 20px rgba(${client.targetColor.r}, ${client.targetColor.g}, ${client.targetColor.b}, 0.3)`,
           }}
+          aria-label={`Target color swatch: Red ${client.targetColor.r}, Green ${client.targetColor.g}, Blue ${client.targetColor.b}, hex ${hex}`}
         />
         <span className="client-card__target-hex">{hex}</span>
       </div>
 
       {/* Timer */}
-      <div className="client-card__timer">
+      <div className="client-card__timer" role="timer" aria-label="Client patience remaining" aria-valuenow={Math.round(timerPct)}>
         <span className="client-card__timer-label">⏳ Patience</span>
         <ProgressBar
           value={timerPct}

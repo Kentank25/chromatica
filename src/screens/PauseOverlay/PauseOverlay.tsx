@@ -1,6 +1,7 @@
 import React from 'react';
 import Button from '../../components/common/Button';
 import { useSettingsStore } from '../../store/settingsStore';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import './PauseOverlay.css';
 
 interface PauseOverlayProps {
@@ -11,9 +12,19 @@ interface PauseOverlayProps {
 
 export const PauseOverlay: React.FC<PauseOverlayProps> = ({ onResume, onRestart, onQuit }) => {
   const { bgmVolume, sfxVolume, setVolume } = useSettingsStore();
+  const { containerRef, handleKeyDown } = useFocusTrap<HTMLDivElement>(true);
 
   return (
-    <div className="pause-overlay" id="pause-overlay">
+    <div
+      ref={containerRef}
+      onKeyDown={handleKeyDown}
+      tabIndex={-1}
+      className="pause-overlay"
+      id="pause-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Pause Menu"
+    >
       <div className="pause-overlay__card">
         <h2 className="pause-overlay__title">PAUSED</h2>
 

@@ -8,7 +8,15 @@ export const SatisfactionBar: React.FC = () => {
   const critical = satisfaction < 20;
 
   return (
-    <div className={`satisfaction-bar ${critical ? 'satisfaction-bar--critical' : ''}`} id="satisfaction-bar">
+    <div
+      className={`satisfaction-bar ${critical ? 'satisfaction-bar--critical' : ''}`}
+      id="satisfaction-bar"
+      role="progressbar"
+      aria-valuenow={Math.round(satisfaction)}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-label="Client Satisfaction"
+    >
       <div className="satisfaction-bar__header">
         <span className="satisfaction-bar__icon">🧪</span>
         <span className="satisfaction-bar__label">Client Satisfaction</span>

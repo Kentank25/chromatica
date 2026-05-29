@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import './WaveTransition.css';
 
 interface WaveTransitionProps {
@@ -16,6 +17,8 @@ export const WaveTransition: React.FC<WaveTransitionProps> = ({
   pointsEarned,
   onClose,
 }) => {
+  const { containerRef, handleKeyDown } = useFocusTrap<HTMLDivElement>(true);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose();
@@ -24,7 +27,16 @@ export const WaveTransition: React.FC<WaveTransitionProps> = ({
   }, [onClose]);
 
   return (
-    <div className="wave-transition" onClick={onClose}>
+    <div
+      ref={containerRef}
+      onKeyDown={handleKeyDown}
+      tabIndex={-1}
+      className="wave-transition"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Wave Clear Celebration"
+    >
       <div className="wave-transition__content" onClick={(e) => e.stopPropagation()}>
         <div className="wave-transition__sparkles">
           {[...Array(8)].map((_, i) => (

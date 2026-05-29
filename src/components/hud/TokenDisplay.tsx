@@ -34,6 +34,7 @@ export const TokenDisplay: React.FC<TokenDisplayProps> = ({ onUseToken }) => {
             onClick={() => count > 0 && onUseToken?.(t.type)}
             title={t.desc}
             id={`token-${t.type}`}
+            aria-label={`${count} ${t.label.toLowerCase()} token${count === 1 ? '' : 's'} remaining`}
           >
             <span className="token-display__icon">{t.icon}</span>
             <span className="token-display__count">{count}</span>

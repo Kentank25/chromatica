@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import './Modal.css';
 
 interface ModalProps {
@@ -19,6 +20,8 @@ const Modal: React.FC<ModalProps> = ({
   const [visible, setVisible] = useState(false);
   const [closing, setClosing] = useState(false);
   const backdropRef = useRef<HTMLDivElement>(null);
+
+  const { containerRef, handleKeyDown } = useFocusTrap<HTMLDivElement>(visible);
 
   useEffect(() => {
     if (isOpen) {
@@ -67,9 +70,15 @@ const Modal: React.FC<ModalProps> = ({
 
   return (
     <div
-      ref={backdropRef}
+      ref={(el) => {
+        // @ts-ignore
+        backdropRef.current = el;
+        containerRef.current = el;
+      }}
       className={`modal-backdrop ${closing ? 'modal-backdrop--closing' : ''}`}
       onClick={handleBackdropClick}
+      onKeyDown={handleKeyDown}
+      tabIndex={-1}
       role="dialog"
       aria-modal="true"
       aria-label={title || 'Dialog'}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Button from '../common/Button';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import './TutorialOverlay.css';
 
 interface TutorialStep {
@@ -48,6 +49,7 @@ interface TutorialOverlayProps {
 export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ onClose }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [spotlightStyle, setSpotlightStyle] = useState<React.CSSProperties | null>(null);
+  const { containerRef, handleKeyDown } = useFocusTrap<HTMLDivElement>(true);
 
   const updateSpotlight = useCallback(() => {
     const step = TUTORIAL_STEPS[currentStep];
@@ -119,7 +121,15 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ onClose }) => 
   }
 
   return (
-    <div className="tutorial-overlay">
+    <div
+      ref={containerRef}
+      onKeyDown={handleKeyDown}
+      tabIndex={-1}
+      className="tutorial-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Tutorial"
+    >
       {/* Background Mask */}
       <div className="tutorial-overlay__mask" />
 

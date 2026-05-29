@@ -31,7 +31,7 @@ export const ScoreDisplay: React.FC = () => {
   }, [score]);
 
   return (
-    <div className="score-display" id="score-display">
+    <div className="score-display" id="score-display" aria-live="polite">
       <span className="score-display__label">Score</span>
       <span className={`score-display__value ${showPop ? 'score-display__value--pop' : ''}`}>
         {displayScore.toLocaleString()}
