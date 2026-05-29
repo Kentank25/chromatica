@@ -1,5 +1,6 @@
 import React from 'react';
 import { useGameStore } from '../../store/gameStore';
+import { PotionIcon } from '../../utils/icons';
 import './SatisfactionBar.css';
 
 export const SatisfactionBar: React.FC = () => {
@@ -18,7 +19,9 @@ export const SatisfactionBar: React.FC = () => {
       aria-label="Client Satisfaction"
     >
       <div className="satisfaction-bar__header">
-        <span className="satisfaction-bar__icon">🧪</span>
+        <span className="satisfaction-bar__icon">
+          <PotionIcon className="icon--sm" />
+        </span>
         <span className="satisfaction-bar__label">Client Satisfaction</span>
         <span className="satisfaction-bar__value" style={{ color }}>{Math.round(satisfaction)}%</span>
       </div>

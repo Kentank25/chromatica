@@ -2,17 +2,19 @@ import React from 'react';
 import { useGameStore } from '../../store/gameStore';
 import './TokenDisplay.css';
 
+import { SkipTokenIcon, HintTokenIcon, AutoCorrectTokenIcon } from '../../utils/icons';
+
 interface TokenInfo {
   type: 'skip' | 'hint' | 'autoCorrect';
-  icon: string;
+  icon: React.ReactNode;
   label: string;
   desc: string;
 }
 
 const TOKENS: TokenInfo[] = [
-  { type: 'skip', icon: '🪙', label: 'Skip', desc: 'Skip this client without penalty' },
-  { type: 'hint', icon: '🔮', label: 'Hint', desc: 'Reveal one color channel' },
-  { type: 'autoCorrect', icon: '⚗️', label: 'Fix', desc: 'Auto-correct one channel' },
+  { type: 'skip', icon: <SkipTokenIcon className="icon--sm" />, label: 'Skip', desc: 'Skip this client without penalty' },
+  { type: 'hint', icon: <HintTokenIcon className="icon--sm" />, label: 'Hint', desc: 'Reveal one color channel' },
+  { type: 'autoCorrect', icon: <AutoCorrectTokenIcon className="icon--sm" />, label: 'Fix', desc: 'Auto-correct one channel' },
 ];
 
 interface TokenDisplayProps {

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Button from '../../components/common/Button';
 import GlassCard from '../../components/common/GlassCard';
 import { getHighScores, type LeaderboardEntry } from '../../utils/storageUtils';
+import { MedalIcon, BackIcon } from '../../utils/icons';
 import './LeaderboardScreen.css';
 
 export const LeaderboardScreen: React.FC = () => {
@@ -63,7 +64,15 @@ export const LeaderboardScreen: React.FC = () => {
                         className={isNew ? 'leaderboard-screen__row--new' : undefined}
                       >
                         <td className="leaderboard-screen__cell-rank">
-                          {index + 1 === 1 ? '🥇' : index + 1 === 2 ? '🥈' : index + 1 === 3 ? '🥉' : `${index + 1}`}
+                          {index + 1 === 1 ? (
+                            <MedalIcon className="icon--sm icon--gold" />
+                          ) : index + 1 === 2 ? (
+                            <MedalIcon className="icon--sm icon--silver" />
+                          ) : index + 1 === 3 ? (
+                            <MedalIcon className="icon--sm icon--bronze" />
+                          ) : (
+                            `${index + 1}`
+                          )}
                         </td>
                         <td className="leaderboard-screen__cell-score">
                           {entry.score.toLocaleString()}
@@ -96,8 +105,9 @@ export const LeaderboardScreen: React.FC = () => {
             size="md"
             onClick={() => navigate('/menu')}
             id="btn-back-menu"
+            icon={<BackIcon className="icon--sm" />}
           >
-            ◀ Back to Menu
+            Back to Menu
           </Button>
         </div>
       </div>

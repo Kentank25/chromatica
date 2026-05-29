@@ -17,6 +17,7 @@ import { TutorialOverlay } from '../../components/game/TutorialOverlay';
 import type { EvaluationResult } from '../../types/game.types';
 import { audioManager } from '../../audio/AudioManager';
 import { musicManager } from '../../audio/MusicManager';
+import { HintTokenIcon, MoreIcon, LessIcon, SparkleIcon, FailIcon } from '../../utils/icons';
 import './GameScreen.css';
 
 export const GameScreen: React.FC = () => {
@@ -440,15 +441,23 @@ export const GameScreen: React.FC = () => {
           {hintChannel && currentClient && (
             <div className="game-screen__hint-panel">
               <span className="game-screen__hint-title">
-                🔮 {hintChannel === 'r' ? 'Red' : hintChannel === 'g' ? 'Green' : 'Blue'} Channel Target: <strong>{currentClient.targetColor[hintChannel]}</strong>
+                <HintTokenIcon className="icon--sm" style={{ marginRight: '6px' }} /> {hintChannel === 'r' ? 'Red' : hintChannel === 'g' ? 'Green' : 'Blue'} Channel Target: <strong>{currentClient.targetColor[hintChannel]}</strong>
               </span>
               <span className="game-screen__hint-direction">
                 {playerMix[hintChannel] < currentClient.targetColor[hintChannel] ? (
-                  <span className="game-screen__hint-direction--more">Needs MORE {hintChannel === 'r' ? 'red' : hintChannel === 'g' ? 'green' : 'blue'} ▲</span>
+                  <span className="game-screen__hint-direction--more">
+                    Needs MORE {hintChannel === 'r' ? 'red' : hintChannel === 'g' ? 'green' : 'blue'}{' '}
+                    <MoreIcon className="icon--xs icon--success" />
+                  </span>
                 ) : playerMix[hintChannel] > currentClient.targetColor[hintChannel] ? (
-                  <span className="game-screen__hint-direction--less">Needs LESS {hintChannel === 'r' ? 'red' : hintChannel === 'g' ? 'green' : 'blue'} ▼</span>
+                  <span className="game-screen__hint-direction--less">
+                    Needs LESS {hintChannel === 'r' ? 'red' : hintChannel === 'g' ? 'green' : 'blue'}{' '}
+                    <LessIcon className="icon--xs icon--failure" />
+                  </span>
                 ) : (
-                  <span className="game-screen__hint-direction--perfect">Perfect match! ✨</span>
+                  <span className="game-screen__hint-direction--perfect">
+                    Perfect match! <SparkleIcon className="icon--sm icon--gold" />
+                  </span>
                 )}
               </span>
             </div>
@@ -460,7 +469,9 @@ export const GameScreen: React.FC = () => {
               className={`game-screen__feedback ${feedback.passed ? 'game-screen__feedback--success' : 'game-screen__feedback--fail'}`}
               aria-live="polite"
             >
-              <span className="game-screen__feedback-icon">{feedback.passed ? '✨' : '💨'}</span>
+              <span className="game-screen__feedback-icon">
+                {feedback.passed ? <SparkleIcon className="icon--xl icon--gold" /> : <FailIcon className="icon--xl icon--failure" />}
+              </span>
               <span className="game-screen__feedback-accuracy">{feedback.accuracy.toFixed(1)}%</span>
               {feedback.passed && <span className="game-screen__feedback-points">+{feedback.pointsEarned}</span>}
             </div>

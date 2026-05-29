@@ -4,6 +4,8 @@ import { useSettingsStore } from '../../store/settingsStore';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import './PauseOverlay.css';
 
+import { MusicIcon, VolumeIcon, PlayIcon, RestartIcon, QuitIcon } from '../../utils/icons';
+
 interface PauseOverlayProps {
   onResume: () => void;
   onRestart: () => void;
@@ -30,21 +32,49 @@ export const PauseOverlay: React.FC<PauseOverlayProps> = ({ onResume, onRestart,
 
         <div className="pause-overlay__volume">
           <label className="pause-overlay__slider">
-            <span>🎵 Music</span>
+            <span>
+              <MusicIcon className="icon--sm" style={{ marginRight: '6px' }} /> Music
+            </span>
             <input type="range" min="0" max="1" step="0.05" value={bgmVolume}
               onChange={(e) => setVolume('bgm', parseFloat(e.target.value))} />
           </label>
           <label className="pause-overlay__slider">
-            <span>🔊 Effects</span>
+            <span>
+              <VolumeIcon className="icon--sm" style={{ marginRight: '6px' }} /> Effects
+            </span>
             <input type="range" min="0" max="1" step="0.05" value={sfxVolume}
               onChange={(e) => setVolume('sfx', parseFloat(e.target.value))} />
           </label>
         </div>
 
         <div className="pause-overlay__actions">
-          <Button variant="primary" size="lg" onClick={onResume} id="btn-resume">▶ Resume</Button>
-          <Button variant="secondary" size="md" onClick={onRestart} id="btn-restart">🔄 Restart</Button>
-          <Button variant="danger" size="md" onClick={onQuit} id="btn-quit">🚪 Quit to Menu</Button>
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={onResume}
+            id="btn-resume"
+            icon={<PlayIcon className="icon--sm" />}
+          >
+            Resume
+          </Button>
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={onRestart}
+            id="btn-restart"
+            icon={<RestartIcon className="icon--sm" />}
+          >
+            Restart
+          </Button>
+          <Button
+            variant="danger"
+            size="md"
+            onClick={onQuit}
+            id="btn-quit"
+            icon={<QuitIcon className="icon--sm" />}
+          >
+            Quit to Menu
+          </Button>
         </div>
       </div>
     </div>

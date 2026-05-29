@@ -5,6 +5,7 @@ import Button from '../../components/common/Button';
 import GlassCard from '../../components/common/GlassCard';
 import { saveHighScore } from '../../utils/storageUtils';
 import { musicManager } from '../../audio/MusicManager';
+import { RestartIcon } from '../../utils/icons';
 import './ResultsScreen.css';
 
 function getRating(score: number): { grade: string; color: string } {
@@ -79,8 +80,14 @@ export const ResultsScreen: React.FC = () => {
         </div>
 
         <div className="results__actions">
-          <Button variant="primary" size="lg" onClick={() => navigate('/game')} id="btn-retry">
-            🔄 Try Again
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={() => navigate('/game')}
+            id="btn-retry"
+            icon={<RestartIcon className="icon--sm" />}
+          >
+            Try Again
           </Button>
           <Button variant="secondary" size="md" onClick={() => navigate('/menu')} id="btn-menu">
             Main Menu

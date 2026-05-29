@@ -14,20 +14,42 @@ interface ClientCardProps {
   } | null;
 }
 
-const CLIENT_EMOJIS: Record<string, string> = {
-  wizard: '🧙',
-  zombie: '🧟',
-  villager: '👤',
-  noble: '👑',
-  alchemist: '⚗️',
+import {
+  WizardIcon,
+  ZombieIcon,
+  VillagerIcon,
+  NobleIcon,
+  AlchemistIcon,
+  NeutralExpression,
+  HappyExpression,
+  EcstaticExpression,
+  AnnoyedExpression,
+  EnragedExpression,
+  TimerIcon,
+} from '../../utils/icons';
+
+const CLIENT_ICONS: Record<string, React.ComponentType<any>> = {
+  wizard: WizardIcon,
+  zombie: ZombieIcon,
+  villager: VillagerIcon,
+  noble: NobleIcon,
+  alchemist: AlchemistIcon,
 };
 
-const EXPRESSION_EMOJIS: Record<ClientExpression, string> = {
-  neutral: '😐',
-  happy: '😊',
-  ecstatic: '🤩',
-  annoyed: '😤',
-  enraged: '😡',
+const EXPRESSION_ICONS: Record<ClientExpression, React.ComponentType<any>> = {
+  neutral: NeutralExpression,
+  happy: HappyExpression,
+  ecstatic: EcstaticExpression,
+  annoyed: AnnoyedExpression,
+  enraged: EnragedExpression,
+};
+
+const EXPRESSION_CLASSES: Record<ClientExpression, string> = {
+  neutral: 'icon--neutral',
+  happy: 'icon--happy',
+  ecstatic: 'icon--ecstatic',
+  annoyed: 'icon--annoyed',
+  enraged: 'icon--enraged',
 };
 
 const ClientCardComponent: React.FC<ClientCardProps> = ({
@@ -90,8 +112,8 @@ const ClientCardComponent: React.FC<ClientCardProps> = ({
     );
   }
 
-  const avatar = CLIENT_EMOJIS[client.type] || '👤';
-  const expressionEmoji = EXPRESSION_EMOJIS[dynamicExpression] || '😐';
+  const AvatarIcon = CLIENT_ICONS[client.type] || VillagerIcon;
+  const ExpressionIcon = EXPRESSION_ICONS[dynamicExpression] || NeutralExpression;
   const hex = rgbToHex(client.targetColor);
 
   const urgencyClass =
@@ -118,12 +140,14 @@ const ClientCardComponent: React.FC<ClientCardProps> = ({
         className="client-card__expression"
         title={`Feeling: ${dynamicExpression}`}
       >
-        {expressionEmoji}
+        <ExpressionIcon className={`icon--xl icon--expression ${EXPRESSION_CLASSES[dynamicExpression]}`} />
       </span>
 
       {/* Header */}
       <div className="client-card__header">
-        <div className="client-card__avatar">{avatar}</div>
+        <div className="client-card__avatar">
+          <AvatarIcon className="icon--lg" />
+        </div>
         <div className="client-card__info">
           <h3 className="client-card__name">{client.name}</h3>
           <span className={`client-card__type-badge ${typeClass}`}>
@@ -148,7 +172,9 @@ const ClientCardComponent: React.FC<ClientCardProps> = ({
 
       {/* Timer */}
       <div className="client-card__timer" role="timer" aria-label="Client patience remaining" aria-valuenow={Math.round(timerPct)}>
-        <span className="client-card__timer-label">⏳ Patience</span>
+        <span className="client-card__timer-label">
+          <TimerIcon className="icon--sm" /> Patience
+        </span>
         <ProgressBar
           value={timerPct}
           color="auto"

@@ -1,0 +1,126 @@
+/* src/styles/icons.css */
+
+/* Base SVG styling for Lucide Icons */
+.lucide,
+.lucide-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  flex-shrink: 0;
+  width: var(--icon-size-base);
+  height: var(--icon-size-base);
+  stroke: currentColor;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+  transition: color var(--transition-fast), fill var(--transition-fast), transform var(--transition-fast);
+}
+
+/* Sizing utilities using CSS custom properties */
+.icon--xs {
+  width: var(--icon-size-xs) !important;
+  height: var(--icon-size-xs) !important;
+}
+
+.icon--sm {
+  width: var(--icon-size-sm) !important;
+  height: var(--icon-size-sm) !important;
+}
+
+.icon--md,
+.icon--base {
+  width: var(--icon-size-base) !important;
+  height: var(--icon-size-base) !important;
+}
+
+.icon--lg {
+  width: var(--icon-size-lg) !important;
+  height: var(--icon-size-lg) !important;
+}
+
+.icon--xl {
+  width: var(--icon-size-xl) !important;
+  height: var(--icon-size-xl) !important;
+}
+
+/* Semantic & Game State Colors */
+.icon--success {
+  color: var(--accent-success);
+}
+
+.icon--failure {
+  color: var(--accent-failure);
+}
+
+.icon--warning {
+  color: var(--accent-warning);
+}
+
+.icon--gold {
+  color: var(--accent-gold);
+  filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.4));
+}
+
+.icon--silver {
+  color: #C0C0C0;
+  filter: drop-shadow(0 0 4px rgba(192, 192, 192, 0.3));
+}
+
+.icon--bronze {
+  color: #CD7F32;
+  filter: drop-shadow(0 0 4px rgba(205, 127, 50, 0.3));
+}
+
+/* Combo States */
+.icon--combo-t1 {
+  color: var(--accent-success);
+  filter: drop-shadow(0 0 4px rgba(69, 182, 254, 0.4));
+}
+
+.icon--combo-t2 {
+  color: var(--accent-warning);
+  filter: drop-shadow(0 0 6px rgba(255, 167, 38, 0.5));
+  animation: pulse 2s infinite ease-in-out;
+}
+
+.icon--combo-t3 {
+  color: var(--accent-combo);
+  filter: drop-shadow(0 0 8px rgba(180, 79, 255, 0.6));
+  animation: pulse 1.5s infinite ease-in-out, shake 3s infinite ease-in-out;
+}
+
+/* Mood/Expression styles based on user feedback */
+.icon--expression {
+  border-radius: var(--radius-round);
+  padding: 2px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(29, 38, 48, 0.3);
+}
+
+.icon--neutral {
+  color: var(--text-secondary);
+}
+
+.icon--happy {
+  color: var(--accent-success);
+  fill: rgba(69, 182, 254, 0.15);
+}
+
+.icon--ecstatic {
+  color: var(--accent-combo);
+  fill: rgba(180, 79, 255, 0.2);
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.icon--annoyed {
+  color: var(--accent-warning);
+  fill: rgba(255, 167, 38, 0.15);
+}
+
+.icon--enraged {
+  color: var(--accent-failure);
+  fill: rgba(255, 74, 74, 0.2);
+  animation: shake 0.5s infinite;
+}

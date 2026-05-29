@@ -4,6 +4,7 @@ import { SatisfactionBar } from './SatisfactionBar';
 import { WaveIndicator } from './WaveIndicator';
 import { TokenDisplay } from './TokenDisplay';
 import ComboCounter from '../game/ComboCounter';
+import { PauseIcon } from '../../utils/icons';
 import './GameHUD.css';
 
 interface GameHUDProps {
@@ -25,7 +26,7 @@ export const GameHUD: React.FC<GameHUDProps> = ({ onUseToken, onPause }) => {
         <div className="game-hud__right">
           <TokenDisplay onUseToken={onUseToken} />
           <button className="game-hud__pause-btn" onClick={onPause} id="pause-button" title="Pause (Esc)">
-            ⏸
+            <PauseIcon className="icon--sm" />
           </button>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useGameStore } from '../../store/gameStore';
+import { ComboTier1Icon, ComboTier2Icon, ComboTier3Icon } from '../../utils/icons';
 import './ComboCounter.css';
 
 const COMBO_TOKEN_THRESHOLDS = [3, 5, 7];
@@ -25,7 +26,8 @@ const ComboCounter: React.FC = () => {
 
   // Determine tier
   const tier = comboStreak >= 7 ? 'tier3' : comboStreak >= 4 ? 'tier2' : 'tier1';
-  const icon = comboStreak >= 7 ? '⚡' : comboStreak >= 4 ? '🔥' : '✨';
+  const TierIcon = comboStreak >= 7 ? ComboTier3Icon : comboStreak >= 4 ? ComboTier2Icon : ComboTier1Icon;
+  const iconClass = comboStreak >= 7 ? 'icon--combo-t3' : comboStreak >= 4 ? 'icon--combo-t2' : 'icon--combo-t1';
 
   // Next token threshold
   const nextThreshold = COMBO_TOKEN_THRESHOLDS.find((t) => t > comboStreak);
@@ -35,7 +37,9 @@ const ComboCounter: React.FC = () => {
 
   return (
     <div className={`combo-counter combo-counter--${tier}`} aria-label={`Combo streak: ${comboStreak}`}>
-      <span className="combo-counter__icon">{icon}</span>
+      <span className="combo-counter__icon">
+        <TierIcon className={iconClass} />
+      </span>
       <span
         className={`combo-counter__number ${popping ? 'combo-counter__number--pop' : ''}`}
       >

@@ -6,6 +6,16 @@ import { useSettingsStore } from '../../store/settingsStore';
 import { useGameStore } from '../../store/gameStore';
 import { audioManager } from '../../audio/AudioManager';
 import { musicManager } from '../../audio/MusicManager';
+import {
+  ApprenticeIcon,
+  SubmitPotionIcon,
+  WizardIcon,
+  TrophyIcon,
+  SettingsIcon,
+  MusicIcon,
+  VolumeIcon,
+  MutedIcon,
+} from '../../utils/icons';
 import './MainMenu.css';
 
 export const MainMenu: React.FC = () => {
@@ -52,7 +62,9 @@ export const MainMenu: React.FC = () => {
                 }}
               >
                 <div className="main-menu__difficulty-icon">
-                  {mode === 'apprentice' ? '🌱' : mode === 'journeyman' ? '⚗️' : '🧙'}
+                  {mode === 'apprentice' && <ApprenticeIcon className="icon--md" />}
+                  {mode === 'journeyman' && <SubmitPotionIcon className="icon--md" />}
+                  {mode === 'master' && <WizardIcon className="icon--md" />}
                 </div>
                 <div className="main-menu__difficulty-name">{mode}</div>
                 <div className="main-menu__difficulty-desc">
@@ -66,14 +78,32 @@ export const MainMenu: React.FC = () => {
         </div>
 
         <div className="main-menu__actions">
-          <Button variant="primary" size="lg" onClick={() => navigate('/game')} id="btn-play">
-            ⚗️ Begin Brewing
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={() => navigate('/game')}
+            id="btn-play"
+            icon={<SubmitPotionIcon className="icon--sm" />}
+          >
+            Begin Brewing
           </Button>
-          <Button variant="secondary" size="md" onClick={() => navigate('/leaderboard')} id="btn-leaderboard">
-            🏆 Leaderboard
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={() => navigate('/leaderboard')}
+            id="btn-leaderboard"
+            icon={<TrophyIcon className="icon--sm" />}
+          >
+            Leaderboard
           </Button>
-          <Button variant="secondary" size="md" onClick={() => setShowSettings(true)} id="btn-settings">
-            ⚙️ Settings
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={() => setShowSettings(true)}
+            id="btn-settings"
+            icon={<SettingsIcon className="icon--sm" />}
+          >
+            Settings
           </Button>
           <Button variant="ghost" size="md" onClick={() => setShowCredits(true)} id="btn-credits">
             Credits
@@ -91,19 +121,29 @@ export const MainMenu: React.FC = () => {
       <Modal isOpen={showSettings} onClose={() => setShowSettings(false)} title="Settings" closable>
         <div className="main-menu__settings">
           <label className="main-menu__slider-label">
-            <span>🎵 Music</span>
+            <span>
+              <MusicIcon className="icon--sm" style={{ marginRight: '6px' }} /> Music
+            </span>
             <input type="range" min="0" max="1" step="0.05" value={bgmVolume}
               onChange={(e) => setVolume('bgm', parseFloat(e.target.value))} />
             <span className="main-menu__slider-val">{Math.round(bgmVolume * 100)}%</span>
           </label>
           <label className="main-menu__slider-label">
-            <span>🔊 Effects</span>
+            <span>
+              <VolumeIcon className="icon--sm" style={{ marginRight: '6px' }} /> Effects
+            </span>
             <input type="range" min="0" max="1" step="0.05" value={sfxVolume}
               onChange={(e) => setVolume('sfx', parseFloat(e.target.value))} />
             <span className="main-menu__slider-val">{Math.round(sfxVolume * 100)}%</span>
           </label>
-          <Button variant={muted ? 'danger' : 'secondary'} size="sm" onClick={toggleMute} id="btn-mute">
-            {muted ? '🔇 Unmute' : '🔊 Mute All'}
+          <Button
+            variant={muted ? 'danger' : 'secondary'}
+            size="sm"
+            onClick={toggleMute}
+            id="btn-mute"
+            icon={muted ? <MutedIcon className="icon--sm" /> : <VolumeIcon className="icon--sm" />}
+          >
+            {muted ? 'Unmute All' : 'Mute All'}
           </Button>
         </div>
       </Modal>

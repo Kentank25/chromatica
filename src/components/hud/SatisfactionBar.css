@@ -10,7 +10,11 @@
   margin-bottom: 4px;
 }
 
-.satisfaction-bar__icon { font-size: 0.9rem; }
+.satisfaction-bar__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 
 .satisfaction-bar__label {
   font-family: var(--font-body);

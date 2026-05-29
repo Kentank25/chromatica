@@ -72,7 +72,11 @@
   animation: scaleIn 0.4s var(--spring), shake 0.5s ease 0.3s;
 }
 
-.game-screen__feedback-icon { font-size: 2.5rem; }
+.game-screen__feedback-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 
 .game-screen__feedback-accuracy {
   font-family: var(--font-mono);

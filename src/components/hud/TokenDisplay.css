@@ -36,8 +36,9 @@
 }
 
 .token-display__icon {
-  font-size: 1.2rem;
-  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .token-display__count {

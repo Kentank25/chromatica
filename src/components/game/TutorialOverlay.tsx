@@ -3,40 +3,73 @@ import Button from '../common/Button';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import './TutorialOverlay.css';
 
+import {
+  WelcomeIcon,
+  MeetClientIcon,
+  MixPotionIcon,
+  ColorTheoryIcon,
+  CheckIcon,
+  ReputationIcon,
+} from '../../utils/icons';
+
 interface TutorialStep {
-  title: string;
+  title: React.ReactNode;
   text: string;
   selector: string | null;
 }
 
 const TUTORIAL_STEPS: TutorialStep[] = [
   {
-    title: '✨ Welcome to Chromatica! ✨',
+    title: (
+      <>
+        <WelcomeIcon className="icon--sm" /> Welcome to Chromatica! <WelcomeIcon className="icon--sm" />
+      </>
+    ),
     text: 'Welcome, Apprentice! In this shop, you will master the art of color alchemy. Clients will request potions of exact hues, and it is your job to brew them.',
     selector: null,
   },
   {
-    title: '🧙 Meet Your Client',
+    title: (
+      <>
+        <MeetClientIcon className="icon--sm" /> Meet Your Client
+      </>
+    ),
     text: 'Your current customer and their color order are shown here. Pay attention to their type, patience timer, and accuracy threshold! Different client types have different demands.',
     selector: '.client-card',
   },
   {
-    title: '⚗️ Mix Your Potion',
+    title: (
+      <>
+        <MixPotionIcon className="icon--sm" /> Mix Your Potion
+      </>
+    ),
     text: 'Adjust the amounts (0-10) of the 8 base alchemical ingredients. Each addition will dynamically update your potion\'s mixed color.',
     selector: '.color-mixer',
   },
   {
-    title: '🎨 Subtractive Color Theory',
+    title: (
+      <>
+        <ColorTheoryIcon className="icon--sm" /> Subtractive Color Theory
+      </>
+    ),
     text: 'Remember: potion colors use Subtractive mixing (Kubelka-Munk physics), not digital RGB light. Just like mixing real paint, combining pigments will make the potion darker!',
     selector: null,
   },
   {
-    title: '✅ Submit and Earn Points',
+    title: (
+      <>
+        <CheckIcon className="icon--sm" /> Submit and Earn Points
+      </>
+    ),
     text: 'Once you are satisfied with your mixture, tap "Submit Potion" to check its accuracy. Match the target color as closely as possible to earn points and combo streak bonuses!',
     selector: '#mixer-submit-btn',
   },
   {
-    title: '🧪 Reputation and Satisfaction',
+    title: (
+      <>
+        <ReputationIcon className="icon--sm" /> Reputation and Satisfaction
+      </>
+    ),
     text: 'Keep your customer satisfaction high! Serving wrong potions or letting the timer run out will drain your shop\'s reputation. If satisfaction hits 0%, it is game over.',
     selector: '#satisfaction-bar',
   },

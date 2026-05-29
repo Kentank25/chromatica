@@ -53,7 +53,6 @@
   border-radius: var(--radius-round);
   background: rgba(197, 198, 199, 0.06);
   border: 1px solid rgba(197, 198, 199, 0.1);
-  font-size: 1.8rem;
   flex-shrink: 0;
   animation: float 4s ease-in-out infinite;
 }
@@ -115,7 +114,9 @@
   position: absolute;
   top: var(--space-md);
   right: var(--space-md);
-  font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: transform var(--transition-fast);
   animation: scalePulse 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }

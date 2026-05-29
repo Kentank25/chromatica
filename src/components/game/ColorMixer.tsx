@@ -5,6 +5,7 @@ import { rgbToHex } from '../../utils/colorUtils';
 import type { RGB, Ingredient } from '../../types/color.types';
 import Button from '../common/Button';
 import { audioManager } from '../../audio/AudioManager';
+import { ResetIcon, SubmitPotionIcon } from '../../utils/icons';
 import './ColorMixer.css';
 
 interface ColorMixerProps {
@@ -219,7 +220,7 @@ const ColorMixerComponent: React.FC<ColorMixerProps> = ({
           size="md"
           onClick={resetAll}
           disabled={totalAmount === 0 || disabled}
-          icon={<span>↺</span>}
+          icon={<ResetIcon className="icon--sm" />}
         >
           Reset
         </Button>
@@ -229,7 +230,7 @@ const ColorMixerComponent: React.FC<ColorMixerProps> = ({
           size="lg"
           onClick={onSubmit}
           disabled={totalAmount === 0 || disabled}
-          icon={<span>⚗️</span>}
+          icon={<SubmitPotionIcon className="icon--sm" />}
         >
           Submit Potion
         </Button>
