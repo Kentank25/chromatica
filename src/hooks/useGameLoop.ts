@@ -5,7 +5,7 @@
  * with delta time on each frame. Automatically pauses when the tab
  * is hidden and cleans up on unmount.
  */
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
 
 interface GameLoopOptions {
   /** Called every frame with delta time in seconds */
@@ -26,30 +26,32 @@ export function useGameLoop({ onTick, running, maxDelta = 0.1 }: GameLoopOptions
     tickRef.current = onTick;
   }, [onTick]);
 
-  const loop = useCallback((timestamp: number) => {
-    if (lastTime.current === 0) {
-      lastTime.current = timestamp;
-    }
-
-    const rawDelta = (timestamp - lastTime.current) / 1000; // Convert to seconds
-    const deltaTime = Math.min(rawDelta, maxDelta); // Clamp to prevent spiral of death
-    lastTime.current = timestamp;
-
-    tickRef.current(deltaTime);
-
-    rafId.current = requestAnimationFrame(loop);
-  }, [maxDelta]);
-
   useEffect(() => {
-    if (running) {
-      lastTime.current = 0; // Reset on start
-      rafId.current = requestAnimationFrame(loop);
-    } else {
+    if (!running) {
       if (rafId.current) {
         cancelAnimationFrame(rafId.current);
         rafId.current = 0;
       }
+      return;
     }
+
+    lastTime.current = 0; // Reset on start
+
+    const loop = (timestamp: number) => {
+      if (lastTime.current === 0) {
+        lastTime.current = timestamp;
+      }
+
+      const rawDelta = (timestamp - lastTime.current) / 1000; // Convert to seconds
+      const deltaTime = Math.min(rawDelta, maxDelta); // Clamp to prevent spiral of death
+      lastTime.current = timestamp;
+
+      tickRef.current(deltaTime);
+
+      rafId.current = requestAnimationFrame(loop);
+    };
+
+    rafId.current = requestAnimationFrame(loop);
 
     return () => {
       if (rafId.current) {
@@ -57,5 +59,5 @@ export function useGameLoop({ onTick, running, maxDelta = 0.1 }: GameLoopOptions
         rafId.current = 0;
       }
     };
-  }, [running, loop]);
+  }, [running, maxDelta]);
 }

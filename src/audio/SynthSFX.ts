@@ -226,7 +226,7 @@ export class SynthSFX {
   static playClientArrive(
     ctx: AudioContext,
     destination: AudioNode,
-    type: 'wizard' | 'zombie' | 'villager' | 'noble',
+    type: 'wizard' | 'zombie' | 'villager' | 'noble' | 'mystic',
     volume: number
   ): void {
     const now = ctx.currentTime;

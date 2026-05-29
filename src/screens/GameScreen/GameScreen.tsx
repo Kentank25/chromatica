@@ -47,6 +47,10 @@ export const GameScreen: React.FC = () => {
   const updateSatisfaction = useGameStore((s) => s.updateSatisfaction);
   const incrementCombo = useGameStore((s) => s.incrementCombo);
   const resetCombo = useGameStore((s) => s.resetCombo);
+  const setMultiOrder = useGameStore((s) => s.setMultiOrder);
+  const clearMultiOrder = useGameStore((s) => s.clearMultiOrder);
+  const advanceSubOrder = useGameStore((s) => s.advanceSubOrder);
+  const resetMixerAmounts = useGameStore((s) => s.resetMixerAmounts);
   const addToken = useGameStore((s) => s.addToken);
   const consumeToken = useGameStore((s) => s.useToken);
   const setPhase = useGameStore((s) => s.setPhase);
@@ -90,19 +94,26 @@ export const GameScreen: React.FC = () => {
     useAchievementStore.getState().clearSessionRecap();
     sessionClientTypesServed.current.clear();
     const client = generateClient(1, useGameStore.getState().difficulty);
+    if (client.subOrders) {
+      setMultiOrder(client.subOrders);
+    } else {
+      clearMultiOrder();
+    }
     setCurrentClient(client);
     localTimeRef.current = client.modifiers.patience;
     setTimeRemaining(client.modifiers.patience);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Synchronize local timer reference when currentClient changes
+  // Synchronize local timer reference when currentClient changes (only on client ID change)
+  const currentClientId = currentClient?.id;
   useEffect(() => {
     if (currentClient) {
       localTimeRef.current = currentClient.modifiers.patience;
       setTimeRemaining(currentClient.modifiers.patience);
     }
-  }, [currentClient, setTimeRemaining]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentClientId, setTimeRemaining]);
 
   // Hint token auto-dismiss after 5 seconds
   useEffect(() => {
@@ -140,18 +151,19 @@ export const GameScreen: React.FC = () => {
     }
   }, [phase, timeRemaining, currentClient]);
 
-  // Trigger client arrival sounds
+  // Trigger client arrival sounds (only on client ID or phase change)
   useEffect(() => {
     if (currentClient && phase === 'playing') {
       if (currentClient.type === 'wizard') {
         audioManager.playSFX('clientArriveWizard');
       } else if (currentClient.type === 'zombie') {
         audioManager.playSFX('clientArriveZombie');
-      } else if (currentClient.type === 'villager' || currentClient.type === 'noble') {
+      } else if (currentClient.type === 'villager' || currentClient.type === 'noble' || currentClient.type === 'mystic') {
         audioManager.playSFX('clientArriveVillager');
       }
     }
-  }, [currentClient, phase]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentClientId, phase]);
 
   // Stable check and advance logic
   const checkAndAdvance = useCallback(() => {
@@ -197,6 +209,11 @@ export const GameScreen: React.FC = () => {
 
     // Spawn next client
     const newClient = generateClient(currentWave, difficulty);
+    if (newClient.subOrders) {
+      setMultiOrder(newClient.subOrders);
+    } else {
+      clearMultiOrder();
+    }
     setCurrentClient(newClient);
     localTimeRef.current = newClient.modifiers.patience;
     setTimeRemaining(newClient.modifiers.patience);
@@ -211,6 +228,8 @@ export const GameScreen: React.FC = () => {
     setPhase,
     setCurrentClient,
     setTimeRemaining,
+    setMultiOrder,
+    clearMultiOrder,
     navigate,
   ]);
 
@@ -317,17 +336,32 @@ export const GameScreen: React.FC = () => {
     // Sync exact remaining time to store before evaluation
     setTimeRemaining(localTimeRef.current);
 
+    // Get ingredients info for Picky Nobles check
+    const mixerAmounts = useGameStore.getState().mixerAmounts;
+    const activeIngredients = Object.entries(mixerAmounts).filter(([, amt]) => amt > 0);
+    const ingredientsUsed = activeIngredients.map(([id]) => id);
+    const totalAmount = activeIngredients.reduce((sum, [, amt]) => sum + amt, 0);
+
     const result = evaluatePotion(
       currentClient.targetColor,
       playerMix,
       currentClient,
       localTimeRef.current,
-      comboStreak
+      comboStreak,
+      currentClient.modifiers.efficiencyPenalty
+        ? { ingredientsUsed: activeIngredients.length, totalAmount }
+        : undefined
     );
 
     setFeedback(result);
     setShowFeedback(true);
     setPhase('evaluating');
+
+    // Multi-color sub-orders tracking
+    const isMultiOrder = !!currentClient.subOrders;
+    const subOrderIndex = currentClient.currentSubOrder ?? 0;
+    const subOrderTotal = currentClient.subOrders ? currentClient.subOrders.length : 1;
+    const hasMoreSubOrders = isMultiOrder && (subOrderIndex + 1 < subOrderTotal);
 
     if (result.passed) {
       audioManager.playSFX('success');
@@ -344,6 +378,12 @@ export const GameScreen: React.FC = () => {
       if (newStreak === 3 || newStreak === 5 || newStreak === 7) {
         audioManager.playSFX('comboMilestone');
       }
+
+      if (hasMoreSubOrders) {
+        // Multi-order partial success! Grace Period: +2s
+        localTimeRef.current = Math.min(currentClient.modifiers.patience, localTimeRef.current + 2);
+        setTimeRemaining(localTimeRef.current);
+      }
     } else {
       audioManager.playSFX('failure');
       updateSatisfaction(-currentClient.modifiers.penaltySeverity);
@@ -354,10 +394,6 @@ export const GameScreen: React.FC = () => {
     if (result.passed) {
       sessionClientTypesServed.current.add(currentClient.type);
     }
-
-    const ingredientsUsed = Object.entries(useGameStore.getState().mixerAmounts)
-      .filter(([, amt]) => amt > 0)
-      .map(([id]) => id);
 
     AchievementEventBus.publish('POTION_SUBMITTED', {
       passed: result.passed,
@@ -370,7 +406,10 @@ export const GameScreen: React.FC = () => {
       sessionClientTypesServed: sessionClientTypesServed.current,
     });
 
-    incrementClientsServed();
+    // Only increment clients served if they fully finished the order (passed last suborder, or failed early)
+    if (!result.passed || !hasMoreSubOrders) {
+      incrementClientsServed();
+    }
 
     // Track accuracy of the current submission
     setWaveAccuracies((prev) => [...prev, result.accuracy]);
@@ -379,7 +418,15 @@ export const GameScreen: React.FC = () => {
       setShowFeedback(false);
       setFeedback(null);
       setHintChannel(null);
-      checkAndAdvance();
+
+      if (result.passed && hasMoreSubOrders) {
+        // Clear ingredients and step to next suborder
+        resetMixerAmounts();
+        advanceSubOrder();
+        setPhase('playing');
+      } else {
+        checkAndAdvance();
+      }
     }, 1800);
   }, [
     currentClient,
@@ -398,6 +445,8 @@ export const GameScreen: React.FC = () => {
     incrementClientsServed,
     checkAndAdvance,
     setPhase,
+    resetMixerAmounts,
+    advanceSubOrder,
   ]);
 
   // Stable token use handler
@@ -477,7 +526,13 @@ export const GameScreen: React.FC = () => {
           <div className="game-screen__vials">
             <PotionVial color={playerMix} label="Your Mix" size="lg" />
             {currentClient && (
-              <PotionVial color={currentClient.targetColor} label="Target" size="lg" animated={false} />
+              <PotionVial
+                color={currentClient.type === 'mystic' ? { r: 35, g: 25, b: 50 } : currentClient.targetColor}
+                label={currentClient.type === 'mystic' ? 'Unknown Target' : 'Target'}
+                size="lg"
+                animated={currentClient.type === 'mystic'}
+                isMystic={currentClient.type === 'mystic'}
+              />
             )}
           </div>
 
@@ -518,6 +573,16 @@ export const GameScreen: React.FC = () => {
               </span>
               <span className="game-screen__feedback-accuracy">{feedback.accuracy.toFixed(1)}%</span>
               {feedback.passed && <span className="game-screen__feedback-points">+{feedback.pointsEarned}</span>}
+              {feedback.passed && feedback.efficiencyDeduction !== undefined && feedback.efficiencyDeduction > 0 && (
+                <span className="game-screen__feedback-efficiency">
+                  &minus;{feedback.efficiencyDeduction} pts: Inefficient Mixing
+                </span>
+              )}
+              {currentClient?.subOrders && feedback.passed && (
+                <span className="game-screen__feedback-suborder">
+                  Potion {(currentClient.currentSubOrder ?? 0) + 1} of {currentClient.subOrders.length} Done!
+                </span>
+              )}
             </div>
           )}
         </div>

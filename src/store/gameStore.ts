@@ -28,6 +28,9 @@ interface GameState {
   waveScore: number;
   difficulty: 'apprentice' | 'journeyman' | 'master';
   mixerAmounts: Record<string, number>;
+  // ── Multi-Color Orders ──
+  multiOrderTargets: RGB[];
+  currentSubOrderIndex: number;
 
   // Actions
   startGame: () => void;
@@ -52,6 +55,9 @@ interface GameState {
   setMixerAmounts: (amounts: Record<string, number>) => void;
   resetMixerAmounts: () => void;
   autoCorrectMixer: (targetColor: RGB, unlockedIngredients: Ingredient[]) => void;
+  setMultiOrder: (targets: RGB[]) => void;
+  advanceSubOrder: () => RGB | null;
+  clearMultiOrder: () => void;
 }
 
 const INITIAL_STATE = {
@@ -85,6 +91,8 @@ const INITIAL_STATE = {
     ochre: 0,
     silver: 0,
   } as Record<string, number>,
+  multiOrderTargets: [] as RGB[],
+  currentSubOrderIndex: 0,
 };
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -157,6 +165,8 @@ export const useGameStore = create<GameState>((set, get) => ({
         silver: 0,
       },
       playerMix: { r: 40, g: 40, b: 50 },
+      multiOrderTargets: [],
+      currentSubOrderIndex: 0,
     })),
 
   incrementPotionsCompleted: () =>
@@ -243,4 +253,38 @@ export const useGameStore = create<GameState>((set, get) => ({
       playerMix: finalColor,
     });
   },
+
+  setMultiOrder: (targets) =>
+    set({
+      multiOrderTargets: targets,
+      currentSubOrderIndex: 0,
+    }),
+
+  advanceSubOrder: () => {
+    const { multiOrderTargets, currentSubOrderIndex, currentClient } = get();
+    const nextIndex = currentSubOrderIndex + 1;
+    if (nextIndex >= multiOrderTargets.length) {
+      return null;
+    }
+    const nextTarget = multiOrderTargets[nextIndex];
+    set({ currentSubOrderIndex: nextIndex });
+
+    if (currentClient) {
+      set({
+        currentClient: {
+          ...currentClient,
+          targetColor: nextTarget,
+          currentSubOrder: nextIndex,
+        },
+      });
+    }
+
+    return nextTarget;
+  },
+
+  clearMultiOrder: () =>
+    set({
+      multiOrderTargets: [],
+      currentSubOrderIndex: 0,
+    }),
 }));

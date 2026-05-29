@@ -8,6 +8,7 @@ export interface IconProps extends React.SVGProps<SVGSVGElement> {
   strokeWidth?: number;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const createIcon = (IconComponent: React.ComponentType<any>) => {
   const WrappedIcon = React.forwardRef<SVGSVGElement, IconProps>(
     ({ className = '', size = 18, strokeWidth = 2, ...props }, ref) => {
@@ -34,7 +35,9 @@ export const WizardIcon = createIcon(Lucide.Wand2);
 export const ZombieIcon = createIcon(Lucide.Skull);
 export const VillagerIcon = createIcon(Lucide.User);
 export const NobleIcon = createIcon(Lucide.Crown);
+export const MysticIcon = createIcon(Lucide.EyeOff);
 export const AlchemistIcon = createIcon(Lucide.FlaskConical);
+export const EfficiencyIcon = createIcon(Lucide.Scale);
 
 // Client Expressions
 export const NeutralExpression = createIcon(Lucide.Meh);

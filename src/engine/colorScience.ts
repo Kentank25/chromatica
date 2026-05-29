@@ -12,6 +12,7 @@
 
 import type { RGB, LAB, Ingredient } from '../types/color.types';
 import { clamp, randomInt, randomFloat } from '../utils/mathUtils';
+import { rgbToHsl } from '../utils/colorUtils';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -458,5 +459,78 @@ export function generateTargetColor(difficulty: number, wave: number = 1): RGB {
   }
 
   return mixColorsKM(chosen);
+}
+
+/**
+ * Generates a flavour-text description of a color using HSL decomposition.
+ * Used by the Mystic client type who cannot show a swatch.
+ *
+ * @returns A string describing the color.
+ */
+export function describeColor(color: RGB): string {
+  const { h, s, l } = rgbToHsl(color);
+
+  // Hue words
+  let hueChoices: string[];
+  if (h < 25 || h >= 345) {
+    hueChoices = ['crimson', 'fiery red', 'blood ruby'];
+  } else if (h < 50) {
+    hueChoices = ['amber', 'warm orange', 'autumn copper'];
+  } else if (h < 75) {
+    hueChoices = ['golden yellow', 'sunlit gold', 'bright saffron'];
+  } else if (h < 140) {
+    hueChoices = ['verdant green', 'forest emerald', 'leafy moss'];
+  } else if (h < 175) {
+    hueChoices = ['turquoise cyan', 'oceanic teal', 'deep sea cyan'];
+  } else if (h < 210) {
+    hueChoices = ['sky blue', 'azure', 'clear cerulean'];
+  } else if (h < 255) {
+    hueChoices = ['sapphire blue', 'cobalt', 'deep royal blue'];
+  } else if (h < 290) {
+    hueChoices = ['mystical violet', 'amethyst purple', 'nightshade lavender'];
+  } else {
+    hueChoices = ['rose magenta', 'blossom pink', 'vibrant fuchsia'];
+  }
+  const hue = hueChoices[Math.floor(Math.random() * hueChoices.length)];
+
+  // Saturation words
+  let satChoices: string[];
+  if (s < 15) {
+    satChoices = ['faintly ashen', 'extremely muted', 'dusty and greyed'];
+  } else if (s < 45) {
+    satChoices = ['subdued', 'softly toned', 'gentle'];
+  } else if (s < 75) {
+    satChoices = ['vivid', 'distinct', 'rich'];
+  } else {
+    satChoices = ['intensely pure', 'vibrant', 'brilliant'];
+  }
+  const saturation = satChoices[Math.floor(Math.random() * satChoices.length)];
+
+  // Lightness words
+  let lightChoices: string[];
+  if (l < 20) {
+    lightChoices = ['abyssal darkness', 'deepest shadow', 'velvet twilight'];
+  } else if (l < 40) {
+    lightChoices = ['shadowy darkness', 'dusk-like dimness', 'darkened shadow'];
+  } else if (l < 60) {
+    lightChoices = ['balanced tones', 'soft moderation', 'gentle equilibrium'];
+  } else if (l < 80) {
+    lightChoices = ['bright luminescence', 'sunlit brightness', 'luminous glow'];
+  } else {
+    lightChoices = ['ethereal paleness', 'radiant light', 'delicate mist'];
+  }
+  const lightness = lightChoices[Math.floor(Math.random() * lightChoices.length)];
+
+  const TEMPLATES = [
+    'A {saturation} {hue} hue with {lightness} undertones.',
+    'The essence of {hue}, {saturation} and {lightness}.',
+    'It looks {saturation}, with a {hue} shade that feels {lightness}.',
+  ];
+
+  const template = TEMPLATES[Math.floor(Math.random() * TEMPLATES.length)];
+  return template
+    .replace('{hue}', hue)
+    .replace('{saturation}', saturation)
+    .replace('{lightness}', lightness);
 }
 

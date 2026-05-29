@@ -6,7 +6,7 @@
 import type { RGB } from './color.types';
 
 /** The archetype of a visiting client. */
-export type ClientType = 'villager' | 'wizard' | 'zombie' | 'noble';
+export type ClientType = 'villager' | 'wizard' | 'zombie' | 'noble' | 'mystic';
 
 /** Facial expression shown by the client sprite. */
 export type ClientExpression = 'neutral' | 'happy' | 'ecstatic' | 'annoyed' | 'enraged';
@@ -31,6 +31,9 @@ export interface ClientModifiers {
   accuracyThreshold: number;
   /** Satisfaction deducted on failure. */
   penaltySeverity: number;
+  // ── Picky Nobles ──
+  efficiencyPenalty?: boolean;     // Whether this client checks ingredient efficiency
+  maxIngredients?: number;         // Optimal ingredient count display limit
 }
 
 /** A single customer visiting the potion shop. */
@@ -41,6 +44,12 @@ export interface Client {
   targetColor: RGB;
   modifiers: ClientModifiers;
   expression: ClientExpression;
+  // ── Multi-Color Orders ──
+  subOrders?: RGB[];               // Sequential targets (length 2-3)
+  currentSubOrder?: number;        // 0-based active sub-order index
+  // ── Mystic ──
+  colorDescription?: string;       // Text hint instead of visual swatch
+  dialogue?: string;               // Speech bubble text upon arrival
 }
 
 /** Persistent state for the current play-through. */
@@ -85,4 +94,8 @@ export interface EvaluationResult {
   comboBonus: number;
   /** Bonus points from speed. */
   speedBonus: number;
+  // ── Picky Nobles ──
+  efficiencyDeduction?: number;    // Score penalty on wasteful ingredients
+  ingredientsUsed?: number;        // Number of active ingredients
+  optimalIngredients?: number;     // Ideal count
 }

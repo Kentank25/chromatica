@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../components/common/Button';
 import GlassCard from '../../components/common/GlassCard';
@@ -8,14 +8,8 @@ import './LeaderboardScreen.css';
 
 export const LeaderboardScreen: React.FC = () => {
   const navigate = useNavigate();
-  const [scores, setScores] = useState<LeaderboardEntry[]>([]);
-  const [latestScoreId, setLatestScoreId] = useState<string | null>(null);
-
-  useEffect(() => {
-    setScores(getHighScores());
-    const id = localStorage.getItem('chromatica_v2_latest_score_id');
-    setLatestScoreId(id);
-  }, []);
+  const [scores] = useState<LeaderboardEntry[]>(() => getHighScores());
+  const [latestScoreId] = useState<string | null>(() => localStorage.getItem('chromatica_v2_latest_score_id'));
 
   // Determine grade display color
   const getGradeColor = (grade: string): string => {

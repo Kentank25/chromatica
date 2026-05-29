@@ -27,6 +27,7 @@ export interface LifetimeStats {
   totalWizardsServed: number;
   totalNoblesServed: number;
   totalVillagersServed: number;
+  totalMysticsServed: number;
 }
 
 // Zod schemas for localStorage validation
@@ -36,6 +37,7 @@ export const LifetimeStatsSchema = z.object({
   totalWizardsServed: z.number().int().nonnegative().default(0),
   totalNoblesServed: z.number().int().nonnegative().default(0),
   totalVillagersServed: z.number().int().nonnegative().default(0),
+  totalMysticsServed: z.number().int().nonnegative().default(0),
 });
 
 export const AchievementProgressSchema = z.object({
@@ -51,6 +53,7 @@ export const AchievementStorageSchema = z.object({
     totalWizardsServed: 0,
     totalNoblesServed: 0,
     totalVillagersServed: 0,
+    totalMysticsServed: 0,
   }),
 });
 

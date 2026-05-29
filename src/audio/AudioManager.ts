@@ -38,8 +38,8 @@ class AudioManager {
   init(): void {
     if (this.ctx) return; // already initialized
 
-    // Create AudioContext
-    this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    this.ctx = new AudioContextClass();
 
     // Create Mixer Gains
     this.masterGain = this.ctx.createGain();

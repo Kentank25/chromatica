@@ -138,7 +138,9 @@ export class MusicManager {
         try {
           src.stop();
           src.disconnect();
-        } catch {}
+        } catch {
+          // ignore error if already stopped
+        }
       });
       this.fadingSources.clear();
     }
@@ -172,7 +174,9 @@ export class MusicManager {
         try {
           sourceToStop.stop();
           sourceToStop.disconnect();
-        } catch {}
+        } catch {
+          // ignore error if already stopped
+        }
         this.fadingSources.delete(sourceToStop);
       }, fadeMs + 100);
     }

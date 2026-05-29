@@ -10,6 +10,7 @@ interface PotionVialProps {
   label?: string;
   animated?: boolean;
   className?: string;
+  isMystic?: boolean;
 }
 
 const SIZE_MAP = { sm: 80, md: 120, lg: 160 };
@@ -21,8 +22,9 @@ export const PotionVial = React.memo<PotionVialProps>(({
   label,
   animated = true,
   className = '',
+  isMystic = false,
 }) => {
-  const cssColor = rgbToCssString(color);
+  const cssColor = isMystic ? 'rgba(186, 104, 200, 0.5)' : rgbToCssString(color);
   const px = SIZE_MAP[size];
   const fillH = Math.round(fillLevel * 60); // percentage of the vial body
 
@@ -57,10 +59,10 @@ export const PotionVial = React.memo<PotionVialProps>(({
           <rect
             x="30" y={150 - fillH * 1.75} width="40" height={fillH * 1.75}
             fill={cssColor}
-            opacity="0.85"
+            opacity={isMystic ? "0.3" : "0.85"}
           />
           {/* Liquid surface highlight */}
-          <ellipse cx="50" cy={150 - fillH * 1.75} rx="20" ry="3" fill={cssColor} opacity="0.6" />
+          <ellipse cx="50" cy={150 - fillH * 1.75} rx="20" ry="3" fill={cssColor} opacity={isMystic ? "0.2" : "0.6"} />
           
           {/* Bubbles */}
           {animated && (
@@ -70,6 +72,21 @@ export const PotionVial = React.memo<PotionVialProps>(({
               <circle className="potion-vial__bubble potion-vial__bubble--3" cx="48" cy="130" r="2.5" fill="rgba(255,255,255,0.2)" />
             </>
           )}
+
+          {isMystic && (
+            <text
+              x="50"
+              y="110"
+              textAnchor="middle"
+              fill="rgba(186, 104, 200, 0.7)"
+              fontSize="36"
+              fontFamily="'Cinzel', serif"
+              fontWeight="bold"
+              style={{ filter: 'drop-shadow(0 0 5px rgba(186, 104, 200, 0.5))' }}
+            >
+              ?
+            </text>
+          )}
         </g>
 
         {/* Glass highlight */}
@@ -77,7 +94,20 @@ export const PotionVial = React.memo<PotionVialProps>(({
       </svg>
 
       {/* Glow effect */}
-      <div className="potion-vial__glow" style={{ backgroundColor: cssColor, boxShadow: `0 0 30px ${cssColor}, 0 0 60px ${cssColor}` }} />
+      <div
+        className="potion-vial__glow"
+        style={
+          isMystic
+            ? {
+                backgroundColor: 'rgba(186, 104, 200, 0.4)',
+                boxShadow: '0 0 20px rgba(186, 104, 200, 0.2), 0 0 40px rgba(186, 104, 200, 0.1)',
+              }
+            : {
+                backgroundColor: cssColor,
+                boxShadow: `0 0 30px ${cssColor}, 0 0 60px ${cssColor}`,
+              }
+        }
+      />
 
       {label && <span className="potion-vial__label">{label}</span>}
     </div>

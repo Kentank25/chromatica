@@ -45,6 +45,7 @@ const getInitialState = (): {
       totalWizardsServed: 0,
       totalNoblesServed: 0,
       totalVillagersServed: 0,
+      totalMysticsServed: 0,
     },
   };
 
@@ -147,6 +148,7 @@ export const useAchievementStore = create<AchievementState>((set, get) => ({
         if (payload.clientType === 'wizard') currentLifetime.totalWizardsServed += 1;
         if (payload.clientType === 'zombie') currentLifetime.totalZombiesServed += 1;
         if (payload.clientType === 'noble') currentLifetime.totalNoblesServed += 1;
+        if (payload.clientType === 'mystic') currentLifetime.totalMysticsServed += 1;
       }
 
       set({ lifetimeStats: currentLifetime });
@@ -259,6 +261,7 @@ export const useAchievementStore = create<AchievementState>((set, get) => ({
         totalWizardsServed: 0,
         totalNoblesServed: 0,
         totalVillagersServed: 0,
+        totalMysticsServed: 0,
       },
     };
 

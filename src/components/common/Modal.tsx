@@ -23,19 +23,27 @@ const Modal: React.FC<ModalProps> = ({
 
   const { containerRef, handleKeyDown } = useFocusTrap<HTMLDivElement>(visible);
 
-  useEffect(() => {
+  // Reset visibility and closing states during rendering when isOpen changes to avoid useEffect setState warnings
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
     if (isOpen) {
       setVisible(true);
       setClosing(false);
     } else if (visible) {
       setClosing(true);
-      const timer = setTimeout(() => {
-        setVisible(false);
-        setClosing(false);
-      }, 200);
-      return () => clearTimeout(timer);
     }
-  }, [isOpen, visible]);
+  }
+
+  // Handle exit animation timer when closing is triggered
+  useEffect(() => {
+    if (!closing) return;
+    const timer = setTimeout(() => {
+      setVisible(false);
+      setClosing(false);
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [closing]);
 
   // Lock body scroll
   useEffect(() => {
@@ -71,7 +79,6 @@ const Modal: React.FC<ModalProps> = ({
   return (
     <div
       ref={(el) => {
-        // @ts-ignore
         backdropRef.current = el;
         containerRef.current = el;
       }}

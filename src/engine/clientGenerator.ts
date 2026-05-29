@@ -5,7 +5,8 @@
  */
 
 import type { Client, ClientModifiers, ClientType } from '../types/game.types';
-import { generateTargetColor } from './colorScience';
+import type { RGB } from '../types/color.types';
+import { generateTargetColor, describeColor } from './colorScience';
 import { randomInt, clamp } from '../utils/mathUtils';
 
 // ---------------------------------------------------------------------------
@@ -33,7 +34,7 @@ const WIZARD_NAMES: string[] = [
   'Magus Thorn',
   'Enchantress Lyria',
   'Warlock Drace',
-  'Mystic Opaline',
+  'Spellbinder Opaline',
   'Sorcerer Kael',
   'Diviner Ash',
   'Conjurer Bramwell',
@@ -70,11 +71,26 @@ const NOBLE_NAMES: string[] = [
   'Princess Elowen',
 ];
 
+const MYSTIC_NAMES: string[] = [
+  'Oracle Maren',
+  'Seer Ashwind',
+  'Prophet Kira',
+  'Blind Elder Vane',
+  'Mystic Zephyr',
+  'Sibyl Cassandra',
+  'Scribe Elara',
+  'Oracle Pythia',
+  'Visage Oakhaven',
+  'Dreamer Silas',
+  'Auguste the Blinded',
+];
+
 const NAME_POOLS: Record<ClientType, string[]> = {
   villager: VILLAGER_NAMES,
   wizard: WIZARD_NAMES,
   zombie: ZOMBIE_NAMES,
   noble: NOBLE_NAMES,
+  mystic: MYSTIC_NAMES,
 };
 
 // ---------------------------------------------------------------------------
@@ -105,6 +121,14 @@ const MODIFIERS: Record<ClientType, ClientModifiers> = {
     patience: 25,
     accuracyThreshold: 0.80,
     penaltySeverity: 20,    // Very high penalty
+    efficiencyPenalty: true,
+    maxIngredients: 3,      // Noble clients demand at most 3 ingredients
+  },
+  mystic: {
+    scoreMultiplier: 1.8,
+    patience: 35,           // Slower speed since they describe in words
+    accuracyThreshold: 0.65,
+    penaltySeverity: 12,
   },
 };
 
@@ -121,21 +145,21 @@ const MODIFIERS: Record<ClientType, ClientModifiers> = {
 function pickClientType(wave: number): ClientType {
   const w = clamp(wave, 1, 20);
 
-  // Weight tables: [villager, wizard, zombie, noble]
+  // Weight tables: [villager, wizard, zombie, noble, mystic]
   let weights: number[];
   if (w <= 2) {
-    weights = [80, 10, 10, 0];
+    weights = [80, 10, 10, 0, 0];
   } else if (w <= 4) {
-    weights = [50, 25, 20, 5];
+    weights = [45, 25, 18, 5, 7];
   } else if (w <= 7) {
-    weights = [30, 30, 25, 15];
+    weights = [25, 25, 22, 15, 13];
   } else {
-    weights = [15, 30, 30, 25];
+    weights = [10, 28, 25, 22, 15];
   }
 
   const total = weights.reduce((s, v) => s + v, 0);
   let roll = Math.random() * total;
-  const types: ClientType[] = ['villager', 'wizard', 'zombie', 'noble'];
+  const types: ClientType[] = ['villager', 'wizard', 'zombie', 'noble', 'mystic'];
 
   for (let i = 0; i < types.length; i++) {
     roll -= weights[i];
@@ -168,7 +192,7 @@ export function generateClient(
 
   // Difficulty scales with wave: wave 1-2 → 1, wave 3-4 → 2, wave 5+ → 3
   const difficulty = clamp(Math.ceil(wave / 2), 1, 3);
-  const targetColor = generateTargetColor(difficulty, wave);
+  let targetColor = generateTargetColor(difficulty, wave);
 
   clientIdCounter += 1;
 
@@ -183,6 +207,46 @@ export function generateClient(
     baseModifiers.penaltySeverity = Math.round(baseModifiers.penaltySeverity * 1.5);
   }
 
+  // Multi-Color Order generation
+  // Wizard, zombie, noble are eligible for multi-color orders at wave >= 3
+  let subOrders: RGB[] | undefined;
+  let currentSubOrder: number | undefined;
+  const isEligibleForMulti = type === 'wizard' || type === 'zombie' || type === 'noble';
+
+  if (wave >= 3 && isEligibleForMulti) {
+    const multiChance = wave >= 5 ? 0.30 : 0.15;
+    if (Math.random() < multiChance) {
+      const orderLength = wave >= 6 ? randomInt(2, 3) : 2;
+      subOrders = [];
+      for (let i = 0; i < orderLength; i++) {
+        subOrders.push(generateTargetColor(difficulty, wave));
+      }
+      currentSubOrder = 0;
+      targetColor = subOrders[0];
+
+      // Multiplier of 1.5x patience for 2-potion orders, 2.0x for 3-potion orders
+      const patienceMultiplier = orderLength === 2 ? 1.5 : 2.0;
+      baseModifiers.patience = Math.round(baseModifiers.patience * patienceMultiplier);
+    }
+  }
+
+  // Mystic text description generation
+  let colorDescription: string | undefined;
+  if (type === 'mystic') {
+    colorDescription = describeColor(targetColor);
+  }
+
+  // Pre-generate dialogues in the engine to keep components pure and avoid impure Math.random calls during React render
+  const dialogues: Record<ClientType, string[]> = {
+    villager: ["I need this for my garden fence!", "Can you match this for me?"],
+    wizard: ["I require PRECISELY this hue.", "My spell demands exactness."],
+    zombie: ["Graaagh... me want this color...", "Pretty... color..."],
+    noble: ["Perfect, commoner. Not one shade off.", "I hope you know what you're doing."],
+    mystic: ["The shadows whisper to me...", "Explain the color of the winds...", "I can see the hidden truth..."],
+  };
+  const pool = dialogues[type];
+  const dialogue = pool[randomInt(0, pool.length - 1)];
+
   return {
     id: `client_${clientIdCounter}_${Date.now()}`,
     type,
@@ -190,5 +254,9 @@ export function generateClient(
     targetColor,
     modifiers: baseModifiers,
     expression: 'neutral',
+    subOrders,
+    currentSubOrder,
+    colorDescription,
+    dialogue,
   };
 }

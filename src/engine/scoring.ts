@@ -22,6 +22,7 @@ import { clamp } from '../utils/mathUtils';
  * 1. Base points = floor(100 × (accuracy / 100) × clientMultiplier)
  * 2. Combo bonus = +10 % per combo level (applied to base)
  * 3. Speed bonus = +5-20 % based on remaining time vs. client patience
+ * 4. Picky Noble penalty = deductions if ingredients are wasteful
  *
  * A potion *passes* if `accuracy / 100 >= client.modifiers.accuracyThreshold`.
  * Failed potions earn 0 points.
@@ -31,6 +32,7 @@ import { clamp } from '../utils/mathUtils';
  * @param client        - The current client (provides modifiers).
  * @param timeRemaining - Seconds remaining on the client's patience timer.
  * @param comboStreak   - Current consecutive-success streak (before this attempt).
+ * @param efficiencyData - Optional details about ingredients used for picky noble checks.
  * @returns A detailed {@link EvaluationResult}.
  */
 export function evaluatePotion(
@@ -39,10 +41,14 @@ export function evaluatePotion(
   client: Client,
   timeRemaining: number,
   comboStreak: number,
+  efficiencyData?: { ingredientsUsed: number; totalAmount: number },
 ): EvaluationResult {
   const accuracy = computeAccuracy(target, submitted);
   const deltaE = computeDeltaE(target, submitted);
-  const passed = accuracy / 100 >= client.modifiers.accuracyThreshold;
+  // Compare rounded accuracy to prevent frustrating rounding display mismatches (e.g. 79.96% displaying as 80.0% but failing)
+  const displayAccuracy = Math.round(accuracy * 10) / 10;
+  const targetThreshold = Math.round(client.modifiers.accuracyThreshold * 100 * 10) / 10;
+  const passed = displayAccuracy >= targetThreshold;
 
   if (!passed) {
     return {
@@ -60,6 +66,27 @@ export function evaluatePotion(
     100 * (accuracy / 100) * client.modifiers.scoreMultiplier,
   );
 
+  // --- Picky Noble Efficiency Penalty ---
+  let efficiencyDeduction = 0;
+  const optimalIngredients = client.modifiers.maxIngredients ?? 3;
+
+  if (client.modifiers.efficiencyPenalty && efficiencyData) {
+    const { ingredientsUsed, totalAmount } = efficiencyData;
+    const extraIngredients = Math.max(0, ingredientsUsed - (optimalIngredients + 1));
+    let penaltyPercent = 0;
+
+    if (extraIngredients > 0) {
+      penaltyPercent += extraIngredients * 0.08;
+    }
+    if (totalAmount > 15) {
+      penaltyPercent += 0.05;
+    }
+
+    // Cap deduction at 40% of base points
+    penaltyPercent = Math.min(0.40, penaltyPercent);
+    efficiencyDeduction = Math.floor(basePoints * penaltyPercent);
+  }
+
   // --- Combo bonus: +10 % per combo level ---
   const comboMultiplier = 1 + comboStreak * 0.1;
   const comboBonus = Math.floor(basePoints * comboStreak * 0.1);
@@ -71,7 +98,8 @@ export function evaluatePotion(
   const pointsBeforeSpeed = Math.floor(basePoints * comboMultiplier);
   const speedBonus = Math.floor(pointsBeforeSpeed * speedPercent);
 
-  const totalPoints = pointsBeforeSpeed + speedBonus;
+  // Apply efficiency deduction to total points earned
+  const totalPoints = Math.max(0, pointsBeforeSpeed + speedBonus - efficiencyDeduction);
 
   return {
     accuracy,
@@ -80,6 +108,9 @@ export function evaluatePotion(
     pointsEarned: totalPoints,
     comboBonus,
     speedBonus,
+    efficiencyDeduction,
+    ingredientsUsed: efficiencyData?.ingredientsUsed,
+    optimalIngredients,
   };
 }
 

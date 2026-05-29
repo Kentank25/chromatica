@@ -5,7 +5,7 @@ export interface AchievementPayloads {
     passed: boolean;
     accuracy: number;
     comboStreak: number;
-    clientType: 'villager' | 'wizard' | 'zombie' | 'noble';
+    clientType: 'villager' | 'wizard' | 'zombie' | 'noble' | 'mystic';
     patience: number;
     timeRemaining: number;
     ingredientsUsed: string[];

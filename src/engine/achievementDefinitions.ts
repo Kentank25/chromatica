@@ -158,6 +158,16 @@ export const ACHIEVEMENT_DEFINITIONS: Array<
     check: (payload) => payload.passed && payload.clientType === 'noble',
   },
   {
+    id: 'mystic_vision',
+    name: 'Mystic Vision',
+    description: 'Successfully serve a Mystic client with 90%+ accuracy',
+    category: 'clients',
+    rarity: 'rare',
+    icon: 'Eye',
+    trigger: 'POTION_SUBMITTED',
+    check: (payload) => payload.passed && payload.clientType === 'mystic' && payload.accuracy >= 90,
+  },
+  {
     id: 'zombie_whisperer',
     name: 'Zombie Whisperer',
     description: 'Successfully serve 10 Zombie clients (lifetime)',

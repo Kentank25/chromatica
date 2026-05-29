@@ -179,3 +179,19 @@
 .game-screen__hint-direction--perfect {
   color: var(--accent-gold);
 }
+
+.game-screen__feedback-suborder {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--accent-success);
+  margin-top: 4px;
+  text-shadow: 0 0 8px rgba(46, 204, 113, 0.4);
+}
+
+.game-screen__feedback-efficiency {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--accent-warning);
+  margin-top: 4px;
+  text-shadow: 0 0 8px rgba(255, 167, 38, 0.4);
+}
