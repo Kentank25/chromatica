@@ -19,6 +19,9 @@ import { audioManager } from '../../audio/AudioManager';
 import { musicManager } from '../../audio/MusicManager';
 import { HintTokenIcon, MoreIcon, LessIcon, SparkleIcon, FailIcon } from '../../utils/icons';
 import { BASE_INGREDIENTS } from '../../engine/colorScience';
+import { AchievementEventBus } from '../../engine/achievementEventBus';
+import { useAchievementStore } from '../../store/achievementStore';
+import { AchievementToastContainer } from '../../components/game/AchievementToast';
 import './GameScreen.css';
 
 export const GameScreen: React.FC = () => {
@@ -74,6 +77,7 @@ export const GameScreen: React.FC = () => {
   const feedbackTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const localTimeRef = useRef(0);
   const lastStoreUpdate = useRef(0);
+  const sessionClientTypesServed = useRef<Set<string>>(new Set());
 
   const [showTutorial, setShowTutorial] = useState(() => {
     return !localStorage.getItem('chromatica-tutorial');
@@ -82,6 +86,8 @@ export const GameScreen: React.FC = () => {
   // Initialize game on mount
   useEffect(() => {
     startGame();
+    useAchievementStore.getState().clearSessionRecap();
+    sessionClientTypesServed.current.clear();
     const client = generateClient(1, useGameStore.getState().difficulty);
     setCurrentClient(client);
     localTimeRef.current = client.modifiers.patience;
@@ -150,6 +156,14 @@ export const GameScreen: React.FC = () => {
   const checkAndAdvance = useCallback(() => {
     if (satisfaction <= 0) {
       setPhase('gameOver');
+      const { score, potionsCompleted, potionsFailed, highestCombo, waveHistory } = useGameStore.getState();
+      AchievementEventBus.publish('SESSION_END', {
+        finalScore: score,
+        totalCompleted: potionsCompleted,
+        totalFailed: potionsFailed,
+        highestCombo: highestCombo,
+        wavesCleared: waveHistory.length,
+      });
       setTimeout(() => navigate('/results'), 500);
       return;
     }
@@ -160,6 +174,13 @@ export const GameScreen: React.FC = () => {
       const avgAccuracy = waveAccuracies.length > 0
         ? waveAccuracies.reduce((sum, val) => sum + val, 0) / waveAccuracies.length
         : 0;
+
+      AchievementEventBus.publish('WAVE_CLEARED', {
+        waveNumber: currentWave,
+        clientsServed: clientsServedThisWave,
+        averageAccuracy: avgAccuracy,
+        pointsEarned: waveScore,
+      });
 
       setTransitionStats({
         waveNumber: currentWave,
@@ -328,6 +349,25 @@ export const GameScreen: React.FC = () => {
       incrementPotionsFailed();
     }
 
+    if (result.passed) {
+      sessionClientTypesServed.current.add(currentClient.type);
+    }
+
+    const ingredientsUsed = Object.entries(useGameStore.getState().mixerAmounts)
+      .filter(([, amt]) => amt > 0)
+      .map(([id]) => id);
+
+    AchievementEventBus.publish('POTION_SUBMITTED', {
+      passed: result.passed,
+      accuracy: result.accuracy,
+      comboStreak: result.passed ? comboStreak + 1 : 0,
+      clientType: currentClient.type,
+      patience: currentClient.modifiers.patience,
+      timeRemaining: localTimeRef.current,
+      ingredientsUsed,
+      sessionClientTypesServed: sessionClientTypesServed.current,
+    });
+
     incrementClientsServed();
 
     // Track accuracy of the current submission
@@ -395,6 +435,8 @@ export const GameScreen: React.FC = () => {
     setShowWaveTransition(false);
     setWaveAccuracies([]);
     startGame();
+    useAchievementStore.getState().clearSessionRecap();
+    sessionClientTypesServed.current.clear();
     const client = generateClient(1, difficulty);
     setCurrentClient(client);
     localTimeRef.current = client.modifiers.patience;
@@ -505,6 +547,7 @@ export const GameScreen: React.FC = () => {
       {showTutorial && (
         <TutorialOverlay onClose={() => setShowTutorial(false)} />
       )}
+      <AchievementToastContainer />
     </div>
   );
 };

@@ -307,4 +307,49 @@ export class SynthSFX {
       });
     }
   }
+
+  /**
+   * achievementUnlock: sparkling major 7th chord C5-E5-G5-B5-C6 with bright decay and final G6 chime.
+   */
+  static playAchievementUnlock(ctx: AudioContext, destination: AudioNode, volume: number): void {
+    const now = ctx.currentTime;
+    const notes = [523.25, 659.25, 783.99, 987.77, 1046.50]; // C5, E5, G5, B5, C6
+    const noteDuration = 0.5;
+    const overlap = 0.08;
+
+    notes.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      osc.type = 'triangle'; // Smooth, magical chime tone
+      osc.frequency.setValueAtTime(freq, now + idx * overlap);
+
+      const gainNode = ctx.createGain();
+      const startTime = now + idx * overlap;
+      gainNode.gain.setValueAtTime(0.0001, startTime);
+      gainNode.gain.linearRampToValueAtTime(volume * 0.25, startTime + 0.03);
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + noteDuration);
+
+      osc.connect(gainNode);
+      gainNode.connect(destination);
+
+      osc.start(startTime);
+      osc.stop(startTime + noteDuration);
+    });
+
+    // High magic chime ping
+    const chimeOsc = ctx.createOscillator();
+    chimeOsc.type = 'sine';
+    chimeOsc.frequency.setValueAtTime(1567.98, now + 0.4); // G6
+    
+    const chimeGain = ctx.createGain();
+    chimeGain.gain.setValueAtTime(0.0001, now + 0.4);
+    chimeGain.gain.linearRampToValueAtTime(volume * 0.15, now + 0.42);
+    chimeGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.9);
+
+    chimeOsc.connect(chimeGain);
+    chimeGain.connect(destination);
+
+    chimeOsc.start(now + 0.4);
+    chimeOsc.stop(now + 0.9);
+  }
 }
+

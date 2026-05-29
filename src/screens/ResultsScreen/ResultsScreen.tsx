@@ -6,6 +6,9 @@ import GlassCard from '../../components/common/GlassCard';
 import { saveHighScore } from '../../utils/storageUtils';
 import { musicManager } from '../../audio/MusicManager';
 import { RestartIcon } from '../../utils/icons';
+import { useAchievementStore } from '../../store/achievementStore';
+import { ACHIEVEMENT_DEFINITIONS } from '../../engine/achievementDefinitions';
+import { DynamicLucideIcon } from '../../components/game/AchievementToast';
 import './ResultsScreen.css';
 
 function getRating(score: number): { grade: string; color: string } {
@@ -20,6 +23,13 @@ export const ResultsScreen: React.FC = () => {
   const navigate = useNavigate();
   const { score, potionsCompleted, potionsFailed, highestCombo, currentWave, waveHistory } = useGameStore();
   const [displayScore, setDisplayScore] = useState(0);
+  const sessionRecap = useAchievementStore((s) => s.sessionRecap);
+
+  const sessionAchievements = useMemo(() => {
+    return sessionRecap
+      .map((id) => ACHIEVEMENT_DEFINITIONS.find((def) => def.id === id))
+      .filter((def) => !!def);
+  }, [sessionRecap]);
 
   const avgAccuracy = useMemo(() => {
     const total = potionsCompleted + potionsFailed;
@@ -78,6 +88,24 @@ export const ResultsScreen: React.FC = () => {
             <span className="results__stat-label">Waves Cleared</span>
           </GlassCard>
         </div>
+
+        {sessionAchievements.length > 0 && (
+          <div className="results__achievements">
+            <h3 className="results__achievements-title">Achievements Earned</h3>
+            <div className="results__achievements-list">
+              {sessionAchievements.map((def) => (
+                <div
+                  key={def.id}
+                  className={`results__achievement-badge results__achievement-badge--${def.rarity}`}
+                  title={`${def.name}: ${def.description}`}
+                >
+                  <DynamicLucideIcon name={def!.icon} size={18} className="results__achievement-badge-icon" />
+                  <span className="results__achievement-badge-name">{def!.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="results__actions">
           <Button

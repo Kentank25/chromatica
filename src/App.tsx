@@ -5,9 +5,11 @@ import { MainMenu } from './screens/MainMenu/MainMenu';
 import { GameScreen } from './screens/GameScreen/GameScreen';
 import { ResultsScreen } from './screens/ResultsScreen/ResultsScreen';
 import { LeaderboardScreen } from './screens/LeaderboardScreen/LeaderboardScreen';
+import { AchievementsScreen } from './screens/AchievementsScreen/AchievementsScreen';
 import { useAudio } from './hooks/useAudio';
 import { audioManager } from './audio/AudioManager';
 import { musicManager } from './audio/MusicManager';
+import { useAchievementStore } from './store/achievementStore';
 
 function App() {
   useAudio(); // Synchronizes volume settings globally from the settingsStore
@@ -19,6 +21,12 @@ function App() {
       musicManager.connectContext(ctx);
       musicManager.preloadAll(ctx);
     }
+    
+    // Subscribe achievement store to event bus
+    const unsubAchievements = useAchievementStore.getState().init();
+    return () => {
+      unsubAchievements();
+    };
   }, []);
 
   return (
@@ -29,6 +37,7 @@ function App() {
         <Route path="/game" element={<GameScreen />} />
         <Route path="/results" element={<ResultsScreen />} />
         <Route path="/leaderboard" element={<LeaderboardScreen />} />
+        <Route path="/achievements" element={<AchievementsScreen />} />
       </Routes>
     </BrowserRouter>
   );

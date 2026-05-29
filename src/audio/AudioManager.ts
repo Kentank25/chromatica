@@ -113,6 +113,9 @@ class AudioManager {
       case 'clientArriveVillager':
         SynthSFX.playClientArrive(this.ctx, this.sfxGain, 'villager', 1.0);
         break;
+      case 'achievementUnlock':
+        SynthSFX.playAchievementUnlock(this.ctx, this.sfxGain, 1.0);
+        break;
       default:
         break;
     }

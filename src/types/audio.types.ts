@@ -14,7 +14,8 @@ export type SFXEvent =
   | 'uiClick'
   | 'uiHover'
   | 'comboMilestone'
-  | 'waveClear';
+  | 'waveClear'
+  | 'achievementUnlock';
 
 /** Background music mood states. */
 export type BGMState = 'ambient' | 'driving' | 'tension' | 'silent';

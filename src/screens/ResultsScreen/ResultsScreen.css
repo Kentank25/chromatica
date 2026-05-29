@@ -118,6 +118,86 @@
   gap: var(--space-md);
 }
 
+.results__achievements {
+  margin-top: var(--space-lg);
+  margin-bottom: var(--space-xl);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  animation: slideUp 0.6s ease-out 0.2s both;
+}
+
+.results__achievements-title {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: var(--space-md);
+}
+
+.results__achievements-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.results__achievement-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  font-family: var(--font-body);
+  transition: all var(--transition-normal);
+  cursor: help;
+}
+
+.results__achievement-badge:hover {
+  transform: scale(1.05);
+}
+
+/* Rarity border glows for recap badges */
+.results__achievement-badge--common {
+  border-color: rgba(156, 163, 175, 0.3);
+}
+.results__achievement-badge--common .results__achievement-badge-icon { color: var(--text-secondary); }
+
+.results__achievement-badge--uncommon {
+  border-color: rgba(74, 222, 128, 0.4);
+  box-shadow: 0 0 10px rgba(74, 222, 128, 0.1);
+}
+.results__achievement-badge--uncommon .results__achievement-badge-icon { color: #4ade80; }
+
+.results__achievement-badge--rare {
+  border-color: rgba(69, 182, 254, 0.4);
+  box-shadow: 0 0 10px rgba(69, 182, 254, 0.15);
+}
+.results__achievement-badge--rare .results__achievement-badge-icon { color: var(--accent-success); }
+
+.results__achievement-badge--epic {
+  border-color: rgba(180, 79, 255, 0.4);
+  box-shadow: 0 0 12px rgba(180, 79, 255, 0.2);
+}
+.results__achievement-badge--epic .results__achievement-badge-icon { color: var(--accent-combo); }
+
+.results__achievement-badge--legendary {
+  border-color: rgba(255, 215, 0, 0.5);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+}
+.results__achievement-badge--legendary .results__achievement-badge-icon { color: var(--accent-gold); }
+
+.results__achievement-badge-name {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
 @media (max-width: 640px) {
   .results__stats {
     grid-template-columns: repeat(2, 1fr);

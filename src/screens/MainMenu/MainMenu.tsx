@@ -15,7 +15,9 @@ import {
   MusicIcon,
   VolumeIcon,
   MutedIcon,
+  MedalIcon,
 } from '../../utils/icons';
+import { useAchievementStore } from '../../store/achievementStore';
 import './MainMenu.css';
 
 export const MainMenu: React.FC = () => {
@@ -24,6 +26,13 @@ export const MainMenu: React.FC = () => {
   const [showCredits, setShowCredits] = useState(false);
   const { bgmVolume, sfxVolume, setVolume, muted, toggleMute } = useSettingsStore();
   const { difficulty, setDifficulty } = useGameStore();
+  const achievements = useAchievementStore((s) => s.achievements);
+
+  const stats = React.useMemo(() => {
+    const total = Object.keys(achievements).length;
+    const unlocked = Object.values(achievements).filter((a) => a.unlockedAt !== null).length;
+    return { total, unlocked };
+  }, [achievements]);
 
   useEffect(() => {
     // Initialize audio system and start menu music
@@ -95,6 +104,18 @@ export const MainMenu: React.FC = () => {
             icon={<TrophyIcon className="icon--sm" />}
           >
             Leaderboard
+          </Button>
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={() => {
+              audioManager.playSFX('uiClick');
+              navigate('/achievements');
+            }}
+            id="btn-achievements"
+            icon={<MedalIcon className="icon--sm" />}
+          >
+            Achievements {stats.total > 0 && `(${stats.unlocked}/${stats.total})`}
           </Button>
           <Button
             variant="secondary"
