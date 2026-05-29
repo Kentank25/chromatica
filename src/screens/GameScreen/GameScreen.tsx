@@ -16,6 +16,7 @@ import { WaveTransition } from '../WaveTransition/WaveTransition';
 import { TutorialOverlay } from '../../components/game/TutorialOverlay';
 import type { EvaluationResult } from '../../types/game.types';
 import { audioManager } from '../../audio/AudioManager';
+import { musicManager } from '../../audio/MusicManager';
 import './GameScreen.css';
 
 export const GameScreen: React.FC = () => {
@@ -107,22 +108,31 @@ export const GameScreen: React.FC = () => {
     }
   }, [hintChannel]);
 
-  // Synchronize BGM state based on game phase and timer
+  // Synchronize BGM track and intensity reactively
   useEffect(() => {
     if (phase === 'playing') {
-      if (timeRemaining <= 15) {
-        audioManager.setBGMState('tension');
-      } else {
-        audioManager.setBGMState('driving');
-      }
-    } else if (phase === 'waveClear') {
-      audioManager.setBGMState('ambient');
-    } else if (phase === 'idle') {
-      audioManager.setBGMState('ambient');
-    } else if (phase === 'gameOver' || phase === 'result') {
-      audioManager.setBGMState('silent');
+      const trackKey = currentWave <= 2 ? 'wave1'
+                     : currentWave <= 4 ? 'wave2'
+                     : 'wave3';
+      musicManager.play(trackKey);
+    } else if (phase === 'waveClear' || phase === 'gameOver') {
+      musicManager.setIntensity('normal');
     }
-  }, [phase, timeRemaining]);
+  }, [phase, currentWave]);
+
+  useEffect(() => {
+    if (phase === 'playing' && currentClient) {
+      const patience = currentClient.modifiers.patience || 1;
+      const pct = timeRemaining / patience;
+      if (pct > 0.25) {
+        musicManager.setIntensity('normal');
+      } else if (pct > 0.10) {
+        musicManager.setIntensity('warning');
+      } else {
+        musicManager.setIntensity('urgent');
+      }
+    }
+  }, [phase, timeRemaining, currentClient]);
 
   // Trigger client arrival sounds
   useEffect(() => {

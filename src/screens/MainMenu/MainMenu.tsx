@@ -5,6 +5,7 @@ import Modal from '../../components/common/Modal';
 import { useSettingsStore } from '../../store/settingsStore';
 import { useGameStore } from '../../store/gameStore';
 import { audioManager } from '../../audio/AudioManager';
+import { musicManager } from '../../audio/MusicManager';
 import './MainMenu.css';
 
 export const MainMenu: React.FC = () => {
@@ -15,9 +16,13 @@ export const MainMenu: React.FC = () => {
   const { difficulty, setDifficulty } = useGameStore();
 
   useEffect(() => {
-    // Initialize audio system and start ambient drone
+    // Initialize audio system and start menu music
     audioManager.init();
-    audioManager.setBGMState('ambient');
+    const ctx = audioManager.getContext();
+    if (ctx) {
+      musicManager.connectContext(ctx);
+    }
+    musicManager.play('menu');
   }, []);
 
   return (

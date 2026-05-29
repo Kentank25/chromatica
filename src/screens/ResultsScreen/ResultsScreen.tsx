@@ -4,6 +4,7 @@ import { useGameStore } from '../../store/gameStore';
 import Button from '../../components/common/Button';
 import GlassCard from '../../components/common/GlassCard';
 import { saveHighScore } from '../../utils/storageUtils';
+import { musicManager } from '../../audio/MusicManager';
 import './ResultsScreen.css';
 
 function getRating(score: number): { grade: string; color: string } {
@@ -28,6 +29,7 @@ export const ResultsScreen: React.FC = () => {
 
   useEffect(() => {
     saveHighScore(score);
+    musicManager.play('results');
     // Animated count-up
     const duration = 1500;
     const start = performance.now();
