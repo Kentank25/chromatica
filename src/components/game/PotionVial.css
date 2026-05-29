@@ -55,3 +55,99 @@
   letter-spacing: 0.06em;
   text-align: center;
 }
+
+/* ── Potion Effect Animations ──────────────── */
+
+/* Luminous Particles */
+@keyframes floatUp {
+  0% { transform: translateY(20px); opacity: 0; }
+  50% { opacity: 0.8; }
+  100% { transform: translateY(-40px); opacity: 0; }
+}
+.potion-effect__lumi-particle {
+  transform-origin: center;
+  animation: floatUp 3s ease-in-out infinite;
+}
+.potion-effect__lumi-particle--1 { animation-delay: 0s; }
+.potion-effect__lumi-particle--2 { animation-delay: 0.8s; }
+.potion-effect__lumi-particle--3 { animation-delay: 1.5s; }
+.potion-effect__lumi-particle--4 { animation-delay: 2.2s; }
+
+/* Shadowy Smoke Wisps */
+@keyframes smokeRise {
+  0% { stroke-dashoffset: 60; opacity: 0; transform: scaleY(0.8); }
+  30% { opacity: 0.5; }
+  100% { stroke-dashoffset: -30; opacity: 0; transform: scaleY(1.2) translateY(-20px); }
+}
+.potion-effect__shadow-wisp {
+  transform-origin: bottom center;
+  animation: smokeRise 4s linear infinite;
+}
+.potion-effect__shadow-wisp--1 { animation-delay: 0s; }
+.potion-effect__shadow-wisp--2 { animation-delay: 2s; }
+
+/* Vivid Rings and Sparkles */
+@keyframes vividRingPulse {
+  0% { transform: scale(0.9) translate(5px, 5px); opacity: 0.1; }
+  50% { opacity: 0.3; }
+  100% { transform: scale(1.1) translate(-5px, -5px); opacity: 0; }
+}
+.potion-effect__vivid-ring {
+  transform-origin: center;
+  animation: vividRingPulse 3s ease-in-out infinite;
+}
+@keyframes sparklePulse {
+  0%, 100% { transform: scale(0.8); opacity: 0.3; }
+  50% { transform: scale(1.3); opacity: 1; }
+}
+.potion-effect__vivid-sparkle {
+  transform-origin: center;
+  animation: sparklePulse 1.5s ease-in-out infinite;
+}
+.potion-effect__vivid-sparkle--1 { animation-delay: 0s; }
+.potion-effect__vivid-sparkle--2 { animation-delay: 0.4s; }
+.potion-effect__vivid-sparkle--3 { animation-delay: 0.8s; }
+.potion-effect__vivid-sparkle--4 { animation-delay: 1.2s; }
+
+/* Muted Dust Motes */
+@keyframes dustDrift {
+  0%, 100% { transform: translate(0, 0); opacity: 0.2; }
+  50% { transform: translate(5px, -5px); opacity: 0.6; }
+}
+.potion-effect__muted-dust {
+  animation: dustDrift 5s ease-in-out infinite;
+}
+.potion-effect__muted-dust--1 { animation-delay: 0s; }
+.potion-effect__muted-dust--2 { animation-delay: 1.2s; }
+.potion-effect__muted-dust--3 { animation-delay: 2.5s; }
+.potion-effect__muted-dust--4 { animation-delay: 3.8s; }
+
+/* Warm Embers */
+@keyframes emberRise {
+  0% { transform: translateY(10px) scale(0.8); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: translateY(-35px) scale(0.5); opacity: 0; }
+}
+.potion-effect__warm-ember {
+  transform-origin: center;
+  animation: emberRise 2s ease-in infinite;
+}
+.potion-effect__warm-ember--1 { animation-delay: 0s; }
+.potion-effect__warm-ember--2 { animation-delay: 0.5s; }
+.potion-effect__warm-ember--3 { animation-delay: 1s; }
+.potion-effect__warm-ember--4 { animation-delay: 1.5s; }
+
+/* Cool Frost */
+@keyframes frostFall {
+  0% { transform: translateY(-10px); opacity: 0; }
+  30% { opacity: 0.8; }
+  100% { transform: translateY(30px); opacity: 0; }
+}
+.potion-effect__cool-frost {
+  transform-origin: center;
+  animation: frostFall 3s linear infinite;
+}
+.potion-effect__cool-frost--1 { animation-delay: 0s; }
+.potion-effect__cool-frost--2 { animation-delay: 0.7s; }
+.potion-effect__cool-frost--3 { animation-delay: 1.5s; }
+.potion-effect__cool-frost--4 { animation-delay: 2.2s; }

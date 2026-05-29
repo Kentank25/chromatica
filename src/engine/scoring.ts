@@ -10,6 +10,8 @@ import type { RGB } from '../types/color.types';
 import type { Client, EvaluationResult } from '../types/game.types';
 import { computeAccuracy, computeDeltaE } from './colorScience';
 import { clamp } from '../utils/mathUtils';
+import { detectEffect } from './potionEffects';
+import { computeReactionTier, computeTipReward, generateReactionDialogue } from './reactionEngine';
 
 // ---------------------------------------------------------------------------
 // Potion evaluation
@@ -23,16 +25,18 @@ import { clamp } from '../utils/mathUtils';
  * 2. Combo bonus = +10 % per combo level (applied to base)
  * 3. Speed bonus = +5-20 % based on remaining time vs. client patience
  * 4. Picky Noble penalty = deductions if ingredients are wasteful
+ * 5. Effect bonus = +15% of base points if requested effect is matched
  *
  * A potion *passes* if `accuracy / 100 >= client.modifiers.accuracyThreshold`.
  * Failed potions earn 0 points.
  *
- * @param target        - The colour the client requested.
- * @param submitted     - The colour the player mixed.
- * @param client        - The current client (provides modifiers).
- * @param timeRemaining - Seconds remaining on the client's patience timer.
- * @param comboStreak   - Current consecutive-success streak (before this attempt).
+ * @param target         - The colour the client requested.
+ * @param submitted      - The colour the player mixed.
+ * @param client         - The current client (provides modifiers).
+ * @param timeRemaining  - Seconds remaining on the client's patience timer.
+ * @param comboStreak    - Current consecutive-success streak (before this attempt).
  * @param efficiencyData - Optional details about ingredients used for picky noble checks.
+ * @param playerMixColor - The raw mixed color (used to detect effects).
  * @returns A detailed {@link EvaluationResult}.
  */
 export function evaluatePotion(
@@ -42,6 +46,7 @@ export function evaluatePotion(
   timeRemaining: number,
   comboStreak: number,
   efficiencyData?: { ingredientsUsed: number; totalAmount: number },
+  playerMixColor?: RGB,
 ): EvaluationResult {
   const accuracy = computeAccuracy(target, submitted);
   const deltaE = computeDeltaE(target, submitted);
@@ -49,6 +54,11 @@ export function evaluatePotion(
   const displayAccuracy = Math.round(accuracy * 10) / 10;
   const targetThreshold = Math.round(client.modifiers.accuracyThreshold * 100 * 10) / 10;
   const passed = displayAccuracy >= targetThreshold;
+
+  // Compute common elements (effects, reactions)
+  const detectedEffect = playerMixColor ? detectEffect(playerMixColor) : null;
+  const reactionTier = computeReactionTier(accuracy, passed);
+  const reactionDialogue = generateReactionDialogue(client.type, reactionTier);
 
   if (!passed) {
     return {
@@ -58,6 +68,12 @@ export function evaluatePotion(
       pointsEarned: 0,
       comboBonus: 0,
       speedBonus: 0,
+      detectedEffect,
+      requestedEffect: client.requestedEffect,
+      effectBonus: 0,
+      reactionTier,
+      tipReward: null,
+      reactionDialogue,
     };
   }
 
@@ -98,8 +114,18 @@ export function evaluatePotion(
   const pointsBeforeSpeed = Math.floor(basePoints * comboMultiplier);
   const speedBonus = Math.floor(pointsBeforeSpeed * speedPercent);
 
-  // Apply efficiency deduction to total points earned
-  const totalPoints = Math.max(0, pointsBeforeSpeed + speedBonus - efficiencyDeduction);
+  // --- Effect Match Bonus ---
+  let effectBonus = 0;
+  if (client.requestedEffect && client.requestedEffect === detectedEffect) {
+    const multiplier = client.modifiers.effectBonusMultiplier ?? 0.15;
+    effectBonus = Math.floor(basePoints * multiplier);
+  }
+
+  // Apply efficiency deduction and add effect bonus to total points earned
+  const totalPoints = Math.max(0, pointsBeforeSpeed + speedBonus + effectBonus - efficiencyDeduction);
+
+  // --- Tip Reward ---
+  const tipReward = computeTipReward(reactionTier);
 
   return {
     accuracy,
@@ -111,6 +137,12 @@ export function evaluatePotion(
     efficiencyDeduction,
     ingredientsUsed: efficiencyData?.ingredientsUsed,
     optimalIngredients,
+    detectedEffect,
+    requestedEffect: client.requestedEffect,
+    effectBonus,
+    reactionTier,
+    tipReward,
+    reactionDialogue,
   };
 }
 

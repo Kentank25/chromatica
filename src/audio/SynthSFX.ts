@@ -412,5 +412,78 @@ export class SynthSFX {
     osc1.stop(alarmTime + 0.65);
     osc2.stop(alarmTime + 0.65);
   }
+
+  /**
+   * playTipReward: Coin chime — ascending C6->E6 with metallic overtone, 250ms
+   */
+  static playTipReward(ctx: AudioContext, destination: AudioNode, volume: number): void {
+    const now = ctx.currentTime;
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(1046.50, now); // C6
+    osc1.frequency.exponentialRampToValueAtTime(1318.51, now + 0.15); // E6
+
+    osc2.type = 'triangle'; // metallic overtone
+    osc2.frequency.setValueAtTime(2093.00, now); // C7
+    osc2.frequency.exponentialRampToValueAtTime(2637.02, now + 0.15); // E7
+
+    gainNode.gain.setValueAtTime(0.0001, now);
+    gainNode.gain.linearRampToValueAtTime(volume * 0.4, now + 0.02);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+
+    osc1.connect(gainNode);
+    osc2.connect(gainNode);
+    gainNode.connect(destination);
+
+    osc1.start(now);
+    osc2.start(now);
+    osc1.stop(now + 0.25);
+    osc2.stop(now + 0.25);
+  }
+
+  /**
+   * playEffectMatch: Magical shimmer — white noise burst through bandpass at 2kHz + sine sweep 1kHz->2kHz, 300ms
+   */
+  static playEffectMatch(ctx: AudioContext, destination: AudioNode, volume: number): void {
+    const now = ctx.currentTime;
+
+    // 1. Noise Shimmer
+    const noiseSource = ctx.createBufferSource();
+    noiseSource.buffer = SynthSFX.getNoiseBuffer(ctx);
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(2000, now);
+    filter.Q.setValueAtTime(5, now);
+
+    const noiseGain = ctx.createGain();
+    noiseGain.gain.setValueAtTime(volume * 0.25, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+
+    noiseSource.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(destination);
+
+    // 2. Sine sweep
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(1000, now);
+    osc.frequency.exponentialRampToValueAtTime(2000, now + 0.3);
+
+    const oscGain = ctx.createGain();
+    oscGain.gain.setValueAtTime(volume * 0.3, now);
+    oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+
+    osc.connect(oscGain);
+    oscGain.connect(destination);
+
+    noiseSource.start(now);
+    noiseSource.stop(now + 0.3);
+    osc.start(now);
+    osc.stop(now + 0.3);
+  }
 }
 

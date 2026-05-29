@@ -90,3 +90,13 @@ export const WelcomeIcon = createIcon(Lucide.Sparkles);
 export const MeetClientIcon = createIcon(Lucide.Wand2);
 export const MixPotionIcon = createIcon(Lucide.FlaskConical);
 export const ReputationIcon = createIcon(Lucide.TestTubes);
+
+// Potion Effects & Client Reactions
+export const LuminousEffectIcon = createIcon(Lucide.Sun);
+export const ShadowyEffectIcon = createIcon(Lucide.Moon);
+export const VividEffectIcon = createIcon(Lucide.Rainbow);
+export const MutedEffectIcon = createIcon(Lucide.CloudFog);
+export const WarmEffectIcon = createIcon(Lucide.Flame);
+export const CoolEffectIcon = createIcon(Lucide.Snowflake);
+export const TipIcon = createIcon(Lucide.Coins);
+export const SurprisedExpression = createIcon(Lucide.PartyPopper);

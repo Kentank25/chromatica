@@ -1,5 +1,7 @@
 import type { AchievementTrigger } from '../types/achievement.types';
 
+import type { PotionEffect, ReactionTier } from '../types/game.types';
+
 export interface AchievementPayloads {
   POTION_SUBMITTED: {
     passed: boolean;
@@ -10,6 +12,10 @@ export interface AchievementPayloads {
     timeRemaining: number;
     ingredientsUsed: string[];
     sessionClientTypesServed: Set<string>;
+    detectedEffect?: PotionEffect;
+    effectMatched?: boolean;
+    reactionTier?: ReactionTier;
+    tipReceived?: boolean;
   };
   WAVE_CLEARED: {
     waveNumber: number;

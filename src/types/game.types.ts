@@ -9,7 +9,7 @@ import type { RGB } from './color.types';
 export type ClientType = 'villager' | 'wizard' | 'zombie' | 'noble' | 'mystic';
 
 /** Facial expression shown by the client sprite. */
-export type ClientExpression = 'neutral' | 'happy' | 'ecstatic' | 'annoyed' | 'enraged';
+export type ClientExpression = 'neutral' | 'happy' | 'ecstatic' | 'annoyed' | 'enraged' | 'surprised';
 
 /** High-level phase of the game loop. */
 export type GamePhase =
@@ -20,6 +20,12 @@ export type GamePhase =
   | 'paused'
   | 'gameOver'
   | 'waveClear';
+
+/** Potion effect types determined by HSL properties. */
+export type PotionEffect = 'luminous' | 'shadowy' | 'vivid' | 'muted' | 'warm' | 'cool' | null;
+
+/** Client reaction tiers based on accuracy and evaluation outcome. */
+export type ReactionTier = 'terrible' | 'poor' | 'okay' | 'good' | 'excellent' | 'perfect';
 
 /** Per-client-type gameplay modifiers. */
 export interface ClientModifiers {
@@ -34,6 +40,8 @@ export interface ClientModifiers {
   // ── Picky Nobles ──
   efficiencyPenalty?: boolean;     // Whether this client checks ingredient efficiency
   maxIngredients?: number;         // Optimal ingredient count display limit
+  // ── Potion Effects ──
+  effectBonusMultiplier?: number;  // Multiplier for matching requested effect
 }
 
 /** A single customer visiting the potion shop. */
@@ -50,6 +58,8 @@ export interface Client {
   // ── Mystic ──
   colorDescription?: string;       // Text hint instead of visual swatch
   dialogue?: string;               // Speech bubble text upon arrival
+  // ── Potion Effects ──
+  requestedEffect?: PotionEffect;  // The specific magical effect they want
 }
 
 /** Persistent state for the current play-through. */
@@ -98,4 +108,11 @@ export interface EvaluationResult {
   efficiencyDeduction?: number;    // Score penalty on wasteful ingredients
   ingredientsUsed?: number;        // Number of active ingredients
   optimalIngredients?: number;     // Ideal count
+  // ── Potion Effects & Client Reactions ──
+  detectedEffect?: PotionEffect;   // The effect the player's mix produced
+  requestedEffect?: PotionEffect;  // The effect the client wanted
+  effectBonus?: number;            // Bonus points earned from matching effect
+  reactionTier?: ReactionTier;     // The reaction tier computed
+  tipReward?: { type: 'score'; amount: number } | { type: 'token'; token: 'skip' | 'hint' | 'autoCorrect' } | null;
+  reactionDialogue?: string;       // Dialogue spoken by client after evaluation
 }

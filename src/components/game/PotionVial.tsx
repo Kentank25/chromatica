@@ -1,6 +1,7 @@
 import React from 'react';
 import { rgbToCssString } from '../../utils/colorUtils';
 import type { RGB } from '../../types/color.types';
+import type { PotionEffect } from '../../types/game.types';
 import './PotionVial.css';
 
 interface PotionVialProps {
@@ -11,6 +12,7 @@ interface PotionVialProps {
   animated?: boolean;
   className?: string;
   isMystic?: boolean;
+  effect?: PotionEffect;
 }
 
 const SIZE_MAP = { sm: 80, md: 120, lg: 160 };
@@ -23,6 +25,7 @@ export const PotionVial = React.memo<PotionVialProps>(({
   animated = true,
   className = '',
   isMystic = false,
+  effect = null,
 }) => {
   const cssColor = isMystic ? 'rgba(186, 104, 200, 0.5)' : rgbToCssString(color);
   const px = SIZE_MAP[size];
@@ -33,6 +36,10 @@ export const PotionVial = React.memo<PotionVialProps>(({
       <svg viewBox="0 0 100 160" className="potion-vial__svg" xmlns="http://www.w3.org/2000/svg">
         {/* Glow filter */}
         <defs>
+          <radialGradient id="luminous-glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
+            <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+          </radialGradient>
           <filter id={`glow-${cssColor.replace(/[^a-z0-9]/g, '')}`}>
             <feGaussianBlur stdDeviation="4" result="blur" />
             <feMerge>
@@ -65,7 +72,7 @@ export const PotionVial = React.memo<PotionVialProps>(({
           <ellipse cx="50" cy={150 - fillH * 1.75} rx="20" ry="3" fill={cssColor} opacity={isMystic ? "0.2" : "0.6"} />
           
           {/* Bubbles */}
-          {animated && (
+          {animated && !effect && (
             <>
               <circle className="potion-vial__bubble potion-vial__bubble--1" cx="40" cy="140" r="2" fill="rgba(255,255,255,0.3)" />
               <circle className="potion-vial__bubble potion-vial__bubble--2" cx="55" cy="135" r="1.5" fill="rgba(255,255,255,0.25)" />
@@ -87,7 +94,63 @@ export const PotionVial = React.memo<PotionVialProps>(({
               ?
             </text>
           )}
+
+          {/* Active Potion Effect Overlays */}
+          {effect === 'luminous' && (
+            <>
+              <circle cx="50" cy="100" r="30" fill="url(#luminous-glow)" opacity="0.15" />
+              <circle className="potion-effect__lumi-particle potion-effect__lumi-particle--1" cx="45" cy="100" r="2" fill="#fff" />
+              <circle className="potion-effect__lumi-particle potion-effect__lumi-particle--2" cx="55" cy="120" r="1.2" fill="#fff" />
+              <circle className="potion-effect__lumi-particle potion-effect__lumi-particle--3" cx="38" cy="110" r="1.6" fill="#fff" />
+              <circle className="potion-effect__lumi-particle potion-effect__lumi-particle--4" cx="62" cy="90" r="1.5" fill="#fff" />
+            </>
+          )}
+
+          {effect === 'vivid' && (
+            <>
+              <circle cx="50" cy="100" r="25" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" className="potion-effect__vivid-ring" />
+              <circle className="potion-effect__vivid-sparkle potion-effect__vivid-sparkle--1" cx="36" cy="90" r="1.5" fill="#ffd700" />
+              <circle className="potion-effect__vivid-sparkle potion-effect__vivid-sparkle--2" cx="64" cy="95" r="1.5" fill="#ff007f" />
+              <circle className="potion-effect__vivid-sparkle potion-effect__vivid-sparkle--3" cx="42" cy="120" r="2" fill="#00ffff" />
+              <circle className="potion-effect__vivid-sparkle potion-effect__vivid-sparkle--4" cx="58" cy="80" r="1" fill="#7fff00" />
+            </>
+          )}
+
+          {effect === 'muted' && (
+            <>
+              <circle className="potion-effect__muted-dust potion-effect__muted-dust--1" cx="45" cy="95" r="1.5" fill="#e0e0e0" opacity="0.5" />
+              <circle className="potion-effect__muted-dust potion-effect__muted-dust--2" cx="56" cy="115" r="1" fill="#c0c0c0" opacity="0.4" />
+              <circle className="potion-effect__muted-dust potion-effect__muted-dust--3" cx="38" cy="85" r="1.2" fill="#dcdcdc" opacity="0.4" />
+              <circle className="potion-effect__muted-dust potion-effect__muted-dust--4" cx="62" cy="105" r="1" fill="#a9a9a9" opacity="0.35" />
+            </>
+          )}
+
+          {effect === 'warm' && (
+            <>
+              <circle className="potion-effect__warm-ember potion-effect__warm-ember--1" cx="43" cy="120" r="1.5" fill="#ff4500" />
+              <circle className="potion-effect__warm-ember potion-effect__warm-ember--2" cx="57" cy="105" r="1.0" fill="#ff8c00" />
+              <circle className="potion-effect__warm-ember potion-effect__warm-ember--3" cx="48" cy="90" r="1.3" fill="#ffcc00" />
+              <circle className="potion-effect__warm-ember potion-effect__warm-ember--4" cx="52" cy="115" r="1" fill="#ff3300" />
+            </>
+          )}
+
+          {effect === 'cool' && (
+            <>
+              <circle className="potion-effect__cool-frost potion-effect__cool-frost--1" cx="42" cy="75" r="1.5" fill="#e0ffff" />
+              <circle className="potion-effect__cool-frost potion-effect__cool-frost--2" cx="58" cy="95" r="1" fill="#87cefa" />
+              <circle className="potion-effect__cool-frost potion-effect__cool-frost--3" cx="47" cy="115" r="1.6" fill="#b0e0e6" />
+              <circle className="potion-effect__cool-frost potion-effect__cool-frost--4" cx="53" cy="85" r="1.2" fill="#ffffff" />
+            </>
+          )}
         </g>
+
+        {/* Shadowy Wisps (rendered outside liquid clip path to allow rising out of vial) */}
+        {effect === 'shadowy' && (
+          <>
+            <path className="potion-effect__shadow-wisp potion-effect__shadow-wisp--1" d="M45,130 Q35,90 48,50 T40,15" fill="none" stroke="#2c004d" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="30" strokeDashoffset="0" opacity="0.5" />
+            <path className="potion-effect__shadow-wisp potion-effect__shadow-wisp--2" d="M55,120 Q65,80 52,45 T60,20" fill="none" stroke="#16002b" strokeWidth="2" strokeLinecap="round" strokeDasharray="25" strokeDashoffset="0" opacity="0.55" />
+          </>
+        )}
 
         {/* Glass highlight */}
         <path d="M35,50 L35,120 Q35,135 42,140" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="2" strokeLinecap="round" />
@@ -104,7 +167,11 @@ export const PotionVial = React.memo<PotionVialProps>(({
               }
             : {
                 backgroundColor: cssColor,
-                boxShadow: `0 0 30px ${cssColor}, 0 0 60px ${cssColor}`,
+                boxShadow: effect === 'luminous'
+                  ? `0 0 40px rgba(255,255,255,0.6), 0 0 80px rgba(255,255,255,0.4)`
+                  : effect === 'shadowy'
+                  ? `0 0 35px rgba(44,0,77,0.8), 0 0 70px rgba(44,0,77,0.5)`
+                  : `0 0 30px ${cssColor}, 0 0 60px ${cssColor}`,
               }
         }
       />

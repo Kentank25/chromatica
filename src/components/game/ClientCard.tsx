@@ -1,7 +1,9 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
-import type { Client, GamePhase, ClientExpression } from '../../types/game.types';
+import type { Client, GamePhase, ClientExpression, ReactionTier } from '../../types/game.types';
 import { rgbToHex } from '../../utils/colorUtils';
 import ProgressBar from '../common/ProgressBar';
+import { EFFECT_INFO } from '../../engine/potionEffects';
+import { TIER_EXPRESSION_SEQUENCE } from '../../engine/reactionEngine';
 import './ClientCard.css';
 
 interface ClientCardProps {
@@ -12,6 +14,8 @@ interface ClientCardProps {
     passed: boolean;
     accuracy: number;
   } | null;
+  reactionTier?: ReactionTier;
+  reactionDialogue?: string;
 }
 
 import {
@@ -26,8 +30,15 @@ import {
   EcstaticExpression,
   AnnoyedExpression,
   EnragedExpression,
+  SurprisedExpression,
   TimerIcon,
   EfficiencyIcon,
+  LuminousEffectIcon,
+  ShadowyEffectIcon,
+  VividEffectIcon,
+  MutedEffectIcon,
+  WarmEffectIcon,
+  CoolEffectIcon,
 } from '../../utils/icons';
 import type { IconProps } from '../../utils/icons';
 
@@ -46,6 +57,7 @@ const EXPRESSION_ICONS: Record<ClientExpression, React.ComponentType<IconProps>>
   ecstatic: EcstaticExpression,
   annoyed: AnnoyedExpression,
   enraged: EnragedExpression,
+  surprised: SurprisedExpression,
 };
 
 const EXPRESSION_CLASSES: Record<ClientExpression, string> = {
@@ -54,6 +66,16 @@ const EXPRESSION_CLASSES: Record<ClientExpression, string> = {
   ecstatic: 'icon--ecstatic',
   annoyed: 'icon--annoyed',
   enraged: 'icon--enraged',
+  surprised: 'icon--surprised',
+};
+
+const EFFECT_ICONS: Record<string, React.ComponentType<IconProps>> = {
+  luminous: LuminousEffectIcon,
+  shadowy: ShadowyEffectIcon,
+  vivid: VividEffectIcon,
+  muted: MutedEffectIcon,
+  warm: WarmEffectIcon,
+  cool: CoolEffectIcon,
 };
 
 interface ArchetypeDetails {
@@ -123,10 +145,12 @@ const ClientCardComponent: React.FC<ClientCardProps> = ({
   client,
   timerPct,
   phase = 'idle',
-  feedback = null,
+  reactionTier,
+  reactionDialogue,
 }) => {
   const [showBubble, setShowBubble] = useState(false);
-  const [activeInfo, setActiveInfo] = useState<'type' | 'efficiency' | null>(null);
+  const [activeInfo, setActiveInfo] = useState<'type' | 'efficiency' | 'effect' | null>(null);
+  const [currentExpression, setCurrentExpression] = useState<ClientExpression>('neutral');
   const popupRef = useRef<HTMLDivElement>(null);
 
   // Reset local interactive UI/Popup state and set up dialogue visibility during rendering when client changes, keeping rendering pure
@@ -134,15 +158,43 @@ const ClientCardComponent: React.FC<ClientCardProps> = ({
   if (client?.id !== prevClientId) {
     setPrevClientId(client?.id);
     setActiveInfo(null);
+    setCurrentExpression('neutral');
     setShowBubble(!!client?.dialogue);
   }
+
+  // Animation sequence for client expressions during evaluation
+  useEffect(() => {
+    if (phase === 'evaluating' && reactionTier) {
+      const sequence = TIER_EXPRESSION_SEQUENCE[reactionTier];
+      if (sequence && sequence.length > 0) {
+        let step = 0;
+        const timer = setTimeout(() => {
+          setCurrentExpression(sequence[0]);
+        }, 0);
+        const interval = setInterval(() => {
+          step += 1;
+          if (step < sequence.length) {
+            setCurrentExpression(sequence[step]);
+          } else {
+            clearInterval(interval);
+          }
+        }, 400); // 400ms per frame matches the evaluation visual rhythm nicely
+        return () => {
+          clearTimeout(timer);
+          clearInterval(interval);
+        };
+      }
+    }
+  }, [phase, reactionTier]);
 
   // Click outside popup handler
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
       if (activeInfo && popupRef.current && !popupRef.current.contains(e.target as Node)) {
         const target = e.target as HTMLElement;
-        if (!target.closest('.client-card__type-badge') && !target.closest('.client-card__efficiency-badge')) {
+        if (!target.closest('.client-card__type-badge') &&
+            !target.closest('.client-card__efficiency-badge') &&
+            !target.closest('.client-card__effect-badge')) {
           setActiveInfo(null);
         }
       }
@@ -162,18 +214,18 @@ const ClientCardComponent: React.FC<ClientCardProps> = ({
     return () => clearTimeout(timer);
   }, [showBubble]);
 
-  const dynamicExpression = useMemo<ClientExpression>(() => {
-    if (phase === 'evaluating' && feedback) {
-      if (feedback.passed) {
-        return feedback.accuracy >= 90 ? 'ecstatic' : 'happy';
-      } else {
-        return 'enraged';
-      }
-    }
+  const patienceExpression = useMemo<ClientExpression>(() => {
     if (timerPct > 70) return 'neutral';
     if (timerPct > 40) return 'annoyed';
-    return 'enraged'; // This maps both >15% and <=15% to 'enraged'
-  }, [timerPct, phase, feedback]);
+    return 'enraged';
+  }, [timerPct]);
+
+  // Determine active expression based on phase
+  const activeExpression = (phase === 'evaluating' && reactionTier) ? currentExpression : patienceExpression;
+
+  // Decide dialogue content and visibility
+  const activeDialogue = (phase === 'evaluating' && reactionDialogue) ? reactionDialogue : client?.dialogue;
+  const isBubbleVisible = (phase === 'evaluating' && reactionDialogue) ? true : showBubble;
 
   const typeClass = useMemo(() => {
     if (!client) return '';
@@ -189,7 +241,7 @@ const ClientCardComponent: React.FC<ClientCardProps> = ({
   }
 
   const AvatarIcon = CLIENT_ICONS[client.type] || VillagerIcon;
-  const ExpressionIcon = EXPRESSION_ICONS[dynamicExpression] || NeutralExpression;
+  const ExpressionIcon = EXPRESSION_ICONS[activeExpression] || NeutralExpression;
   const hex = rgbToHex(client.targetColor);
 
   const urgencyClass =
@@ -201,23 +253,31 @@ const ClientCardComponent: React.FC<ClientCardProps> = ({
           : ''
       : '';
 
+  // Icon component helper for the requested effect badge
+  const EffectBadgeIcon = client.requestedEffect ? EFFECT_ICONS[client.requestedEffect] : null;
+
   return (
     <article className={`client-card client-card--entering ${urgencyClass}`} key={client.id}>
       {/* Speech bubble */}
-      {client.dialogue && (
-        <div className={`client-card__bubble ${showBubble ? 'client-card__bubble--visible' : ''}`}>
-          {client.dialogue}
+      {activeDialogue && (
+        <div className={`client-card__bubble ${isBubbleVisible ? 'client-card__bubble--visible' : ''}`}>
+          {activeDialogue}
         </div>
       )}
 
       {/* Expression with key to trigger CSS pop animation on change */}
       <span
-        key={dynamicExpression}
+        key={activeExpression}
         className="client-card__expression"
-        title={`Feeling: ${dynamicExpression}`}
+        title={`Feeling: ${activeExpression}`}
       >
-        <ExpressionIcon className={`icon--xl icon--expression ${EXPRESSION_CLASSES[dynamicExpression]}`} />
+        <ExpressionIcon className={`icon--xl icon--expression ${EXPRESSION_CLASSES[activeExpression]}`} />
       </span>
+
+      {/* Per-type Reaction Flourish Overlay */}
+      {phase === 'evaluating' && reactionTier && (
+        <div className={`client-card__reaction-flourish client-card__reaction-flourish--${client.type}`} />
+      )}
 
       {/* Header */}
       <div className="client-card__header">
@@ -258,6 +318,24 @@ const ClientCardComponent: React.FC<ClientCardProps> = ({
               >
                 <EfficiencyIcon className="icon--xs" />
                 <span>Picky Noble</span>
+              </span>
+            )}
+            {client.requestedEffect && (
+              <span
+                className={`client-card__effect-badge client-card__effect-badge--${client.requestedEffect}`}
+                role="button"
+                tabIndex={0}
+                onClick={() => setActiveInfo(activeInfo === 'effect' ? null : 'effect')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setActiveInfo(activeInfo === 'effect' ? null : 'effect');
+                  }
+                }}
+                title={`Requested Effect: ${client.requestedEffect}. Click to view details`}
+              >
+                {EffectBadgeIcon && <EffectBadgeIcon className="icon--xs" />}
+                <span>{client.requestedEffect}</span>
               </span>
             )}
           </div>
@@ -328,6 +406,7 @@ const ClientCardComponent: React.FC<ClientCardProps> = ({
           glow={timerPct < 25}
         />
       </div>
+
       {/* Floating Info Popup */}
       {activeInfo && (
         <div className="client-card__info-popup" ref={popupRef}>
@@ -339,7 +418,7 @@ const ClientCardComponent: React.FC<ClientCardProps> = ({
             &times;
           </button>
           
-          {activeInfo === 'type' && client && (
+          {activeInfo === 'type' && (
             (() => {
               const details = ARCHETYPE_INFO[client.type];
               if (!details) return null;
@@ -369,6 +448,23 @@ const ClientCardComponent: React.FC<ClientCardProps> = ({
               </ul>
             </div>
           )}
+
+          {activeInfo === 'effect' && client.requestedEffect && (
+            (() => {
+              const details = EFFECT_INFO[client.requestedEffect];
+              if (!details) return null;
+              return (
+                <div className="client-card__popup-content">
+                  <h4 className="client-card__popup-title">{details.name} Effect Request</h4>
+                  <p className="client-card__popup-desc">{details.desc}</p>
+                  <ul className="client-card__popup-stats">
+                    <li><strong>Requirement:</strong> {details.rangeHint}</li>
+                    <li><strong>Reward:</strong> +15% Score Bonus on match</li>
+                  </ul>
+                </div>
+              );
+            })()
+          )}
         </div>
       )}
     </article>
@@ -376,4 +472,3 @@ const ClientCardComponent: React.FC<ClientCardProps> = ({
 };
 
 export default React.memo(ClientCardComponent);
-

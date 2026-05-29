@@ -303,7 +303,7 @@
 /* ── Speech Bubble ─────────────────────────── */
 .client-card__bubble {
   position: absolute;
-  top: -55px;
+  bottom: calc(100% + 10px);
   left: 20px;
   background: rgba(31, 40, 51, 0.95);
   border: 1px solid rgba(197, 198, 199, 0.25);
@@ -555,5 +555,140 @@
   font-size: 0.68rem;
   color: var(--text-secondary);
   padding-bottom: 0;
+}
+
+/* ── Potion Effect Badges ── */
+.client-card__effect-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+  transition: all var(--transition-fast) var(--spring);
+}
+
+.client-card__effect-badge[role="button"]:hover {
+  transform: translateY(-1px) scale(1.04);
+}
+
+.client-card__effect-badge[role="button"]:active {
+  transform: translateY(0) scale(0.97);
+}
+
+.client-card__effect-badge--luminous {
+  background: rgba(255, 215, 0, 0.12);
+  border: 1px solid rgba(255, 215, 0, 0.35);
+  color: #ffcc00;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.2);
+}
+
+.client-card__effect-badge--shadowy {
+  background: rgba(180, 79, 255, 0.12);
+  border: 1px solid rgba(180, 79, 255, 0.35);
+  color: #c58dff;
+  box-shadow: 0 0 8px rgba(180, 79, 255, 0.2);
+}
+
+.client-card__effect-badge--vivid {
+  background: linear-gradient(135deg, rgba(255,0,127,0.1), rgba(0,255,255,0.1));
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.15);
+}
+
+.client-card__effect-badge--muted {
+  background: rgba(107, 114, 128, 0.12);
+  border: 1px solid rgba(107, 114, 128, 0.35);
+  color: #9ca3af;
+}
+
+.client-card__effect-badge--warm {
+  background: rgba(255, 69, 0, 0.12);
+  border: 1px solid rgba(255, 69, 0, 0.35);
+  color: #ff6633;
+  box-shadow: 0 0 8px rgba(255, 69, 0, 0.2);
+}
+
+.client-card__effect-badge--cool {
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  color: #33ffff;
+  box-shadow: 0 0 8px rgba(0, 255, 255, 0.2);
+}
+
+/* Surprised expression style */
+.icon--surprised {
+  color: #ff66cc;
+  filter: drop-shadow(0 0 6px rgba(255, 102, 204, 0.6));
+  animation: float 2s ease-in-out infinite;
+}
+
+/* ── Flourishes ── */
+.client-card__reaction-flourish {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: var(--radius-xl);
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Wizard sparkle flourish */
+@keyframes wizardSparkle {
+  0% { box-shadow: inset 0 0 0px rgba(180, 79, 255, 0); }
+  50% { box-shadow: inset 0 0 35px rgba(180, 79, 255, 0.45); }
+  100% { box-shadow: inset 0 0 0px rgba(180, 79, 255, 0); }
+}
+.client-card__reaction-flourish--wizard {
+  animation: wizardSparkle 1.5s ease-in-out infinite;
+}
+
+/* Zombie drool flourish */
+@keyframes zombieDrool {
+  0% { box-shadow: inset 0 0 0px rgba(46, 204, 113, 0); }
+  50% { box-shadow: inset 0 -25px 25px rgba(46, 204, 113, 0.3); }
+  100% { box-shadow: inset 0 0 0px rgba(46, 204, 113, 0); }
+}
+.client-card__reaction-flourish--zombie {
+  animation: zombieDrool 1.5s ease-in-out infinite;
+}
+
+/* Noble monocle gold shimmer flourish */
+@keyframes nobleGlint {
+  0% { box-shadow: inset 0 0 0px rgba(255, 215, 0, 0); }
+  50% { box-shadow: inset 0 0 30px rgba(255, 215, 0, 0.35); }
+  100% { box-shadow: inset 0 0 0px rgba(255, 215, 0, 0); }
+}
+.client-card__reaction-flourish--noble {
+  animation: nobleGlint 1.5s ease-in-out infinite;
+}
+
+/* Villager clapping bounce flourish */
+@keyframes villagerBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+.client-card__reaction-flourish--villager {
+  animation: villagerBounce 0.75s ease-in-out infinite;
+}
+
+/* Mystic cosmic eye pulse flourish */
+@keyframes mysticCosmic {
+  0% { box-shadow: inset 0 0 0px rgba(186, 104, 200, 0); }
+  50% { box-shadow: inset 0 0 30px rgba(186, 104, 200, 0.4); }
+  100% { box-shadow: inset 0 0 0px rgba(186, 104, 200, 0); }
+}
+.client-card__reaction-flourish--mystic {
+  animation: mysticCosmic 1.5s ease-in-out infinite;
 }
 

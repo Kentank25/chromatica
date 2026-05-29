@@ -195,3 +195,23 @@
   margin-top: 4px;
   text-shadow: 0 0 8px rgba(255, 167, 38, 0.4);
 }
+
+.game-screen__feedback-effect-bonus {
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  color: #a3e2c9;
+  margin-top: 4px;
+  text-shadow: 0 0 10px rgba(163, 226, 201, 0.6);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.game-screen__feedback-tip {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--accent-gold);
+  margin-top: 4px;
+  font-weight: bold;
+  text-shadow: 0 0 12px rgba(255, 215, 0, 0.7);
+  animation: scalePulse 1s ease-in-out infinite;
+}

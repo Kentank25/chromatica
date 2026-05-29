@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useGameStore } from '../../store/gameStore';
 import { BASE_INGREDIENTS, mixColorsKM } from '../../engine/colorScience';
+import { detectEffect } from '../../engine/potionEffects';
 import { rgbToHex } from '../../utils/colorUtils';
 import type { RGB, Ingredient } from '../../types/color.types';
 import Button from '../common/Button';
@@ -20,6 +21,7 @@ const ColorMixerComponent: React.FC<ColorMixerProps> = ({
   resetKey,
 }) => {
   const setPlayerMix = useGameStore((s) => s.setPlayerMix);
+  const setActiveEffect = useGameStore((s) => s.setActiveEffect);
   const currentWave = useGameStore((s) => s.currentWave);
   const mixerAmounts = useGameStore((s) => s.mixerAmounts);
   const setMixerAmount = useGameStore((s) => s.setMixerAmount);
@@ -73,10 +75,14 @@ const ColorMixerComponent: React.FC<ColorMixerProps> = ({
     return mixColorsKM(entries);
   }, [mixerAmounts, visibleIngredients]);
 
+  // Live potion effect detection based on mixedColor
+  const currentEffect = useMemo(() => detectEffect(mixedColor), [mixedColor]);
+
   // Sync to store
   useEffect(() => {
     setPlayerMix(mixedColor);
-  }, [mixedColor, setPlayerMix]);
+    setActiveEffect(currentEffect);
+  }, [mixedColor, currentEffect, setPlayerMix, setActiveEffect]);
 
   const totalAmount = useMemo(
     () => Object.values(mixerAmounts).reduce((s, v) => s + v, 0),
@@ -226,4 +232,3 @@ const ColorMixerComponent: React.FC<ColorMixerProps> = ({
 };
 
 export default React.memo(ColorMixerComponent);
-

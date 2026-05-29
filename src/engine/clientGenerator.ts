@@ -173,6 +173,8 @@ function pickClientType(wave: number): ClientType {
 // Public API
 // ---------------------------------------------------------------------------
 
+import { generateRequestedEffect } from './potionEffects';
+
 let clientIdCounter = 0;
 
 /**
@@ -247,6 +249,8 @@ export function generateClient(
   const pool = dialogues[type];
   const dialogue = pool[randomInt(0, pool.length - 1)];
 
+  const requestedEffect = generateRequestedEffect(type, wave);
+
   return {
     id: `client_${clientIdCounter}_${Date.now()}`,
     type,
@@ -258,5 +262,6 @@ export function generateClient(
     currentSubOrder,
     colorDescription,
     dialogue,
+    requestedEffect,
   };
 }

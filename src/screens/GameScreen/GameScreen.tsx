@@ -38,6 +38,7 @@ export const GameScreen: React.FC = () => {
   const playerMix = useGameStore((s) => s.playerMix);
   const comboStreak = useGameStore((s) => s.comboStreak);
   const difficulty = useGameStore((s) => s.difficulty);
+  const activeEffect = useGameStore((s) => s.activeEffect);
 
   // Stable Action References
   const startGame = useGameStore((s) => s.startGame);
@@ -350,7 +351,8 @@ export const GameScreen: React.FC = () => {
       comboStreak,
       currentClient.modifiers.efficiencyPenalty
         ? { ingredientsUsed: activeIngredients.length, totalAmount }
-        : undefined
+        : undefined,
+      playerMix
     );
 
     setFeedback(result);
@@ -379,6 +381,22 @@ export const GameScreen: React.FC = () => {
         audioManager.playSFX('comboMilestone');
       }
 
+      // Play SFX if requested effect is matched
+      if (result.effectBonus && result.effectBonus > 0) {
+        audioManager.playSFX('effectMatch');
+      }
+
+      // Award and play tip reward if present
+      if (result.tipReward) {
+        audioManager.playSFX('tipReward');
+        if (result.tipReward.type === 'score') {
+          updateScore(result.tipReward.amount);
+          addWaveScore(result.tipReward.amount);
+        } else if (result.tipReward.type === 'token') {
+          addToken(result.tipReward.token);
+        }
+      }
+
       if (hasMoreSubOrders) {
         // Multi-order partial success! Grace Period: +2s
         localTimeRef.current = Math.min(currentClient.modifiers.patience, localTimeRef.current + 2);
@@ -404,6 +422,10 @@ export const GameScreen: React.FC = () => {
       timeRemaining: localTimeRef.current,
       ingredientsUsed,
       sessionClientTypesServed: sessionClientTypesServed.current,
+      detectedEffect: result.detectedEffect,
+      effectMatched: result.effectBonus ? result.effectBonus > 0 : false,
+      reactionTier: result.reactionTier,
+      tipReceived: !!result.tipReward,
     });
 
     // Only increment clients served if they fully finished the order (passed last suborder, or failed early)
@@ -518,13 +540,15 @@ export const GameScreen: React.FC = () => {
               timerPct={currentClient.modifiers.patience > 0 ? (timeRemaining / currentClient.modifiers.patience) * 100 : 0}
               phase={phase}
               feedback={feedback}
+              reactionTier={feedback?.reactionTier}
+              reactionDialogue={feedback?.reactionDialogue}
             />
           )}
         </div>
 
         <div className="game-screen__center">
           <div className="game-screen__vials">
-            <PotionVial color={playerMix} label="Your Mix" size="lg" />
+            <PotionVial color={playerMix} label="Your Mix" size="lg" effect={activeEffect} />
             {currentClient && (
               <PotionVial
                 color={currentClient.type === 'mystic' ? { r: 35, g: 25, b: 50 } : currentClient.targetColor}
@@ -573,6 +597,16 @@ export const GameScreen: React.FC = () => {
               </span>
               <span className="game-screen__feedback-accuracy">{feedback.accuracy.toFixed(1)}%</span>
               {feedback.passed && <span className="game-screen__feedback-points">+{feedback.pointsEarned}</span>}
+              {feedback.passed && feedback.effectBonus !== undefined && feedback.effectBonus > 0 && (
+                <span className="game-screen__feedback-effect-bonus">
+                  ✦ Effect Bonus: +{feedback.effectBonus} pts
+                </span>
+              )}
+              {feedback.passed && feedback.tipReward && (
+                <span className="game-screen__feedback-tip">
+                  💰 Tip: {feedback.tipReward.type === 'score' ? `+${feedback.tipReward.amount} pts!` : `${feedback.tipReward.token === 'skip' ? 'Skip' : feedback.tipReward.token === 'hint' ? 'Hint' : 'Auto-Correct'} Token!`}
+                </span>
+              )}
               {feedback.passed && feedback.efficiencyDeduction !== undefined && feedback.efficiencyDeduction > 0 && (
                 <span className="game-screen__feedback-efficiency">
                   &minus;{feedback.efficiencyDeduction} pts: Inefficient Mixing

@@ -16,7 +16,9 @@ export type SFXEvent =
   | 'comboMilestone'
   | 'waveClear'
   | 'timeout'
-  | 'achievementUnlock';
+  | 'achievementUnlock'
+  | 'tipReward'
+  | 'effectMatch';
 
 /** Background music mood states. */
 export type BGMState = 'ambient' | 'driving' | 'tension' | 'silent';

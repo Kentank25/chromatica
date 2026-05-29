@@ -6,7 +6,7 @@
  */
 import { create } from 'zustand';
 import type { RGB, Ingredient } from '../types/color.types';
-import type { Client, GamePhase, WaveResult } from '../types/game.types';
+import type { Client, GamePhase, WaveResult, PotionEffect } from '../types/game.types';
 import { mixColorsKM } from '../engine/colorScience';
 
 interface GameState {
@@ -28,6 +28,7 @@ interface GameState {
   waveScore: number;
   difficulty: 'apprentice' | 'journeyman' | 'master';
   mixerAmounts: Record<string, number>;
+  activeEffect: PotionEffect;
   // ── Multi-Color Orders ──
   multiOrderTargets: RGB[];
   currentSubOrderIndex: number;
@@ -58,6 +59,7 @@ interface GameState {
   setMultiOrder: (targets: RGB[]) => void;
   advanceSubOrder: () => RGB | null;
   clearMultiOrder: () => void;
+  setActiveEffect: (effect: PotionEffect) => void;
 }
 
 const INITIAL_STATE = {
@@ -91,6 +93,7 @@ const INITIAL_STATE = {
     ochre: 0,
     silver: 0,
   } as Record<string, number>,
+  activeEffect: null as PotionEffect,
   multiOrderTargets: [] as RGB[],
   currentSubOrderIndex: 0,
 };
@@ -165,6 +168,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         silver: 0,
       },
       playerMix: { r: 40, g: 40, b: 50 },
+      activeEffect: null,
       multiOrderTargets: [],
       currentSubOrderIndex: 0,
     })),
@@ -194,7 +198,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       Object.keys(s.mixerAmounts).forEach((k) => {
         cleared[k] = 0;
       });
-      return { mixerAmounts: cleared, playerMix: { r: 40, g: 40, b: 50 } };
+      return { mixerAmounts: cleared, playerMix: { r: 40, g: 40, b: 50 }, activeEffect: null };
     }),
 
   autoCorrectMixer: (targetColor, unlockedIngredients) => {
@@ -287,4 +291,6 @@ export const useGameStore = create<GameState>((set, get) => ({
       multiOrderTargets: [],
       currentSubOrderIndex: 0,
     }),
+
+  setActiveEffect: (effect) => set({ activeEffect: effect }),
 }));

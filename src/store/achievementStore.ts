@@ -5,7 +5,7 @@ import type {
   LifetimeStats,
 } from '../types/achievement.types';
 import { AchievementStorageSchema } from '../types/achievement.types';
-import { ACHIEVEMENT_DEFINITIONS } from '../engine/achievementDefinitions';
+import { ACHIEVEMENT_DEFINITIONS, resetSessionAchievementData } from '../engine/achievementDefinitions';
 import { AchievementEventBus } from '../engine/achievementEventBus';
 import { audioManager } from '../audio/AudioManager';
 
@@ -249,7 +249,18 @@ export const useAchievementStore = create<AchievementState>((set, get) => ({
   },
 
   clearSessionRecap: () => {
-    set({ sessionRecap: [], toasts: [] });
+    resetSessionAchievementData();
+    set((s) => {
+      const updated = { ...s.achievements };
+      const sessionIds = ['generous_tipper', 'sharpshooter', 'all_effects'];
+      sessionIds.forEach(id => {
+        if (updated[id] && updated[id].unlockedAt === null) {
+          updated[id] = { unlockedAt: null, progress: 0 };
+        }
+      });
+      saveState(updated, s.lifetimeStats);
+      return { sessionRecap: [], toasts: [], achievements: updated };
+    });
   },
 
   resetAll: () => {

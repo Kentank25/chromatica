@@ -119,6 +119,12 @@ class AudioManager {
       case 'timeout':
         SynthSFX.playTimeout(this.ctx, this.sfxGain, 1.0);
         break;
+      case 'tipReward':
+        SynthSFX.playTipReward(this.ctx, this.sfxGain, 1.0);
+        break;
+      case 'effectMatch':
+        SynthSFX.playEffectMatch(this.ctx, this.sfxGain, 1.0);
+        break;
       default:
         break;
     }

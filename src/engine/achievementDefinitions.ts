@@ -10,6 +10,20 @@ export interface AchievementRule<T extends keyof AchievementPayloads> extends Ac
   ) => boolean | { progress: number; unlocked: boolean };
 }
 
+// ── Session variables for resetting single-run achievements ──
+let sessionSharpshooter = 0;
+let sessionTips = 0;
+const sessionEffects = new Set<string>();
+
+/**
+ * Resets all session-based achievement counters at the start of a new run.
+ */
+export function resetSessionAchievementData(): void {
+  sessionSharpshooter = 0;
+  sessionTips = 0;
+  sessionEffects.clear();
+}
+
 export const ACHIEVEMENT_DEFINITIONS: Array<
   | AchievementRule<'POTION_SUBMITTED'>
   | AchievementRule<'WAVE_CLEARED'>
@@ -87,10 +101,11 @@ export const ACHIEVEMENT_DEFINITIONS: Array<
     icon: 'Target',
     trigger: 'POTION_SUBMITTED',
     maxProgress: 5,
-    check: (payload, _, currentProgress) => {
-      const matches = payload.passed && payload.accuracy >= 95;
-      const nextProgress = matches ? currentProgress + 1 : currentProgress;
-      return { progress: Math.min(nextProgress, 5), unlocked: nextProgress >= 5 };
+    check: (payload) => {
+      if (payload.passed && payload.accuracy >= 95) {
+        sessionSharpshooter += 1;
+      }
+      return { progress: Math.min(sessionSharpshooter, 5), unlocked: sessionSharpshooter >= 5 };
     },
   },
 
@@ -200,12 +215,12 @@ export const ACHIEVEMENT_DEFINITIONS: Array<
   {
     id: 'crowd_pleaser',
     name: 'Crowd Pleaser',
-    description: 'Successfully serve all 4 client types in a single session',
+    description: 'Successfully serve all 5 client types in a single session',
     category: 'clients',
     rarity: 'rare',
     icon: 'Users',
     trigger: 'POTION_SUBMITTED',
-    check: (payload) => payload.passed && payload.sessionClientTypesServed.size >= 4,
+    check: (payload) => payload.passed && payload.sessionClientTypesServed.size >= 5,
   },
   {
     id: 'speed_demon',
@@ -219,6 +234,22 @@ export const ACHIEVEMENT_DEFINITIONS: Array<
       if (!payload.passed) return false;
       const ratio = payload.timeRemaining / payload.patience;
       return ratio >= 0.8;
+    },
+  },
+  {
+    id: 'generous_tipper',
+    name: 'Generous Tipper',
+    description: 'Receive 5 tips in a single session',
+    category: 'clients',
+    rarity: 'rare',
+    icon: 'Coins',
+    trigger: 'POTION_SUBMITTED',
+    maxProgress: 5,
+    check: (payload) => {
+      if (payload.passed && payload.tipReceived) {
+        sessionTips += 1;
+      }
+      return { progress: Math.min(sessionTips, 5), unlocked: sessionTips >= 5 };
     },
   },
 
@@ -314,5 +345,52 @@ export const ACHIEVEMENT_DEFINITIONS: Array<
     icon: 'Compass',
     trigger: 'POTION_SUBMITTED',
     check: (payload) => payload.passed && payload.accuracy === 100,
+  },
+  {
+    id: 'effect_master',
+    name: 'Effect Master',
+    description: 'Match 10 requested effects (lifetime)',
+    category: 'color_science',
+    rarity: 'uncommon',
+    icon: 'Sparkles',
+    trigger: 'POTION_SUBMITTED',
+    maxProgress: 10,
+    check: (payload, _, currentProgress) => {
+      const isMatch = payload.passed && payload.effectMatched;
+      const next = isMatch ? currentProgress + 1 : currentProgress;
+      return { progress: Math.min(next, 10), unlocked: next >= 10 };
+    },
+  },
+  {
+    id: 'standing_ovation',
+    name: 'Standing Ovation',
+    description: 'Get a Perfect (100%) reaction 3 times (lifetime)',
+    category: 'brewing',
+    rarity: 'epic',
+    icon: 'Crown',
+    trigger: 'POTION_SUBMITTED',
+    maxProgress: 3,
+    check: (payload, _, currentProgress) => {
+      const isPerfect = payload.passed && payload.reactionTier === 'perfect';
+      const next = isPerfect ? currentProgress + 1 : currentProgress;
+      return { progress: Math.min(next, 3), unlocked: next >= 3 };
+    },
+  },
+  {
+    id: 'all_effects',
+    name: 'Chromatic Alchemist',
+    description: 'Produce all 6 effect types in a single session',
+    category: 'color_science',
+    rarity: 'legendary',
+    icon: 'Trophy',
+    trigger: 'POTION_SUBMITTED',
+    maxProgress: 6,
+    check: (payload) => {
+      if (payload.passed && payload.detectedEffect) {
+        sessionEffects.add(payload.detectedEffect);
+      }
+      const count = sessionEffects.size;
+      return { progress: Math.min(count, 6), unlocked: count >= 6 };
+    },
   },
 ];
