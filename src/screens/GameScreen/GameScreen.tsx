@@ -249,6 +249,7 @@ export const GameScreen: React.FC = () => {
   // Stable timeout logic
   const handleTimeout = useCallback(() => {
     if (!currentClient) return;
+    audioManager.playSFX('timeout');
     updateSatisfaction(-currentClient.modifiers.penaltySeverity);
     resetCombo();
     incrementPotionsFailed();

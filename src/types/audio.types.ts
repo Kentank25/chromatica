@@ -15,6 +15,7 @@ export type SFXEvent =
   | 'uiHover'
   | 'comboMilestone'
   | 'waveClear'
+  | 'timeout'
   | 'achievementUnlock';
 
 /** Background music mood states. */

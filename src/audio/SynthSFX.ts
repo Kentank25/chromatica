@@ -351,5 +351,66 @@ export class SynthSFX {
     chimeOsc.start(now + 0.4);
     chimeOsc.stop(now + 0.9);
   }
+
+  /**
+   * timeout: 3 rapid clock ticks followed by a low warning buzzer, 800ms
+   */
+  static playTimeout(ctx: AudioContext, destination: AudioNode, volume: number): void {
+    const now = ctx.currentTime;
+
+    // Clock ticks: short sine wave decays
+    const playTick = (time: number) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1500, time);
+      osc.frequency.exponentialRampToValueAtTime(600, time + 0.08);
+      
+      gain.gain.setValueAtTime(volume * 0.8, time);
+      gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.08);
+      
+      osc.connect(gain);
+      gain.connect(destination);
+      
+      osc.start(time);
+      osc.stop(time + 0.1);
+    };
+
+    playTick(now);
+    playTick(now + 0.15);
+    playTick(now + 0.3);
+
+    // Alarm Buzzer: detuned sawtooth/square wave blend
+    const alarmTime = now + 0.45;
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const filter = ctx.createBiquadFilter();
+    const gain = ctx.createGain();
+
+    osc1.type = 'sawtooth';
+    osc1.frequency.setValueAtTime(120, alarmTime); // low A2
+
+    osc2.type = 'square';
+    osc2.frequency.setValueAtTime(123, alarmTime); // detuned wobble
+
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(800, alarmTime);
+    filter.frequency.exponentialRampToValueAtTime(150, alarmTime + 0.5);
+
+    gain.gain.setValueAtTime(0.0001, alarmTime);
+    gain.gain.linearRampToValueAtTime(volume * 0.9, alarmTime + 0.08);
+    gain.gain.exponentialRampToValueAtTime(0.0001, alarmTime + 0.5);
+
+    osc1.connect(filter);
+    osc2.connect(filter);
+    filter.connect(gain);
+    gain.connect(destination);
+
+    osc1.start(alarmTime);
+    osc2.start(alarmTime);
+    osc1.stop(alarmTime + 0.65);
+    osc2.stop(alarmTime + 0.65);
+  }
 }
 

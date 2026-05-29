@@ -116,6 +116,9 @@ class AudioManager {
       case 'achievementUnlock':
         SynthSFX.playAchievementUnlock(this.ctx, this.sfxGain, 1.0);
         break;
+      case 'timeout':
+        SynthSFX.playTimeout(this.ctx, this.sfxGain, 1.0);
+        break;
       default:
         break;
     }
