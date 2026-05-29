@@ -21,7 +21,7 @@ const ComboCounter: React.FC = () => {
   }, [comboStreak]);
 
   if (comboStreak <= 0) {
-    return <div className="combo-counter combo-counter--hidden" aria-hidden="true" />;
+    return null;
   }
 
   // Determine tier

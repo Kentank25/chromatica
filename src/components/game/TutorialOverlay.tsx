@@ -143,7 +143,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ onClose }) => 
   // Determine where to place the tutorial instruction box
   // If the spotlight is active on the left side, we put the box on the right side
   let boxPositionClass = 'tutorial-overlay__box--center';
-  if (stepInfo.selector) {
+  if (stepInfo.selector && document.querySelector(stepInfo.selector)) {
     if (stepInfo.selector === '.client-card') {
       boxPositionClass = 'tutorial-overlay__box--right';
     } else if (stepInfo.selector === '.color-mixer' || stepInfo.selector === '#mixer-submit-btn') {

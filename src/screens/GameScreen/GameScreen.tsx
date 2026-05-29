@@ -82,6 +82,7 @@ export const GameScreen: React.FC = () => {
   const [showTutorial, setShowTutorial] = useState(() => {
     return !localStorage.getItem('chromatica-tutorial');
   });
+  const [isTutorialFromPause, setIsTutorialFromPause] = useState(false);
 
   // Initialize game on mount
   useEffect(() => {
@@ -455,7 +456,10 @@ export const GameScreen: React.FC = () => {
 
   return (
     <div className={gameScreenClass} id="game-screen">
-      <GameHUD onUseToken={handleUseToken} onPause={handlePause} />
+      <GameHUD
+        onUseToken={handleUseToken}
+        onPause={handlePause}
+      />
 
       <div className="game-screen__main" role="main">
         <div className="game-screen__left">
@@ -532,6 +536,11 @@ export const GameScreen: React.FC = () => {
           onResume={() => setShowPause(false)}
           onRestart={handleRestart}
           onQuit={() => navigate('/menu')}
+          onTriggerTutorial={() => {
+            setIsTutorialFromPause(true);
+            setShowPause(false);
+            setShowTutorial(true);
+          }}
         />
       )}
 
@@ -546,7 +555,15 @@ export const GameScreen: React.FC = () => {
       )}
 
       {showTutorial && (
-        <TutorialOverlay onClose={() => setShowTutorial(false)} />
+        <TutorialOverlay
+          onClose={() => {
+            setShowTutorial(false);
+            if (isTutorialFromPause) {
+              setIsTutorialFromPause(false);
+              setShowPause(true);
+            }
+          }}
+        />
       )}
       <AchievementToastContainer />
     </div>

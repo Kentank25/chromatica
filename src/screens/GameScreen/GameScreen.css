@@ -1,5 +1,6 @@
 .game-screen {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   background: var(--bg-gradient);
   position: relative;
   display: flex;
@@ -15,18 +16,21 @@
   max-width: 1400px;
   width: 100%;
   margin: 0 auto;
-  align-items: center;
+  align-items: stretch;
+  overflow: hidden;
 }
 
 .game-screen__left {
   display: flex;
   justify-content: center;
+  align-items: center;
 }
 
 .game-screen__center {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: var(--space-xl);
   position: relative;
 }
@@ -40,6 +44,8 @@
 .game-screen__right {
   display: flex;
   justify-content: center;
+  height: 100%;
+  overflow: hidden;
 }
 
 /* Feedback overlay */

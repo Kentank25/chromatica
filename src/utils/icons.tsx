@@ -71,6 +71,7 @@ export const MusicIcon = createIcon(Lucide.Music);
 export const VolumeIcon = createIcon(Lucide.Volume2);
 export const MutedIcon = createIcon(Lucide.VolumeX);
 export const SettingsIcon = createIcon(Lucide.Settings);
+export const HelpIcon = createIcon(Lucide.HelpCircle);
 
 // Content & Thematic
 export const TrophyIcon = createIcon(Lucide.Trophy);
