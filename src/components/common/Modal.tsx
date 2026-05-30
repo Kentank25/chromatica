@@ -8,6 +8,7 @@ interface ModalProps {
   title?: string;
   children: React.ReactNode;
   closable?: boolean;
+  className?: string;
 }
 
 const Modal: React.FC<ModalProps> = ({
@@ -16,6 +17,7 @@ const Modal: React.FC<ModalProps> = ({
   title,
   children,
   closable = true,
+  className = '',
 }) => {
   const [visible, setVisible] = useState(false);
   const [closing, setClosing] = useState(false);
@@ -90,7 +92,7 @@ const Modal: React.FC<ModalProps> = ({
       aria-modal="true"
       aria-label={title || 'Dialog'}
     >
-      <div className={`modal-content ${closing ? 'modal-content--closing' : ''}`}>
+      <div className={`modal-content ${closing ? 'modal-content--closing' : ''} ${className}`}>
         {(title || closable) && (
           <header className="modal-header">
             {title && <h2 className="modal-title">{title}</h2>}

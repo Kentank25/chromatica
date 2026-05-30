@@ -16,6 +16,8 @@ import {
   VolumeIcon,
   MutedIcon,
   MedalIcon,
+  LockIcon,
+  BookIcon,
 } from '../../utils/icons';
 import { useAchievementStore } from '../../store/achievementStore';
 import './MainMenu.css';
@@ -24,6 +26,7 @@ export const MainMenu: React.FC = () => {
   const navigate = useNavigate();
   const [showSettings, setShowSettings] = useState(false);
   const [showCredits, setShowCredits] = useState(false);
+  const [showDifficultyModal, setShowDifficultyModal] = useState(false);
   const { bgmVolume, sfxVolume, setVolume, muted, toggleMute } = useSettingsStore();
   const { difficulty, setDifficulty } = useGameStore();
   const achievements = useAchievementStore((s) => s.achievements);
@@ -55,46 +58,31 @@ export const MainMenu: React.FC = () => {
           <p className="main-menu__tagline">Master the art of color alchemy</p>
         </div>
 
-        {/* Difficulty Selection */}
-        <div className="main-menu__difficulty">
-          <h3 className="main-menu__difficulty-title">Select Difficulty</h3>
-          <div className="main-menu__difficulty-cards">
-            {(['apprentice', 'journeyman', 'master'] as const).map((mode) => (
-              <div
-                key={mode}
-                className={`main-menu__difficulty-card main-menu__difficulty-card--${mode} ${
-                  difficulty === mode ? 'main-menu__difficulty-card--selected' : ''
-                }`}
-                onClick={() => {
-                  audioManager.playSFX('uiClick');
-                  setDifficulty(mode);
-                }}
-              >
-                <div className="main-menu__difficulty-icon">
-                  {mode === 'apprentice' && <ApprenticeIcon className="icon--md" />}
-                  {mode === 'journeyman' && <SubmitPotionIcon className="icon--md" />}
-                  {mode === 'master' && <WizardIcon className="icon--md" />}
-                </div>
-                <div className="main-menu__difficulty-name">{mode}</div>
-                <div className="main-menu__difficulty-desc">
-                  {mode === 'apprentice' && 'Relaxed pacing & low requirements.'}
-                  {mode === 'journeyman' && 'Standard color recipe testing.'}
-                  {mode === 'master' && 'Severe time pressure & strict demands.'}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
         <div className="main-menu__actions">
           <Button
             variant="primary"
             size="lg"
-            onClick={() => navigate('/game')}
+            onClick={() => {
+              audioManager.playSFX('uiClick');
+              setShowDifficultyModal(true);
+            }}
             id="btn-play"
             icon={<SubmitPotionIcon className="icon--sm" />}
           >
-            Begin Brewing
+            Endless Mode
+          </Button>
+          <Button
+            variant="secondary"
+            size="lg"
+            disabled={true}
+            id="btn-story"
+            icon={<BookIcon className="icon--sm" />}
+            className="main-menu__story-btn"
+          >
+            <span>Story Mode</span>
+            <span className="main-menu__coming-soon-badge">
+              <LockIcon className="icon--xs" /> Coming Soon
+            </span>
           </Button>
           <Button
             variant="secondary"
@@ -138,6 +126,134 @@ export const MainMenu: React.FC = () => {
           <div className="main-menu__vial main-menu__vial--3" />
         </div>
       </div>
+
+      {/* Difficulty Selection Modal */}
+      <Modal
+        isOpen={showDifficultyModal}
+        onClose={() => setShowDifficultyModal(false)}
+        title="Select Endless Difficulty"
+        closable
+        className="modal-content--difficulty"
+      >
+        <div className="main-menu__difficulty-modal">
+          <p className="main-menu__difficulty-modal-subtitle">
+            Configure your alchemy lab parameters. Apprentice offers a relaxed study environment, while Master demands rapid execution under strict accuracy requirements.
+          </p>
+
+          <div className="main-menu__difficulty-cards">
+            {(['apprentice', 'journeyman', 'master'] as const).map((mode) => (
+              <div
+                key={mode}
+                className={`main-menu__difficulty-card main-menu__difficulty-card--${mode} ${
+                  difficulty === mode ? 'main-menu__difficulty-card--selected' : ''
+                }`}
+                onClick={() => {
+                  audioManager.playSFX('uiClick');
+                  setDifficulty(mode);
+                }}
+              >
+                <div className="main-menu__difficulty-icon">
+                  {mode === 'apprentice' && <ApprenticeIcon className="icon--md" />}
+                  {mode === 'journeyman' && <SubmitPotionIcon className="icon--md" />}
+                  {mode === 'master' && <WizardIcon className="icon--md" />}
+                </div>
+                <div className="main-menu__difficulty-name">{mode}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className={`main-menu__difficulty-details main-menu__difficulty-details--${difficulty}`}>
+            <h4 className="main-menu__difficulty-details-title">
+              {difficulty === 'apprentice' && 'Apprentice (Relaxed Mode)'}
+              {difficulty === 'journeyman' && 'Journeyman (Standard Mode)'}
+              {difficulty === 'master' && 'Master Alchemist (Expert Mode)'}
+            </h4>
+            <p className="main-menu__difficulty-details-highlight">
+              {difficulty === 'apprentice' && 'Relaxed pacing & low requirements. Perfect for casual play.'}
+              {difficulty === 'journeyman' && 'Standard recipe matching. The intended Chromatica experience.'}
+              {difficulty === 'master' && 'Extreme urgency and unforgiving standards. Ultimate test of speed & skill.'}
+            </p>
+            <table className="main-menu__difficulty-details-table">
+              <tbody>
+                {difficulty === 'apprentice' && (
+                  <>
+                    <tr>
+                      <td><strong>Client Patience:</strong></td>
+                      <td>+15s additional prep time for all clients</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Accuracy Threshold:</strong></td>
+                      <td>Standard matches require only 60% accuracy</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Wave Clears:</strong></td>
+                      <td>Wave target scores are cut in half (50% easier)</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Lab Standard:</strong></td>
+                      <td>Less stress, perfect for practicing subtractive color mixing</td>
+                    </tr>
+                  </>
+                )}
+                {difficulty === 'journeyman' && (
+                  <>
+                    <tr>
+                      <td><strong>Client Patience:</strong></td>
+                      <td>Dynamic patience limits per client type (20s to 45s)</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Accuracy Threshold:</strong></td>
+                      <td>Standard requirements (70% standard, 80% for Picky Nobles)</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Wave Clears:</strong></td>
+                      <td>Standard wave targets and progression scaling</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Tip Rewards:</strong></td>
+                      <td>Standard token rewards and combo bonuses on clean matches</td>
+                    </tr>
+                  </>
+                )}
+                {difficulty === 'master' && (
+                  <>
+                    <tr>
+                      <td><strong>Client Patience:</strong></td>
+                      <td>-5s off all client timers (Wizards demand in 15s!)</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Accuracy Threshold:</strong></td>
+                      <td>Cruel 80% minimum accuracy required for all clients</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Failure Penalty:</strong></td>
+                      <td>1.5× higher satisfaction penalty on wrong mixtures</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Noble Demands:</strong></td>
+                      <td>Highly punishing environment. Only for master mixers</td>
+                    </tr>
+                  </>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="main-menu__difficulty-modal-actions">
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={() => {
+                setShowDifficultyModal(false);
+                navigate('/game');
+              }}
+              icon={<SubmitPotionIcon className="icon--sm" />}
+            >
+              Begin Journey
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       <Modal isOpen={showSettings} onClose={() => setShowSettings(false)} title="Settings" closable>
         <div className="main-menu__settings">

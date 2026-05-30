@@ -71,6 +71,8 @@
 .main-menu__actions > *:nth-child(3) { animation: slideUp 0.8s ease-out 0.4s both; }
 .main-menu__actions > *:nth-child(4) { animation: slideUp 0.8s ease-out 0.5s both; }
 .main-menu__actions > *:nth-child(5) { animation: slideUp 0.8s ease-out 0.6s both; }
+.main-menu__actions > *:nth-child(6) { animation: slideUp 0.8s ease-out 0.7s both; }
+
 
 
 /* Decorative vials */
@@ -179,7 +181,7 @@
   background: rgba(197, 198, 199, 0.04);
   border: 1px solid rgba(197, 198, 199, 0.08);
   border-radius: var(--radius-lg);
-  padding: var(--space-md) var(--space-sm);
+  padding: 20px var(--space-md);
   cursor: pointer;
   transition: all var(--transition-normal);
   display: flex;
@@ -215,8 +217,8 @@
 }
 
 .main-menu__difficulty-icon {
-  font-size: 1.5rem;
-  margin-bottom: var(--space-xs);
+  font-size: 1.8rem;
+  margin-bottom: var(--space-sm);
 }
 
 .main-menu__difficulty-name {
@@ -235,3 +237,186 @@
   color: var(--text-muted);
   line-height: 1.35;
 }
+
+/* Story Mode button overrides */
+.main-menu__actions > .main-menu__story-btn {
+  animation: slideUpDisabled 0.8s ease-out 0.3s both;
+}
+
+.main-menu__story-btn.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: auto;
+}
+
+.main-menu__story-btn.btn:disabled:hover {
+  transform: none;
+  background: var(--glass-bg);
+  border-color: var(--border);
+  box-shadow: none;
+}
+
+@keyframes slideUpDisabled {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 0.5;
+    transform: translateY(0);
+  }
+}
+
+.main-menu__coming-soon-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  padding: 2px 6px;
+  background: rgba(255, 215, 0, 0.12);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  color: var(--accent-gold);
+  border-radius: 4px;
+  margin-left: var(--space-sm);
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.15);
+}
+
+/* Difficulty Modal styling */
+.modal-content--difficulty {
+  max-width: 600px !important;
+}
+
+.main-menu__difficulty-modal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  color: var(--text-primary);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.main-menu__difficulty-modal-subtitle {
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  margin: 0;
+  text-align: center;
+}
+
+.main-menu__difficulty-modal .main-menu__difficulty-cards {
+  margin: var(--space-sm) 0;
+}
+
+.main-menu__difficulty-details {
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: rgba(197, 198, 199, 0.03);
+  transition: all var(--transition-normal);
+  min-height: 200px;
+}
+
+/* Accent colors for details container based on selected difficulty */
+.main-menu__difficulty-details--apprentice {
+  border-color: rgba(46, 204, 113, 0.3);
+  background: radial-gradient(circle at top right, rgba(46, 204, 113, 0.04), transparent 50%), rgba(197, 198, 199, 0.02);
+}
+
+.main-menu__difficulty-details--journeyman {
+  border-color: rgba(69, 182, 254, 0.3);
+  background: radial-gradient(circle at top right, rgba(69, 182, 254, 0.04), transparent 50%), rgba(197, 198, 199, 0.02);
+}
+
+.main-menu__difficulty-details--master {
+  border-color: rgba(255, 74, 74, 0.35);
+  background: radial-gradient(circle at top right, rgba(255, 74, 74, 0.05), transparent 50%), rgba(197, 198, 199, 0.02);
+}
+
+.main-menu__difficulty-details-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  letter-spacing: 1px;
+  margin: 0 0 6px 0;
+  text-transform: uppercase;
+}
+
+.main-menu__difficulty-details--apprentice .main-menu__difficulty-details-title {
+  color: #2ecc71;
+  text-shadow: 0 0 10px rgba(46, 204, 113, 0.2);
+}
+
+.main-menu__difficulty-details--journeyman .main-menu__difficulty-details-title {
+  color: var(--accent-success);
+  text-shadow: 0 0 10px rgba(69, 182, 254, 0.2);
+}
+
+.main-menu__difficulty-details--master .main-menu__difficulty-details-title {
+  color: var(--accent-failure);
+  text-shadow: 0 0 10px rgba(255, 74, 74, 0.25);
+}
+
+.main-menu__difficulty-details-highlight {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  font-style: italic;
+  margin: 0 0 var(--space-md) 0;
+}
+
+.main-menu__difficulty-details-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: var(--space-sm);
+}
+
+.main-menu__difficulty-details-table td {
+  padding: 6px 0;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
+  vertical-align: top;
+}
+
+.main-menu__difficulty-details-table tr td:first-child {
+  width: 35%;
+  padding-right: var(--space-md);
+  text-align: left;
+}
+
+.main-menu__difficulty-details-table tr td:first-child strong {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.main-menu__difficulty-details-table tr td:last-child {
+  text-align: left;
+}
+
+.main-menu__difficulty-details--apprentice .main-menu__difficulty-details-table tr td:first-child strong {
+  color: #2ecc71;
+}
+
+.main-menu__difficulty-details--journeyman .main-menu__difficulty-details-table tr td:first-child strong {
+  color: var(--accent-success);
+}
+
+.main-menu__difficulty-details--master .main-menu__difficulty-details-table tr td:first-child strong {
+  color: var(--accent-failure);
+}
+
+.main-menu__difficulty-modal-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-sm);
+}
+

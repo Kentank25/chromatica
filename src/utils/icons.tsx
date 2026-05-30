@@ -100,3 +100,5 @@ export const WarmEffectIcon = createIcon(Lucide.Flame);
 export const CoolEffectIcon = createIcon(Lucide.Snowflake);
 export const TipIcon = createIcon(Lucide.Coins);
 export const SurprisedExpression = createIcon(Lucide.PartyPopper);
+export const LockIcon = createIcon(Lucide.Lock);
+export const BookIcon = createIcon(Lucide.BookOpen);
