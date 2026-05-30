@@ -70,6 +70,47 @@
 
 
 
+.game-hud__mode-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding-left: var(--space-sm);
+  border-left: 1px solid rgba(197, 198, 199, 0.15);
+}
+
+.game-hud__mode-label {
+  font-family: var(--font-body);
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 500;
+}
+
+.game-hud__difficulty-badge {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+}
+
+.game-hud__difficulty-badge--apprentice {
+  color: #2ecc71;
+  text-shadow: 0 0 8px rgba(46, 204, 113, 0.3);
+}
+
+.game-hud__difficulty-badge--journeyman {
+  color: var(--accent-success);
+  text-shadow: 0 0 8px rgba(69, 182, 254, 0.3);
+}
+
+.game-hud__difficulty-badge--master {
+  color: var(--accent-failure);
+  text-shadow: 0 0 8px rgba(255, 74, 74, 0.4);
+}
+
 @media (max-width: 768px) {
   .game-hud { padding: var(--space-sm); }
   .game-hud__top { flex-wrap: wrap; }

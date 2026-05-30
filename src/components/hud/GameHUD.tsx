@@ -5,6 +5,7 @@ import { WaveIndicator } from './WaveIndicator';
 import { TokenDisplay } from './TokenDisplay';
 import ComboCounter from '../game/ComboCounter';
 import { PauseIcon } from '../../utils/icons';
+import { useGameStore } from '../../store/gameStore';
 import './GameHUD.css';
 
 interface GameHUDProps {
@@ -13,11 +14,19 @@ interface GameHUDProps {
 }
 
 export const GameHUD: React.FC<GameHUDProps> = ({ onUseToken, onPause }) => {
+  const difficulty = useGameStore((s) => s.difficulty);
+
   return (
     <div className="game-hud" id="game-hud">
       <div className="game-hud__top">
         <div className="game-hud__left">
           <WaveIndicator />
+          <div className="game-hud__mode-badge">
+            <span className="game-hud__mode-label">Endless Mode</span>
+            <span className={`game-hud__difficulty-badge game-hud__difficulty-badge--${difficulty}`}>
+              {difficulty}
+            </span>
+          </div>
         </div>
         <div className="game-hud__center">
           <ScoreDisplay />
