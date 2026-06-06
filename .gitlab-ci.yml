@@ -1,0 +1,76 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ""
+  REGISTRY: ${CI_REGISTRY}
+  REGISTRY_USER: ${CI_REGISTRY_USER}
+  REGISTRY_PASSWORD: ${CI_REGISTRY_PASSWORD}
+  IMAGE_NAME: ${CI_REGISTRY_IMAGE}
+  IMAGE_TAG: "${CI_COMMIT_SHORT_SHA}"
+  LATEST_TAG: latest
+
+build:docker:
+  stage: build
+  image: docker:20.10.16
+  services:
+    - docker:20.10.16-dind
+  before_script:
+    - docker login -u $REGISTRY_USER -p $REGISTRY_PASSWORD $REGISTRY
+  script:
+    - echo "Building Docker image for ${IMAGE_NAME}:${IMAGE_TAG}"
+    # Generate the .env file dynamically: use the ENV_FILE File variable if set, otherwise compile from individual Variables
+    - |
+      if [ -n "$ENV_FILE" ]; then
+        echo "Using ENV_FILE variable content..."
+        cp "$ENV_FILE" .env
+      else
+        echo "Generating .env from individual Variables..."
+        echo "VITE_FIREBASE_API_KEY=${VITE_FIREBASE_API_KEY}" > .env
+        echo "VITE_FIREBASE_AUTH_DOMAIN=${VITE_FIREBASE_AUTH_DOMAIN}" >> .env
+        echo "VITE_FIREBASE_PROJECT_ID=${VITE_FIREBASE_PROJECT_ID}" >> .env
+        echo "VITE_FIREBASE_STORAGE_BUCKET=${VITE_FIREBASE_STORAGE_BUCKET}" >> .env
+        echo "VITE_FIREBASE_MESSAGING_SENDER_ID=${VITE_FIREBASE_MESSAGING_SENDER_ID}" >> .env
+        echo "VITE_FIREBASE_APP_ID=${VITE_FIREBASE_APP_ID}" >> .env
+        echo "VITE_FIREBASE_FUNCTIONS_REGION=${VITE_FIREBASE_FUNCTIONS_REGION:-asia-southeast2}" >> .env
+      fi
+    - docker build -t ${IMAGE_NAME}:${IMAGE_TAG} -t ${IMAGE_NAME}:${LATEST_TAG} .
+    - echo "Pushing image to registry..."
+    - docker push ${IMAGE_NAME}:${IMAGE_TAG}
+    - docker push ${IMAGE_NAME}:${LATEST_TAG}
+  only:
+    - master
+    - main
+
+deploy:production:
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache openssh-client sshpass docker-cli
+    - mkdir -p ~/.ssh
+    - ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts 2>/dev/null || true
+  script:
+    - echo "Deploying to production server..."
+    - |
+      sshpass -p "$DEPLOY_PASSWORD" ssh -o StrictHostKeyChecking=no \
+        $DEPLOY_USER@$DEPLOY_HOST \
+        "cd $DEPLOY_PATH && \
+         docker login -u $REGISTRY_USER -p $REGISTRY_PASSWORD $REGISTRY && \
+         docker pull ${IMAGE_NAME}:${IMAGE_TAG} && \
+         docker rm -f chromatica-v2 || true && \
+         docker run -d \
+           --name chromatica-v2 \
+           --restart unless-stopped \
+           -p 3002:3002 \
+           ${IMAGE_NAME}:${IMAGE_TAG} && \
+         docker system prune -f"
+    - echo "Deployment completed successfully"
+  environment:
+    name: production
+    url: $DEPLOY_URL
+  only:
+    - master
+    - main
+  when: manual
