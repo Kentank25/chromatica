@@ -15,34 +15,145 @@
   backdrop-filter: blur(20px);
   border: var(--glass-border);
   border-radius: var(--radius-xl);
-  padding: var(--space-2xl) var(--space-3xl);
+  padding: var(--space-xl) var(--space-2xl);
   text-align: center;
   animation: scaleIn 0.4s var(--spring);
   width: 90%;
-  max-width: 480px;
+  max-width: 680px;
   min-width: 320px;
-  box-shadow: var(--shadow-lg), 0 0 30px rgba(180, 79, 255, 0.15);
+  height: 550px; /* Fixed height for absolute size stability across submenus */
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-lg), 0 0 35px rgba(180, 79, 255, 0.15);
 }
 
 .pause-overlay__title {
   font-family: var(--font-display);
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   color: var(--text-primary);
   letter-spacing: 8px;
-  margin: 0 0 var(--space-xl);
+  margin: 0 0 var(--space-md);
   text-shadow: 0 0 20px rgba(69, 182, 254, 0.3);
+  flex-shrink: 0;
 }
 
-.pause-overlay__settings {
+/* Two-column layout */
+.pause-overlay__layout {
+  display: flex;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-md);
+  text-align: left;
+  flex-grow: 1; /* Stretch to fill card height */
+  min-height: 0; /* Prevent content stretching the container */
+}
+
+/* Left Sidebar */
+.pause-overlay__sidebar {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  width: 170px;
+  flex-shrink: 0;
   gap: var(--space-lg);
-  margin-bottom: var(--space-2xl);
-  text-align: left;
+  border-right: 1px solid rgba(197, 198, 199, 0.1);
+  padding-right: var(--space-md);
+  height: 100%;
+}
+
+.pause-overlay__tabs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+/* Glassmorphic tab buttons */
+.pause-overlay__tab-btn {
   background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-left: 3px solid transparent;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-align: left;
+  transition: all var(--transition-fast);
+  outline: none;
+}
+
+.pause-overlay__tab-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+}
+
+.pause-overlay__tab-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--accent-blue);
+}
+
+/* Active Tab indicator and glow */
+.pause-overlay__tab-btn--active {
+  background: rgba(69, 182, 254, 0.08);
+  border-color: rgba(69, 182, 254, 0.2);
+  border-left-color: var(--accent-blue);
+  color: var(--text-primary);
+  box-shadow: 0 0 10px rgba(69, 182, 254, 0.1);
+}
+
+.pause-overlay__tutorial-btn {
+  width: 100%;
+}
+
+/* Right content panel */
+.pause-overlay__panel-container {
+  flex-grow: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.pause-overlay__tab-panel {
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid rgba(255, 255, 255, 0.03);
   border-radius: var(--radius-lg);
   padding: var(--space-lg);
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  height: 100%; /* Stretch to fill container */
+  min-height: 0; /* Prevent overflow layout stretching */
+  animation: tabFadeIn 0.2s ease-out;
+}
+
+@keyframes tabFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.pause-overlay__panel-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--accent-gold);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid rgba(197, 198, 199, 0.08);
+  padding-bottom: var(--space-xs);
+  flex-shrink: 0;
+}
+
+.pause-overlay__settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin-top: var(--space-xs);
+  flex-grow: 1;
 }
 
 .pause-overlay__slider {
@@ -50,7 +161,7 @@
   align-items: center;
   gap: var(--space-md);
   font-family: var(--font-body);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: var(--text-primary);
   width: 100%;
 }
@@ -58,7 +169,7 @@
 .pause-overlay__slider-label-text {
   display: flex;
   align-items: center;
-  min-width: 90px;
+  min-width: 85px;
 }
 
 .pause-overlay__slider input[type="range"] {
@@ -71,88 +182,56 @@
 
 .pause-overlay__slider-val {
   font-family: var(--font-mono);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--text-secondary);
-  min-width: 45px;
+  min-width: 40px;
   text-align: right;
 }
 
 .pause-overlay__mute-btn {
-  margin-top: var(--space-sm);
-  align-self: center;
+  margin-top: auto; /* Push to the bottom of the group */
   width: 100%;
 }
 
-.pause-overlay__actions {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-}
-
-.pause-overlay__secondary-actions {
-  display: flex;
-  gap: var(--space-md);
-}
-
-.pause-overlay__secondary-actions > * {
-  flex: 1;
-}
-
-/* Pause overlay perks list styling */
-.pause-overlay__perks-section {
-  text-align: left;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: var(--radius-lg);
-  padding: var(--space-lg);
-  margin-bottom: var(--space-2xl);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-}
-
-.pause-overlay__section-title {
-  font-family: var(--font-display);
-  font-size: 1.1rem;
-  color: var(--accent-gold);
-  margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
+/* Perks list inside panel */
 .pause-overlay__no-perks {
   font-family: var(--font-body);
   font-size: 0.85rem;
   color: var(--text-muted);
-  margin: 0;
+  margin: var(--space-md) 0 0;
   font-style: italic;
+  text-align: center;
 }
 
 .pause-overlay__perks-list {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
-  max-height: 180px;
+  flex-grow: 1;
+  min-height: 0;
   overflow-y: auto;
   padding-right: var(--space-xs);
 }
 
-/* Custom scrollbar for perks list */
-.pause-overlay__perks-list::-webkit-scrollbar {
+/* Custom Scrollbar */
+.pause-overlay__perks-list::-webkit-scrollbar,
+.pause-overlay__keyboard-list::-webkit-scrollbar {
   width: 4px;
 }
-.pause-overlay__perks-list::-webkit-scrollbar-track {
+.pause-overlay__perks-list::-webkit-scrollbar-track,
+.pause-overlay__keyboard-list::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.02);
   border-radius: 2px;
 }
-.pause-overlay__perks-list::-webkit-scrollbar-thumb {
+.pause-overlay__perks-list::-webkit-scrollbar-thumb,
+.pause-overlay__keyboard-list::-webkit-scrollbar-thumb {
   background: rgba(197, 198, 199, 0.2);
   border-radius: 2px;
 }
 
 .pause-overlay__perk-item {
   background: rgba(11, 12, 16, 0.4);
-  border: 1px solid rgba(197, 198, 199, 0.1);
+  border: 1px solid rgba(197, 198, 199, 0.08);
   border-radius: var(--radius-md);
   padding: var(--space-sm) var(--space-md);
   display: flex;
@@ -168,14 +247,14 @@
 
 .pause-overlay__perk-name {
   font-family: var(--font-body);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: var(--text-primary);
 }
 
 .pause-overlay__perk-rarity {
   font-family: var(--font-mono);
-  font-size: 0.6rem;
+  font-size: 0.55rem;
   text-transform: uppercase;
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -192,19 +271,19 @@
 
 .pause-overlay__perk-desc {
   font-family: var(--font-body);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
-  line-height: 1.25;
+  line-height: 1.3;
 }
 
 .pause-overlay__perk-count {
   font-family: var(--font-mono);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: var(--accent-gold);
 }
 
-/* Rarity colors for pause menu list items */
+/* Rarity theme coloring */
 .pause-overlay__perk-item--common .pause-overlay__perk-rarity {
   background: rgba(197, 198, 199, 0.15);
   color: var(--text-secondary);
@@ -233,4 +312,117 @@
 .pause-overlay__perk-item--legendary .pause-overlay__perk-rarity {
   background: rgba(255, 215, 0, 0.15);
   color: var(--accent-gold);
+}
+
+/* Keyboard / Accessibility list layout */
+.pause-overlay__keyboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  flex-grow: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: var(--space-xs);
+}
+
+.pause-overlay__keyboard-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px var(--space-md);
+  background: rgba(11, 12, 16, 0.45);
+  border: 1px solid rgba(197, 198, 199, 0.05);
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+}
+
+.pause-overlay__keyboard-keys {
+  display: flex;
+  gap: 4px;
+}
+
+.pause-overlay__kbd {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: #1a1b26;
+  border: 1px solid rgba(197, 198, 199, 0.2);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 1px 5px;
+  color: var(--text-primary);
+}
+
+.pause-overlay__kbd-desc {
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+}
+
+/* bottom action buttons */
+.pause-overlay__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin-top: auto; /* Push to the absolute bottom of the card */
+  border-top: 1px solid rgba(197, 198, 199, 0.1);
+  padding-top: var(--space-md);
+  flex-shrink: 0;
+}
+
+.pause-overlay__secondary-actions {
+  display: flex;
+  gap: var(--space-md);
+}
+
+.pause-overlay__secondary-actions > * {
+  flex: 1;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .pause-overlay__card {
+    height: auto; /* Let it flow normally on mobile */
+    max-height: 95vh;
+    padding: var(--space-md) var(--space-lg);
+    overflow-y: auto;
+  }
+  .pause-overlay__layout {
+    flex-direction: column;
+    gap: var(--space-md);
+    flex-grow: 0;
+  }
+  .pause-overlay__sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid rgba(197, 198, 199, 0.1);
+    padding-right: 0;
+    padding-bottom: var(--space-md);
+    flex-direction: row;
+    align-items: center;
+    height: auto;
+  }
+  .pause-overlay__tabs {
+    flex-direction: row;
+    flex-wrap: wrap;
+    flex-grow: 1;
+  }
+  .pause-overlay__tab-btn {
+    flex-grow: 1;
+    justify-content: center;
+    border-left: 1px solid rgba(255, 255, 255, 0.04);
+    border-bottom: 3px solid transparent;
+  }
+  .pause-overlay__tab-btn--active {
+    border-bottom-color: var(--accent-blue);
+  }
+  .pause-overlay__tutorial-btn {
+    width: auto;
+  }
+  .pause-overlay__tab-panel {
+    min-height: 200px;
+    height: auto;
+  }
+  .pause-overlay__actions {
+    margin-top: var(--space-md);
+  }
 }

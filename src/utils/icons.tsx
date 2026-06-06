@@ -102,3 +102,6 @@ export const TipIcon = createIcon(Lucide.Coins);
 export const SurprisedExpression = createIcon(Lucide.PartyPopper);
 export const LockIcon = createIcon(Lucide.Lock);
 export const BookIcon = createIcon(Lucide.BookOpen);
+export const KeyboardIcon = createIcon(Lucide.Keyboard);
+export const ShieldIcon = createIcon(Lucide.Shield);
+
