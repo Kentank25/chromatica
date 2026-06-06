@@ -167,6 +167,22 @@ const ColorMixerComponent: React.FC<ColorMixerProps> = ({
               aria-valuemax={10}
               aria-label={ing.name}
               tabIndex={0}
+              onKeyDown={(e) => {
+                if (disabled) return;
+                if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
+                  e.preventDefault();
+                  increment(ing.id);
+                } else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
+                  e.preventDefault();
+                  decrement(ing.id);
+                } else if (e.key === 'Home') {
+                  e.preventDefault();
+                  setMixerAmount(ing.id, 0);
+                } else if (e.key === 'End') {
+                  e.preventDefault();
+                  setMixerAmount(ing.id, 10);
+                }
+              }}
             >
               <div
                 className="color-mixer__ingredient-orb"

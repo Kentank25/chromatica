@@ -6,6 +6,7 @@
  */
 import type { MusicTrackKey, IntensityLevel } from './music.types';
 import { useSettingsStore } from '../store/settingsStore';
+import { audioManager } from './AudioManager';
 
 import menuMp3 from '@/assets/audio/menu.mp3';
 import menuOgg from '@/assets/audio/menu.ogg';
@@ -75,9 +76,14 @@ export class MusicManager {
     this.intensityFilter.type = 'highpass';
     this.intensityFilter.frequency.setValueAtTime(10, ctx.currentTime); // bypass default
 
-    // Chain: source -> intensityFilter -> bgmGain -> destination
+    // Chain: source -> intensityFilter -> bgmGain -> masterGain (or fallback to destination)
     this.intensityFilter.connect(this.bgmGain);
-    this.bgmGain.connect(ctx.destination);
+    const masterGain = audioManager.getMasterGain();
+    if (masterGain) {
+      this.bgmGain.connect(masterGain);
+    } else {
+      this.bgmGain.connect(ctx.destination);
+    }
 
     // Sync initial settings from Zustand store
     const { bgmVolume, muted } = useSettingsStore.getState();

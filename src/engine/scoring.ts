@@ -103,9 +103,9 @@ export function evaluatePotion(
     efficiencyDeduction = Math.floor(basePoints * penaltyPercent);
   }
 
-  // --- Combo bonus: +10 % per combo level ---
-  const comboMultiplier = 1 + comboStreak * 0.1;
-  const comboBonus = Math.floor(basePoints * comboStreak * 0.1);
+  // --- Combo bonus: +10 % per combo level (capped at 3.0x / 20 streak) ---
+  const comboMultiplier = getComboMultiplier(comboStreak);
+  const comboBonus = Math.floor(basePoints * Math.min(comboStreak, 20) * 0.1);
 
   // --- Speed bonus: 5-20 % based on time remaining vs patience ---
   const timeRatio = clamp(timeRemaining / client.modifiers.patience, 0, 1);
@@ -174,4 +174,14 @@ export function getComboReward(
     default:
       return null;
   }
+}
+
+/**
+ * Calculates the active gameplay score multiplier driven by the player's current streak.
+ * Enforces a strict ceiling cap to prevent runaway scoring in infinite or high-volume waves.
+ */
+export function getComboMultiplier(streak: number): number {
+  const rawMultiplier = 1 + streak * 0.1;
+  const rounded = Math.round(rawMultiplier * 10) / 10;
+  return Math.min(rounded, 3.0);
 }

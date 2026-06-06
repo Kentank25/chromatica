@@ -60,6 +60,13 @@ class AudioManager {
   }
 
   /**
+   * Get the master gain node for routing external outputs (like BGM)
+   */
+  getMasterGain(): GainNode | null {
+    return this.masterGain;
+  }
+
+  /**
    * Play a sound effect with voice limit gating and click-debouncing.
    */
   async playSFX(event: SFXEvent): Promise<void> {

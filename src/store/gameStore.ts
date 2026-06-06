@@ -7,7 +7,15 @@
 import { create } from 'zustand';
 import type { RGB, Ingredient } from '../types/color.types';
 import type { Client, GamePhase, WaveResult, PotionEffect } from '../types/game.types';
-import { mixColorsKM } from '../engine/colorScience';
+import { mixColorsKM, BASE_INGREDIENTS } from '../engine/colorScience';
+
+const getInitialMixerAmounts = (): Record<string, number> => {
+  const amounts: Record<string, number> = {};
+  BASE_INGREDIENTS.forEach((ing) => {
+    amounts[ing.id] = 0;
+  });
+  return amounts;
+};
 
 interface GameState {
   // Session state
@@ -79,20 +87,7 @@ const INITIAL_STATE = {
   clientsServedThisWave: 0,
   waveScore: 0,
   difficulty: 'journeyman' as 'apprentice' | 'journeyman' | 'master',
-  mixerAmounts: {
-    red: 0,
-    blue: 0,
-    yellow: 0,
-    green: 0,
-    white: 0,
-    black: 0,
-    orange: 0,
-    purple: 0,
-    teal: 0,
-    magenta: 0,
-    ochre: 0,
-    silver: 0,
-  } as Record<string, number>,
+  mixerAmounts: getInitialMixerAmounts(),
   activeEffect: null as PotionEffect,
   multiOrderTargets: [] as RGB[],
   currentSubOrderIndex: 0,
@@ -130,12 +125,18 @@ export const useGameStore = create<GameState>((set, get) => ({
     })),
 
   useToken: (type) => {
-    const state = get();
-    if (state.tokens[type] <= 0) return false;
-    set({
-      tokens: { ...state.tokens, [type]: state.tokens[type] - 1 },
+    let success = false;
+    set((state) => {
+      if (state.tokens[type] <= 0) {
+        success = false;
+        return {};
+      }
+      success = true;
+      return {
+        tokens: { ...state.tokens, [type]: state.tokens[type] - 1 },
+      };
     });
-    return true;
+    return success;
   },
 
   setPhase: (phase) => set({ phase }),
@@ -153,20 +154,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       clientsServedThisWave: 0,
       waveScore: 0,
       phase: 'playing',
-      mixerAmounts: {
-        red: 0,
-        blue: 0,
-        yellow: 0,
-        green: 0,
-        white: 0,
-        black: 0,
-        orange: 0,
-        purple: 0,
-        teal: 0,
-        magenta: 0,
-        ochre: 0,
-        silver: 0,
-      },
+      mixerAmounts: getInitialMixerAmounts(),
       playerMix: { r: 40, g: 40, b: 50 },
       activeEffect: null,
       multiOrderTargets: [],

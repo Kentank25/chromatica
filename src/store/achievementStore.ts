@@ -3,9 +3,10 @@ import type {
   AchievementProgress,
   AchievementRarity,
   LifetimeStats,
+  SessionStats,
 } from '../types/achievement.types';
 import { AchievementStorageSchema } from '../types/achievement.types';
-import { ACHIEVEMENT_DEFINITIONS, resetSessionAchievementData } from '../engine/achievementDefinitions';
+import { ACHIEVEMENT_DEFINITIONS } from '../engine/achievementDefinitions';
 import { AchievementEventBus } from '../engine/achievementEventBus';
 import { audioManager } from '../audio/AudioManager';
 
@@ -22,6 +23,7 @@ interface AchievementState {
   lifetimeStats: LifetimeStats;
   sessionRecap: string[]; // IDs of achievements unlocked in the current session
   toasts: AchievementToastInfo[];
+  sessionStats: SessionStats;
 
   // Core functions
   init: () => () => void; // Subscribes to event bus, returns unsubscribe
@@ -92,106 +94,226 @@ const saveState = (achievements: Record<string, AchievementProgress>, lifetimeSt
   }
 };
 
-export const useAchievementStore = create<AchievementState>((set, get) => ({
+export const useAchievementStore = create<AchievementState>((set) => ({
   ...getInitialState(),
   sessionRecap: [],
   toasts: [],
+  sessionStats: {
+    sessionSharpshooter: 0,
+    sessionTips: 0,
+    sessionEffects: [],
+  },
 
   init: () => {
-    // Helper to evaluate and process check results for an achievement definition
-    const evaluate = (
-      def: typeof ACHIEVEMENT_DEFINITIONS[number],
-      checkResult: boolean | { progress: number; unlocked: boolean }
-    ) => {
-      const state = get();
-      const current = state.achievements[def.id];
-      if (current && current.unlockedAt !== null) return;
-
-      if (typeof checkResult === 'boolean') {
-        if (checkResult) {
-          get().unlockAchievement(def.id);
-        }
-      } else {
-        const currentProgress = current?.progress || 0;
-        if (checkResult.unlocked) {
-          // Pre-save progress value with unlockedAt: null so unlockAchievement doesn't early-return
-          const updatedAchievements = { ...get().achievements };
-          updatedAchievements[def.id] = {
-            unlockedAt: null,
-            progress: checkResult.progress,
-          };
-          set({ achievements: updatedAchievements });
-          
-          get().unlockAchievement(def.id);
-        } else if (checkResult.progress !== currentProgress) {
-          // Progress update only
-          const updatedAchievements = { ...get().achievements };
-          updatedAchievements[def.id] = {
-            unlockedAt: null,
-            progress: checkResult.progress,
-          };
-          set({ achievements: updatedAchievements });
-          saveState(updatedAchievements, get().lifetimeStats);
-        }
-      }
-    };
-
     // 1. Subscribe to POTION_SUBMITTED
     const unsubPotion = AchievementEventBus.subscribe('POTION_SUBMITTED', (payload) => {
-      const state = get();
-      const currentLifetime = { ...state.lifetimeStats };
+      set((state) => {
+        const currentLifetime = { ...state.lifetimeStats };
+        const currentSessionStats = { ...state.sessionStats };
 
-      // Update lifetime stats
-      if (payload.passed) {
-        currentLifetime.totalPotionsCompleted += 1;
-        if (payload.clientType === 'villager') currentLifetime.totalVillagersServed += 1;
-        if (payload.clientType === 'wizard') currentLifetime.totalWizardsServed += 1;
-        if (payload.clientType === 'zombie') currentLifetime.totalZombiesServed += 1;
-        if (payload.clientType === 'noble') currentLifetime.totalNoblesServed += 1;
-        if (payload.clientType === 'mystic') currentLifetime.totalMysticsServed += 1;
-      }
+        // Update lifetime stats
+        if (payload.passed) {
+          currentLifetime.totalPotionsCompleted += 1;
+          if (payload.clientType === 'villager') currentLifetime.totalVillagersServed += 1;
+          if (payload.clientType === 'wizard') currentLifetime.totalWizardsServed += 1;
+          if (payload.clientType === 'zombie') currentLifetime.totalZombiesServed += 1;
+          if (payload.clientType === 'noble') currentLifetime.totalNoblesServed += 1;
+          if (payload.clientType === 'mystic') currentLifetime.totalMysticsServed += 1;
+        }
 
-      set({ lifetimeStats: currentLifetime });
+        // Update session stats
+        if (payload.passed) {
+          if (payload.accuracy >= 95) {
+            currentSessionStats.sessionSharpshooter += 1;
+          }
+          if (payload.tipReceived) {
+            currentSessionStats.sessionTips += 1;
+          }
+          if (payload.detectedEffect && !currentSessionStats.sessionEffects.includes(payload.detectedEffect)) {
+            currentSessionStats.sessionEffects = [...currentSessionStats.sessionEffects, payload.detectedEffect];
+          }
+        }
 
-      // Run evaluations
-      ACHIEVEMENT_DEFINITIONS.forEach((def) => {
-        if (def.trigger !== 'POTION_SUBMITTED') return;
+        const updatedAchievements = { ...state.achievements };
+        const sessionRecap = [...state.sessionRecap];
+        const toasts = [...state.toasts];
 
-        const currentProg = get().achievements[def.id];
-        if (currentProg && currentProg.unlockedAt !== null) return; // Already unlocked
+        ACHIEVEMENT_DEFINITIONS.forEach((def) => {
+          if (def.trigger !== 'POTION_SUBMITTED') return;
 
-        const checkResult = def.check(payload, currentLifetime, currentProg?.progress || 0);
-        evaluate(def, checkResult);
+          const currentProg = updatedAchievements[def.id] || { unlockedAt: null, progress: 0 };
+          if (currentProg.unlockedAt !== null) return; // Already unlocked
+
+          const checkResult = def.check(payload, currentLifetime, currentProg.progress, currentSessionStats);
+
+          if (typeof checkResult === 'boolean') {
+            if (checkResult) {
+              if (!sessionRecap.includes(def.id)) {
+                updatedAchievements[def.id] = { ...currentProg, unlockedAt: Date.now() };
+                sessionRecap.push(def.id);
+                toasts.unshift({
+                  id: `${def.id}_${Date.now()}`,
+                  name: def.name,
+                  description: def.description,
+                  rarity: def.rarity,
+                  icon: def.icon,
+                });
+                audioManager.playSFX('achievementUnlock');
+              }
+            }
+          } else {
+            if (checkResult.unlocked) {
+              if (!sessionRecap.includes(def.id)) {
+                updatedAchievements[def.id] = { unlockedAt: Date.now(), progress: checkResult.progress };
+                sessionRecap.push(def.id);
+                toasts.unshift({
+                  id: `${def.id}_${Date.now()}`,
+                  name: def.name,
+                  description: def.description,
+                  rarity: def.rarity,
+                  icon: def.icon,
+                });
+                audioManager.playSFX('achievementUnlock');
+              }
+            } else if (checkResult.progress !== currentProg.progress) {
+              updatedAchievements[def.id] = { unlockedAt: null, progress: checkResult.progress };
+            }
+          }
+        });
+
+        saveState(updatedAchievements, currentLifetime);
+
+        return {
+          lifetimeStats: currentLifetime,
+          sessionStats: currentSessionStats,
+          achievements: updatedAchievements,
+          sessionRecap,
+          toasts,
+        };
       });
     });
 
     // 2. Subscribe to WAVE_CLEARED
     const unsubWave = AchievementEventBus.subscribe('WAVE_CLEARED', (payload) => {
-      const currentLifetime = get().lifetimeStats;
+      set((state) => {
+        const currentLifetime = state.lifetimeStats;
+        const currentSessionStats = state.sessionStats;
+        const updatedAchievements = { ...state.achievements };
+        const sessionRecap = [...state.sessionRecap];
+        const toasts = [...state.toasts];
 
-      ACHIEVEMENT_DEFINITIONS.forEach((def) => {
-        if (def.trigger !== 'WAVE_CLEARED') return;
+        ACHIEVEMENT_DEFINITIONS.forEach((def) => {
+          if (def.trigger !== 'WAVE_CLEARED') return;
 
-        const currentProg = get().achievements[def.id];
-        if (currentProg && currentProg.unlockedAt !== null) return; // Already unlocked
+          const currentProg = updatedAchievements[def.id] || { unlockedAt: null, progress: 0 };
+          if (currentProg.unlockedAt !== null) return; // Already unlocked
 
-        const checkResult = def.check(payload, currentLifetime, currentProg?.progress || 0);
-        evaluate(def, checkResult);
+          const checkResult = def.check(payload, currentLifetime, currentProg.progress, currentSessionStats);
+
+          if (typeof checkResult === 'boolean') {
+            if (checkResult) {
+              if (!sessionRecap.includes(def.id)) {
+                updatedAchievements[def.id] = { ...currentProg, unlockedAt: Date.now() };
+                sessionRecap.push(def.id);
+                toasts.unshift({
+                  id: `${def.id}_${Date.now()}`,
+                  name: def.name,
+                  description: def.description,
+                  rarity: def.rarity,
+                  icon: def.icon,
+                });
+                audioManager.playSFX('achievementUnlock');
+              }
+            }
+          } else {
+            if (checkResult.unlocked) {
+              if (!sessionRecap.includes(def.id)) {
+                updatedAchievements[def.id] = { unlockedAt: Date.now(), progress: checkResult.progress };
+                sessionRecap.push(def.id);
+                toasts.unshift({
+                  id: `${def.id}_${Date.now()}`,
+                  name: def.name,
+                  description: def.description,
+                  rarity: def.rarity,
+                  icon: def.icon,
+                });
+                audioManager.playSFX('achievementUnlock');
+              }
+            } else if (checkResult.progress !== currentProg.progress) {
+              updatedAchievements[def.id] = { unlockedAt: null, progress: checkResult.progress };
+            }
+          }
+        });
+
+        saveState(updatedAchievements, currentLifetime);
+
+        return {
+          achievements: updatedAchievements,
+          sessionRecap,
+          toasts,
+        };
       });
     });
 
     // 3. Subscribe to SESSION_END
     const unsubSession = AchievementEventBus.subscribe('SESSION_END', (payload) => {
-      const currentLifetime = get().lifetimeStats;
+      set((state) => {
+        const currentLifetime = state.lifetimeStats;
+        const currentSessionStats = state.sessionStats;
+        const updatedAchievements = { ...state.achievements };
+        const sessionRecap = [...state.sessionRecap];
+        const toasts = [...state.toasts];
 
-      ACHIEVEMENT_DEFINITIONS.forEach((def) => {
-        if (def.trigger !== 'SESSION_END') return;
+        ACHIEVEMENT_DEFINITIONS.forEach((def) => {
+          if (def.trigger !== 'SESSION_END') return;
 
-        const currentProg = get().achievements[def.id];
-        if (currentProg && currentProg.unlockedAt !== null) return; // Already unlocked
+          const currentProg = updatedAchievements[def.id] || { unlockedAt: null, progress: 0 };
+          if (currentProg.unlockedAt !== null) return; // Already unlocked
 
-        const checkResult = def.check(payload, currentLifetime, currentProg?.progress || 0);
-        evaluate(def, checkResult);
+          const checkResult = def.check(payload, currentLifetime, currentProg.progress, currentSessionStats);
+
+          if (typeof checkResult === 'boolean') {
+            if (checkResult) {
+              if (!sessionRecap.includes(def.id)) {
+                updatedAchievements[def.id] = { ...currentProg, unlockedAt: Date.now() };
+                sessionRecap.push(def.id);
+                toasts.unshift({
+                  id: `${def.id}_${Date.now()}`,
+                  name: def.name,
+                  description: def.description,
+                  rarity: def.rarity,
+                  icon: def.icon,
+                });
+                audioManager.playSFX('achievementUnlock');
+              }
+            }
+          } else {
+            if (checkResult.unlocked) {
+              if (!sessionRecap.includes(def.id)) {
+                updatedAchievements[def.id] = { unlockedAt: Date.now(), progress: checkResult.progress };
+                sessionRecap.push(def.id);
+                toasts.unshift({
+                  id: `${def.id}_${Date.now()}`,
+                  name: def.name,
+                  description: def.description,
+                  rarity: def.rarity,
+                  icon: def.icon,
+                });
+                audioManager.playSFX('achievementUnlock');
+              }
+            } else if (checkResult.progress !== currentProg.progress) {
+              updatedAchievements[def.id] = { unlockedAt: null, progress: checkResult.progress };
+            }
+          }
+        });
+
+        saveState(updatedAchievements, currentLifetime);
+
+        return {
+          achievements: updatedAchievements,
+          sessionRecap,
+          toasts,
+        };
       });
     });
 
@@ -204,42 +326,40 @@ export const useAchievementStore = create<AchievementState>((set, get) => ({
   },
 
   unlockAchievement: (id) => {
-    const state = get();
-    const def = ACHIEVEMENT_DEFINITIONS.find((d) => d.id === id);
-    if (!def) return;
+    set((state) => {
+      const def = ACHIEVEMENT_DEFINITIONS.find((d) => d.id === id);
+      if (!def) return {};
 
-    // Check if already in recap to avoid duplicate triggers
-    if (state.sessionRecap.includes(id)) return;
+      if (state.sessionRecap.includes(id)) return {};
 
-    const updatedAchievements = { ...state.achievements };
-    const current = updatedAchievements[id] || { unlockedAt: null, progress: 0 };
+      const updatedAchievements = { ...state.achievements };
+      const current = updatedAchievements[id] || { unlockedAt: null, progress: 0 };
 
-    if (current.unlockedAt !== null) return; // already unlocked
+      if (current.unlockedAt !== null) return {};
 
-    updatedAchievements[id] = {
-      ...current,
-      unlockedAt: Date.now(),
-    };
+      updatedAchievements[id] = {
+        ...current,
+        unlockedAt: Date.now(),
+      };
 
-    // Play unlock sound effect
-    audioManager.playSFX('achievementUnlock');
+      audioManager.playSFX('achievementUnlock');
 
-    // Add to toasts and session recap
-    const newToast: AchievementToastInfo = {
-      id: `${id}_${Date.now()}`,
-      name: def.name,
-      description: def.description,
-      rarity: def.rarity,
-      icon: def.icon,
-    };
+      const newToast: AchievementToastInfo = {
+        id: `${id}_${Date.now()}`,
+        name: def.name,
+        description: def.description,
+        rarity: def.rarity,
+        icon: def.icon,
+      };
 
-    set({
-      achievements: updatedAchievements,
-      sessionRecap: [...state.sessionRecap, id],
-      toasts: [newToast, ...state.toasts],
+      saveState(updatedAchievements, state.lifetimeStats);
+
+      return {
+        achievements: updatedAchievements,
+        sessionRecap: [...state.sessionRecap, id],
+        toasts: [newToast, ...state.toasts],
+      };
     });
-
-    saveState(updatedAchievements, state.lifetimeStats);
   },
 
   removeToast: (toastId) => {
@@ -249,7 +369,6 @@ export const useAchievementStore = create<AchievementState>((set, get) => ({
   },
 
   clearSessionRecap: () => {
-    resetSessionAchievementData();
     set((s) => {
       const updated = { ...s.achievements };
       const sessionIds = ['generous_tipper', 'sharpshooter', 'all_effects'];
@@ -259,7 +378,16 @@ export const useAchievementStore = create<AchievementState>((set, get) => ({
         }
       });
       saveState(updated, s.lifetimeStats);
-      return { sessionRecap: [], toasts: [], achievements: updated };
+      return {
+        sessionRecap: [],
+        toasts: [],
+        achievements: updated,
+        sessionStats: {
+          sessionSharpshooter: 0,
+          sessionTips: 0,
+          sessionEffects: [],
+        },
+      };
     });
   },
 
@@ -284,6 +412,11 @@ export const useAchievementStore = create<AchievementState>((set, get) => ({
       ...fresh,
       sessionRecap: [],
       toasts: [],
+      sessionStats: {
+        sessionSharpshooter: 0,
+        sessionTips: 0,
+        sessionEffects: [],
+      },
     });
 
     saveState(fresh.achievements, fresh.lifetimeStats);

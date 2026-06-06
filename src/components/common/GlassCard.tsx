@@ -33,8 +33,22 @@ const GlassCard: React.FC<GlassCardProps> = ({
     .filter(Boolean)
     .join(' ');
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (onClick && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      onClick();
+    }
+  };
+
   return (
-    <div className={classes} style={style} onClick={onClick} role={onClick ? 'button' : undefined}>
+    <div
+      className={classes}
+      style={style}
+      onClick={onClick}
+      onKeyDown={onClick ? handleKeyDown : undefined}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+    >
       {children}
     </div>
   );

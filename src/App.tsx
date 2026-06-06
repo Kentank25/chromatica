@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { SplashScreen } from './screens/SplashScreen/SplashScreen';
 import { MainMenu } from './screens/MainMenu/MainMenu';
 import { GameScreen } from './screens/GameScreen/GameScreen';
@@ -10,6 +10,16 @@ import { useAudio } from './hooks/useAudio';
 import { audioManager } from './audio/AudioManager';
 import { musicManager } from './audio/MusicManager';
 import { useAchievementStore } from './store/achievementStore';
+import ErrorBoundary from './components/common/ErrorBoundary';
+import { useGameStore } from './store/gameStore';
+
+const ResultsGuard = ({ children }: { children: React.ReactNode }) => {
+  const phase = useGameStore((s) => s.phase);
+  if (phase === 'idle') {
+    return <Navigate to="/" replace />;
+  }
+  return <>{children}</>;
+};
 
 function App() {
   useAudio(); // Synchronizes volume settings globally from the settingsStore
@@ -30,16 +40,19 @@ function App() {
   }, []);
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<SplashScreen />} />
-        <Route path="/menu" element={<MainMenu />} />
-        <Route path="/game" element={<GameScreen />} />
-        <Route path="/results" element={<ResultsScreen />} />
-        <Route path="/leaderboard" element={<LeaderboardScreen />} />
-        <Route path="/achievements" element={<AchievementsScreen />} />
-      </Routes>
-    </BrowserRouter>
+    <HashRouter>
+      <ErrorBoundary>
+        <Routes>
+          <Route path="/" element={<SplashScreen />} />
+          <Route path="/menu" element={<MainMenu />} />
+          <Route path="/game" element={<GameScreen />} />
+          <Route path="/results" element={<ResultsGuard><ResultsScreen /></ResultsGuard>} />
+          <Route path="/leaderboard" element={<LeaderboardScreen />} />
+          <Route path="/achievements" element={<AchievementsScreen />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </ErrorBoundary>
+    </HashRouter>
   );
 }
 

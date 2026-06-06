@@ -1,4 +1,4 @@
-import type { AchievementDefinition, LifetimeStats } from '../types/achievement.types';
+import type { AchievementDefinition, LifetimeStats, SessionStats } from '../types/achievement.types';
 import type { AchievementPayloads } from './achievementEventBus';
 
 export interface AchievementRule<T extends keyof AchievementPayloads> extends AchievementDefinition {
@@ -6,22 +6,9 @@ export interface AchievementRule<T extends keyof AchievementPayloads> extends Ac
   check: (
     payload: AchievementPayloads[T],
     lifetimeStats: LifetimeStats,
-    currentProgress: number
+    currentProgress: number,
+    sessionStats: SessionStats
   ) => boolean | { progress: number; unlocked: boolean };
-}
-
-// ── Session variables for resetting single-run achievements ──
-let sessionSharpshooter = 0;
-let sessionTips = 0;
-const sessionEffects = new Set<string>();
-
-/**
- * Resets all session-based achievement counters at the start of a new run.
- */
-export function resetSessionAchievementData(): void {
-  sessionSharpshooter = 0;
-  sessionTips = 0;
-  sessionEffects.clear();
 }
 
 export const ACHIEVEMENT_DEFINITIONS: Array<
@@ -101,11 +88,9 @@ export const ACHIEVEMENT_DEFINITIONS: Array<
     icon: 'Target',
     trigger: 'POTION_SUBMITTED',
     maxProgress: 5,
-    check: (payload) => {
-      if (payload.passed && payload.accuracy >= 95) {
-        sessionSharpshooter += 1;
-      }
-      return { progress: Math.min(sessionSharpshooter, 5), unlocked: sessionSharpshooter >= 5 };
+    check: (_payload, _, __, sessionStats) => {
+      const count = sessionStats.sessionSharpshooter;
+      return { progress: Math.min(count, 5), unlocked: count >= 5 };
     },
   },
 
@@ -245,11 +230,9 @@ export const ACHIEVEMENT_DEFINITIONS: Array<
     icon: 'Coins',
     trigger: 'POTION_SUBMITTED',
     maxProgress: 5,
-    check: (payload) => {
-      if (payload.passed && payload.tipReceived) {
-        sessionTips += 1;
-      }
-      return { progress: Math.min(sessionTips, 5), unlocked: sessionTips >= 5 };
+    check: (_payload, _, __, sessionStats) => {
+      const count = sessionStats.sessionTips;
+      return { progress: Math.min(count, 5), unlocked: count >= 5 };
     },
   },
 
@@ -385,11 +368,8 @@ export const ACHIEVEMENT_DEFINITIONS: Array<
     icon: 'Trophy',
     trigger: 'POTION_SUBMITTED',
     maxProgress: 6,
-    check: (payload) => {
-      if (payload.passed && payload.detectedEffect) {
-        sessionEffects.add(payload.detectedEffect);
-      }
-      const count = sessionEffects.size;
+    check: (_payload, _, __, sessionStats) => {
+      const count = sessionStats.sessionEffects.length;
       return { progress: Math.min(count, 6), unlocked: count >= 6 };
     },
   },

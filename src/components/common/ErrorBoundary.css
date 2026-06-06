@@ -1,0 +1,83 @@
+.error-boundary-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-primary);
+  overflow: hidden;
+  padding: 24px;
+  z-index: 9999;
+}
+
+.error-boundary-screen__orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+.error-boundary-screen__orb--1 {
+  width: 400px;
+  height: 400px;
+  background-color: var(--accent-failure);
+  top: 10%;
+  left: 15%;
+  animation: float 20s infinite ease-in-out alternate;
+}
+
+.error-boundary-screen__orb--2 {
+  width: 350px;
+  height: 350px;
+  background-color: var(--accent-warning);
+  bottom: 15%;
+  right: 15%;
+  animation: float 25s infinite ease-in-out alternate-reverse;
+}
+
+.error-boundary-card {
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  animation: scaleIn 0.4s var(--spring);
+}
+
+.error-boundary-title {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  color: var(--accent-failure);
+  margin-bottom: 16px;
+  text-shadow: 0 0 10px rgba(255, 74, 74, 0.3);
+  letter-spacing: 1.5px;
+}
+
+.error-boundary-desc {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.error-boundary-stack {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  background: rgba(0, 0, 0, 0.4);
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 74, 74, 0.2);
+  text-align: left;
+  max-height: 150px;
+  overflow-y: auto;
+  margin-bottom: 28px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.error-boundary-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}

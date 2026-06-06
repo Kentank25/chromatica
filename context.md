@@ -374,7 +374,7 @@ waveScore: number;            // Score accumulated in current wave
 | `/game` | GameScreen | Full gameplay loop |
 | `/results` | ResultsScreen | Score, stats, rating, retry |
 
-Navigation is via `useNavigate()` from React Router. No hash routing.
+Navigation is via `useNavigate()` from React Router. Uses `HashRouter` for zero-config static hosting.
 
 ---
 

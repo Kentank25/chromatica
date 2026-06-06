@@ -140,7 +140,7 @@ export const MainMenu: React.FC = () => {
             Configure your alchemy lab parameters. Apprentice offers a relaxed study environment, while Master demands rapid execution under strict accuracy requirements.
           </p>
 
-          <div className="main-menu__difficulty-cards">
+          <div className="main-menu__difficulty-cards" role="radiogroup" aria-label="Game difficulty">
             {(['apprentice', 'journeyman', 'master'] as const).map((mode) => (
               <div
                 key={mode}
@@ -150,6 +150,16 @@ export const MainMenu: React.FC = () => {
                 onClick={() => {
                   audioManager.playSFX('uiClick');
                   setDifficulty(mode);
+                }}
+                role="radio"
+                aria-checked={difficulty === mode}
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    audioManager.playSFX('uiClick');
+                    setDifficulty(mode);
+                  }
                 }}
               >
                 <div className="main-menu__difficulty-icon">

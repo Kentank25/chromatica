@@ -194,9 +194,9 @@ export function computeDeltaE(color1: RGB, color2: RGB): number {
 export function computeAccuracy(target: RGB, submitted: RGB): number {
   const deltaE = computeDeltaE(target, submitted);
   const maxDeltaE = 100;
-  const normalised = clamp(deltaE / maxDeltaE, 0, 1);
-  // Quadratic fall-off: small errors penalised less
-  const accuracy = (1 - normalised) ** 0.8 * 100;
+  if (deltaE >= maxDeltaE) return 0;
+  const accuracyRatio = 1 - (deltaE / maxDeltaE);
+  const accuracy = Math.pow(accuracyRatio, 2) * 100;
   return clamp(Math.round(accuracy * 100) / 100, 0, 100);
 }
 

@@ -58,3 +58,9 @@ export const AchievementStorageSchema = z.object({
 });
 
 export type AchievementStorageData = z.infer<typeof AchievementStorageSchema>;
+
+export interface SessionStats {
+  sessionSharpshooter: number;
+  sessionTips: number;
+  sessionEffects: string[];
+}
