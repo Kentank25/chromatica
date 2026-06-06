@@ -26,10 +26,36 @@ export const ResultsScreen: React.FC = () => {
   const sessionRecap = useAchievementStore((s) => s.sessionRecap);
 
   const sessionAchievements = useMemo(() => {
-    return sessionRecap
+    const RARITY_PRIORITY: Record<string, number> = {
+      legendary: 5,
+      epic: 4,
+      rare: 3,
+      uncommon: 2,
+      common: 1,
+    };
+    const list = sessionRecap
       .map((id) => ACHIEVEMENT_DEFINITIONS.find((def) => def.id === id))
-      .filter((def) => !!def);
+      .filter((def): def is typeof ACHIEVEMENT_DEFINITIONS[number] => !!def);
+    return [...list].sort((a, b) => {
+      const priorityA = RARITY_PRIORITY[a.rarity] || 0;
+      const priorityB = RARITY_PRIORITY[b.rarity] || 0;
+      return priorityB - priorityA;
+    });
   }, [sessionRecap]);
+
+  const displayedAchievements = useMemo(() => {
+    return sessionAchievements.slice(0, 5);
+  }, [sessionAchievements]);
+
+  const extraAchievements = useMemo(() => {
+    return sessionAchievements.slice(5);
+  }, [sessionAchievements]);
+
+  const extraTooltip = useMemo(() => {
+    return extraAchievements
+      .map((def) => `${def.name} (${def.rarity.toUpperCase()}): ${def.description}`)
+      .join('\n');
+  }, [extraAchievements]);
 
   const avgAccuracy = useMemo(() => {
     const total = potionsCompleted + potionsFailed;
@@ -93,16 +119,24 @@ export const ResultsScreen: React.FC = () => {
           <div className="results__achievements">
             <h3 className="results__achievements-title">Achievements Earned</h3>
             <div className="results__achievements-list">
-              {sessionAchievements.map((def) => (
+              {displayedAchievements.map((def) => (
                 <div
                   key={def.id}
                   className={`results__achievement-badge results__achievement-badge--${def.rarity}`}
                   title={`${def.name}: ${def.description}`}
                 >
-                  <DynamicLucideIcon name={def!.icon} size={18} className="results__achievement-badge-icon" />
-                  <span className="results__achievement-badge-name">{def!.name}</span>
+                  <DynamicLucideIcon name={def.icon} size={18} className="results__achievement-badge-icon" />
+                  <span className="results__achievement-badge-name">{def.name}</span>
                 </div>
               ))}
+              {extraAchievements.length > 0 && (
+                <div
+                  className="results__achievement-badge results__achievement-badge--more"
+                  title={extraTooltip}
+                >
+                  <span className="results__achievement-badge-name">+{extraAchievements.length} more</span>
+                </div>
+              )}
             </div>
           </div>
         )}

@@ -74,19 +74,29 @@ export function useGameSession() {
   const navigateTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const sessionClientTypesServed = useRef<Set<string>>(new Set());
 
+  // Stable game over sequence
+  const triggerGameOver = useCallback((immediate: boolean = false) => {
+    setPhase('gameOver');
+    const { score, potionsCompleted, potionsFailed, highestCombo, waveHistory } = useGameStore.getState();
+    AchievementEventBus.publish('SESSION_END', {
+      finalScore: score,
+      totalCompleted: potionsCompleted,
+      totalFailed: potionsFailed,
+      highestCombo: highestCombo,
+      wavesCleared: waveHistory.length,
+    });
+    if (immediate) {
+      navigate('/results', { replace: true });
+    } else {
+      navigateTimer.current = setTimeout(() => navigate('/results', { replace: true }), 500);
+    }
+  }, [setPhase, navigate]);
+
   // Stable check and advance logic
   const checkAndAdvance = useCallback(() => {
-    if (satisfaction <= 0) {
-      setPhase('gameOver');
-      const { score, potionsCompleted, potionsFailed, highestCombo, waveHistory } = useGameStore.getState();
-      AchievementEventBus.publish('SESSION_END', {
-        finalScore: score,
-        totalCompleted: potionsCompleted,
-        totalFailed: potionsFailed,
-        highestCombo: highestCombo,
-        wavesCleared: waveHistory.length,
-      });
-      navigateTimer.current = setTimeout(() => navigate('/results'), 500);
+    const currentSatisfaction = useGameStore.getState().satisfaction;
+    if (currentSatisfaction <= 0) {
+      triggerGameOver(false);
       return;
     }
 
@@ -124,7 +134,6 @@ export function useGameSession() {
     setCurrentClient(newClient);
     setPhase('playing');
   }, [
-    satisfaction,
     currentWave,
     clientsServedThisWave,
     waveScore,
@@ -134,19 +143,29 @@ export function useGameSession() {
     setCurrentClient,
     setMultiOrder,
     clearMultiOrder,
-    navigate,
+    triggerGameOver,
   ]);
 
   // Stable timeout logic
   const handleTimeout = useCallback(() => {
     if (!currentClient) return;
     audioManager.playSFX('timeout');
+    
+    // Apply client-specific satisfaction penalty rather than immediately ending the game
     updateSatisfaction(-currentClient.modifiers.penaltySeverity);
+    
     resetCombo();
     incrementPotionsFailed();
     incrementClientsServed();
-    checkAndAdvance();
-  }, [currentClient, updateSatisfaction, resetCombo, incrementPotionsFailed, incrementClientsServed, checkAndAdvance]);
+
+    // Check if satisfaction reached 0. If so, trigger game over immediately. Otherwise, check and advance.
+    const liveSatisfaction = useGameStore.getState().satisfaction;
+    if (liveSatisfaction <= 0) {
+      triggerGameOver(true);
+    } else {
+      checkAndAdvance();
+    }
+  }, [currentClient, updateSatisfaction, resetCombo, incrementPotionsFailed, incrementClientsServed, triggerGameOver, checkAndAdvance]);
 
   // Hook up timer logic
   const isTimerRunning = phase === 'playing' && !showPause && !showFeedback && !showTutorial;
@@ -347,6 +366,7 @@ export function useGameSession() {
       }
     } else {
       audioManager.playSFX('failure');
+      // Apply client-specific satisfaction penalty rather than immediately ending the game
       updateSatisfaction(-currentClient.modifiers.penaltySeverity);
       resetCombo();
       incrementPotionsFailed();
@@ -387,7 +407,12 @@ export function useGameSession() {
         advanceSubOrder();
         setPhase('playing');
       } else {
-        checkAndAdvance();
+        const currentSatisfaction = useGameStore.getState().satisfaction;
+        if (currentSatisfaction <= 0) {
+          triggerGameOver(true);
+        } else {
+          checkAndAdvance();
+        }
       }
     }, 1800);
   }, [
@@ -410,6 +435,7 @@ export function useGameSession() {
     resetMixerAmounts,
     advanceSubOrder,
     localTimeRef,
+    triggerGameOver,
   ]);
 
   // Stable token use handler
