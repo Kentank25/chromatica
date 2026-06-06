@@ -188,6 +188,7 @@ export const GameScreen: React.FC = () => {
           clientsServed={transitionStats.clientsServed}
           accuracy={transitionStats.accuracy}
           pointsEarned={transitionStats.pointsEarned}
+          perks={transitionStats.perks}
           onClose={handleTransitionClose}
         />
       )}

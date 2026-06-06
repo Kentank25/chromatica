@@ -1,76 +1,75 @@
 /**
  * @module waveManager
  * Wave configuration and progression logic for Chromatica v2.
- *
- * Defines how many clients appear per wave, the difficulty curve,
- * and the score target required to clear each wave.
  */
 
-import { clamp } from '../utils/mathUtils';
+import type { WaveDefinition, IngredientId } from '../types/game.types';
 
 // ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-/** Configuration for a single wave. */
-export interface WaveConfig {
-  /** Number of clients to serve in this wave. */
-  clientCount: number;
-  /** Difficulty level passed to target colour generation (1-3). */
-  difficultyLevel: number;
-  /** Minimum cumulative score to clear the wave. */
-  targetScore: number;
-}
-
-// ---------------------------------------------------------------------------
-// Wave configuration
+// Wave metrics generator
 // ---------------------------------------------------------------------------
 
 /**
- * Returns the configuration for a given wave number.
- *
- * Scaling rules:
- * | Wave | Clients | Difficulty | Target Score |
- * |------|---------|------------|--------------|
- * | 1    | 5       | 1.0        | 200          |
- * | 2    | 7       | 1.5        | 400          |
- * | 3    | 8       | 2.0        | 650          |
- * | 4    | 9       | 2.3        | 900          |
- * | 5    | 10      | 2.5        | 1200         |
- * | 6+   | 10+1/wave | 3.0 cap | scales       |
- *
- * @param waveNumber - 1-based wave index.
+ * Evaluates and returns the strict scaling configuration for any active wave.
+ * Corrects legacy fractional rounding issues and safely extrapolates into infinite play.
  */
-export function getWaveConfig(
+export const getWaveMetrics = (
   waveNumber: number,
-  difficultyMode: 'apprentice' | 'journeyman' | 'master' = 'journeyman',
-): WaveConfig {
-  const w = Math.max(1, Math.round(waveNumber));
-  let config: WaveConfig;
+  difficultyMode: 'apprentice' | 'journeyman' | 'master' = 'journeyman'
+): WaveDefinition => {
+  // Base core assets unlocked through progression milestones
+  const allIngredients: IngredientId[] = [
+    'red', 'blue', 'yellow', 'green', 'white', 'black', 
+    'orange', 'purple', 'teal', 'magenta', 'ochre', 'silver'
+  ];
 
-  switch (w) {
-    case 1:
-      config = { clientCount: 5, difficultyLevel: 1.0, targetScore: 200 };
-      break;
-    case 2:
-      config = { clientCount: 7, difficultyLevel: 1.5, targetScore: 400 };
-      break;
-    case 3:
-      config = { clientCount: 8, difficultyLevel: 2.0, targetScore: 650 };
-      break;
-    case 4:
-      config = { clientCount: 9, difficultyLevel: 2.3, targetScore: 900 };
-      break;
-    case 5:
-      config = { clientCount: 10, difficultyLevel: 2.5, targetScore: 1200 };
-      break;
-    default: {
-      // Waves 6+: gradual scaling
-      const clientCount = clamp(10 + Math.floor((w - 5) / 2), 10, 15);
-      const difficultyLevel = clamp(2.5 + (w - 5) * 0.1, 2.5, 3.0);
-      const targetScore = 1200 + (w - 5) * 300;
-      config = { clientCount, difficultyLevel, targetScore };
-    }
+  // Primary Configuration Matrix for Waves 1-10
+  const primaryWaves = [
+    { basePatience: 45000, multiplier: 1.0, target: 200, clients: 5 },
+    { basePatience: 40000, multiplier: 1.2, target: 400, clients: 7 },
+    { basePatience: 35000, multiplier: 1.4, target: 650, clients: 8 },
+    { basePatience: 30000, multiplier: 1.6, target: 900, clients: 9 },
+    { basePatience: 25000, multiplier: 1.8, target: 1200, clients: 10 },
+    { basePatience: 22000, multiplier: 2.0, target: 1500, clients: 11 },
+    { basePatience: 20000, multiplier: 2.2, target: 1800, clients: 12 },
+    { basePatience: 18000, multiplier: 2.4, target: 2100, clients: 13 },
+    { basePatience: 16000, multiplier: 2.6, target: 2400, clients: 14 },
+    { basePatience: 15000, multiplier: 3.0, target: 3000, clients: 15 }
+  ];
+
+  let config: WaveDefinition;
+
+  if (waveNumber <= 10) {
+    const primary = primaryWaves[waveNumber - 1];
+    // Enforce progressive ingredient restriction gates based on the current wave number
+    const activeIngredients = allIngredients.slice(0, 8 + Math.min(4, Math.floor((waveNumber - 1) / 1.5)));
+    
+    config = {
+      waveNumber,
+      clientsRequired: primary.clients,
+      availableIngredients: activeIngredients,
+      basePatienceMs: primary.basePatience,
+      difficultyMultiplier: primary.multiplier,
+      targetScore: primary.target,
+      description: `Wave ${waveNumber}: Standard alchemical match protocol.`
+    };
+  } else {
+    // Endless Mode Extrapolation Layer
+    const scaleFactor = waveNumber - 10;
+    const endlessClients = 15 + Math.min(scaleFactor, 10); // Ceiling cap at 25 clients max
+    const endlessPatience = Math.max(8000, 15000 - (scaleFactor * 500)); // Floor cap at 8000ms minimum
+    const endlessMultiplier = 3.0 + (scaleFactor * 0.2); // Continuous fractional tracking
+    const endlessTargetScore = 3000 + (scaleFactor * 400);
+
+    config = {
+      waveNumber,
+      clientsRequired: endlessClients,
+      availableIngredients: allIngredients, // Full inventory palette unlocked
+      basePatienceMs: endlessPatience,
+      difficultyMultiplier: endlessMultiplier,
+      targetScore: endlessTargetScore,
+      description: `Endless Mode Wave ${waveNumber}: Advanced alchemical runtime environment.`
+    };
   }
 
   if (difficultyMode === 'apprentice') {
@@ -78,7 +77,7 @@ export function getWaveConfig(
   }
 
   return config;
-}
+};
 
 // ---------------------------------------------------------------------------
 // Wave clear check
@@ -89,17 +88,13 @@ export function getWaveConfig(
  *
  * A wave is considered clear when the player has served all clients
  * AND accumulated enough score to meet the wave's target.
- *
- * @param clientsServed - Number of clients successfully served this wave.
- * @param score         - Cumulative score earned during this wave.
- * @param waveConfig    - The active wave's configuration.
  */
 export function isWaveClear(
   clientsServed: number,
   score: number,
-  waveConfig: WaveConfig,
+  waveConfig: WaveDefinition,
 ): boolean {
   return (
-    clientsServed >= waveConfig.clientCount && score >= waveConfig.targetScore
+    clientsServed >= waveConfig.clientsRequired && score >= waveConfig.targetScore
   );
 }

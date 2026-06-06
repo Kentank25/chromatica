@@ -7,6 +7,7 @@
 import type { Client, ClientModifiers, ClientType } from '../types/game.types';
 import type { RGB } from '../types/color.types';
 import { generateTargetColor, describeColor } from './colorScience';
+import { getWaveMetrics } from './waveManager';
 import { randomInt, clamp } from '../utils/mathUtils';
 
 // ---------------------------------------------------------------------------
@@ -192,22 +193,27 @@ export function generateClient(
   const names = NAME_POOLS[type];
   const name = names[randomInt(0, names.length - 1)];
 
-  // Difficulty scales with wave: wave 1-2 → 1, wave 3-4 → 2, wave 5+ → 3
-  const difficulty = clamp(Math.ceil(wave / 2), 1, 3);
-  let targetColor = generateTargetColor(difficulty, wave);
+  const waveMetrics = getWaveMetrics(wave, difficultyMode);
+  const diffMultiplier = waveMetrics.difficultyMultiplier;
+  let targetColor = generateTargetColor(diffMultiplier, wave);
 
   clientIdCounter += 1;
 
   const baseModifiers = { ...MODIFIERS[type] };
 
+  const basePatienceSec = waveMetrics.basePatienceMs / 1000;
+  const clientRatio = MODIFIERS[type].patience / 45.0;
+  let patience = basePatienceSec * clientRatio;
+
   if (difficultyMode === 'apprentice') {
-    baseModifiers.patience += 15;
+    patience += 15;
     baseModifiers.accuracyThreshold = 0.60;
   } else if (difficultyMode === 'master') {
-    baseModifiers.patience = Math.max(5, baseModifiers.patience - 5);
+    patience = Math.max(5, patience - 5);
     baseModifiers.accuracyThreshold = 0.80;
     baseModifiers.penaltySeverity = Math.round(baseModifiers.penaltySeverity * 1.5);
   }
+  baseModifiers.patience = patience;
 
   // Multi-Color Order generation
   // Wizard, zombie, noble are eligible for multi-color orders at wave >= 3
@@ -221,7 +227,7 @@ export function generateClient(
       const orderLength = wave >= 6 ? randomInt(2, 3) : 2;
       subOrders = [];
       for (let i = 0; i < orderLength; i++) {
-        subOrders.push(generateTargetColor(difficulty, wave));
+        subOrders.push(generateTargetColor(diffMultiplier, wave));
       }
       currentSubOrder = 0;
       targetColor = subOrders[0];

@@ -97,3 +97,140 @@
 .pause-overlay__secondary-actions > * {
   flex: 1;
 }
+
+/* Pause overlay perks list styling */
+.pause-overlay__perks-section {
+  text-align: left;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-2xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.pause-overlay__section-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--accent-gold);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.pause-overlay__no-perks {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+  font-style: italic;
+}
+
+.pause-overlay__perks-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  max-height: 180px;
+  overflow-y: auto;
+  padding-right: var(--space-xs);
+}
+
+/* Custom scrollbar for perks list */
+.pause-overlay__perks-list::-webkit-scrollbar {
+  width: 4px;
+}
+.pause-overlay__perks-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 2px;
+}
+.pause-overlay__perks-list::-webkit-scrollbar-thumb {
+  background: rgba(197, 198, 199, 0.2);
+  border-radius: 2px;
+}
+
+.pause-overlay__perk-item {
+  background: rgba(11, 12, 16, 0.4);
+  border: 1px solid rgba(197, 198, 199, 0.1);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pause-overlay__perk-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pause-overlay__perk-name {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.pause-overlay__perk-rarity {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.pause-overlay__perk-body {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.pause-overlay__perk-desc {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.25;
+}
+
+.pause-overlay__perk-count {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent-gold);
+}
+
+/* Rarity colors for pause menu list items */
+.pause-overlay__perk-item--common .pause-overlay__perk-rarity {
+  background: rgba(197, 198, 199, 0.15);
+  color: var(--text-secondary);
+}
+
+.pause-overlay__perk-item--rare {
+  border-color: rgba(69, 182, 254, 0.25);
+}
+.pause-overlay__perk-item--rare .pause-overlay__perk-rarity {
+  background: rgba(69, 182, 254, 0.15);
+  color: var(--accent-blue);
+}
+
+.pause-overlay__perk-item--epic {
+  border-color: rgba(179, 136, 255, 0.25);
+}
+.pause-overlay__perk-item--epic .pause-overlay__perk-rarity {
+  background: rgba(179, 136, 255, 0.15);
+  color: #b388ff;
+}
+
+.pause-overlay__perk-item--legendary {
+  border-color: rgba(255, 215, 0, 0.25);
+  background: linear-gradient(135deg, rgba(11, 12, 16, 0.4) 0%, rgba(255, 215, 0, 0.02) 100%);
+}
+.pause-overlay__perk-item--legendary .pause-overlay__perk-rarity {
+  background: rgba(255, 215, 0, 0.15);
+  color: var(--accent-gold);
+}

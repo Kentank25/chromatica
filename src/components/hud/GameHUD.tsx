@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ScoreDisplay } from './ScoreDisplay';
 import { SatisfactionBar } from './SatisfactionBar';
 import { WaveIndicator } from './WaveIndicator';
@@ -6,6 +6,8 @@ import { TokenDisplay } from './TokenDisplay';
 import ComboCounter from '../game/ComboCounter';
 import { PauseIcon } from '../../utils/icons';
 import { useGameStore } from '../../store/gameStore';
+import { PERK_POOL } from '../../engine/perksManager';
+import { groupActivePerks } from '../../utils/perkUtils';
 import './GameHUD.css';
 
 interface GameHUDProps {
@@ -15,6 +17,11 @@ interface GameHUDProps {
 
 export const GameHUD: React.FC<GameHUDProps> = ({ onUseToken, onPause }) => {
   const difficulty = useGameStore((s) => s.difficulty);
+  const activePerks = useGameStore((s) => s.activePerks);
+
+  const groupedPerks = useMemo(() => {
+    return groupActivePerks(activePerks, PERK_POOL);
+  }, [activePerks]);
 
   return (
     <div className="game-hud" id="game-hud">
@@ -27,6 +34,22 @@ export const GameHUD: React.FC<GameHUDProps> = ({ onUseToken, onPause }) => {
               {difficulty}
             </span>
           </div>
+          {groupedPerks.length > 0 && (
+            <div className="game-hud__perks-tray" role="list" aria-label="Active Perks">
+              {groupedPerks.map(({ perk, count, initials }) => (
+                <div
+                  key={perk.id}
+                  className={`game-hud__perk-badge game-hud__perk-badge--${perk.rarity}`}
+                  data-tooltip={`${perk.name}: ${perk.description}`}
+                  role="listitem"
+                  tabIndex={0}
+                >
+                  <span className="game-hud__perk-initials">{initials}</span>
+                  {count > 1 && <span className="game-hud__perk-multiplier">×{count}</span>}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <div className="game-hud__center">
           <ScoreDisplay />

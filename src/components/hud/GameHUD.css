@@ -115,3 +115,133 @@
   .game-hud { padding: var(--space-sm); }
   .game-hud__top { flex-wrap: wrap; }
 }
+
+/* active perks tray */
+.game-hud__perks-tray {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding-left: var(--space-sm);
+  border-left: 1px solid rgba(197, 198, 199, 0.15);
+  margin-left: 2px;
+}
+
+.game-hud__perk-badge {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(11, 12, 16, 0.65);
+  border: 1px solid rgba(197, 198, 199, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  outline: none;
+  transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.game-hud__perk-badge:hover,
+.game-hud__perk-badge:focus-visible {
+  transform: scale(1.15);
+  z-index: 20;
+}
+
+.game-hud__perk-badge:active {
+  transform: scale(0.95);
+}
+
+.game-hud__perk-initials {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  pointer-events: none;
+}
+
+.game-hud__perk-multiplier {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  background: var(--accent-gold);
+  color: #0b0c10;
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  font-weight: 800;
+  padding: 1px 3px;
+  border-radius: var(--radius-sm);
+  line-height: 1;
+  border: 1px solid #0b0c10;
+  pointer-events: none;
+}
+
+/* Rarity-specific badge borders & glows */
+.game-hud__perk-badge--common {
+  border-color: rgba(197, 198, 199, 0.4);
+}
+.game-hud__perk-badge--common:hover,
+.game-hud__perk-badge--common:focus-visible {
+  box-shadow: 0 0 8px rgba(197, 198, 199, 0.3);
+}
+
+.game-hud__perk-badge--rare {
+  border-color: rgba(69, 182, 254, 0.5);
+}
+.game-hud__perk-badge--rare:hover,
+.game-hud__perk-badge--rare:focus-visible {
+  box-shadow: 0 0 10px rgba(69, 182, 254, 0.5);
+  border-color: var(--accent-blue);
+}
+
+.game-hud__perk-badge--epic {
+  border-color: rgba(179, 136, 255, 0.5);
+}
+.game-hud__perk-badge--epic:hover,
+.game-hud__perk-badge--epic:focus-visible {
+  box-shadow: 0 0 12px rgba(179, 136, 255, 0.6);
+  border-color: #b388ff;
+}
+
+.game-hud__perk-badge--legendary {
+  border-color: rgba(255, 215, 0, 0.6);
+}
+.game-hud__perk-badge--legendary:hover,
+.game-hud__perk-badge--legendary:focus-visible {
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+  border-color: var(--accent-gold);
+}
+
+/* ── Cross-Platform Pure CSS Tooltip ── */
+.game-hud__perk-badge::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 32px;
+  left: 50%;
+  transform: translateX(-50%) translateY(5px);
+  background: rgba(11, 12, 16, 0.95);
+  border: 1px solid rgba(197, 198, 199, 0.25);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  padding: 6px 10px;
+  font-size: 0.7rem;
+  font-family: var(--font-body);
+  min-width: 180px;
+  max-width: 220px;
+  white-space: normal;
+  line-height: 1.3;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  z-index: 100;
+}
+
+.game-hud__perk-badge:hover::after,
+.game-hud__perk-badge:focus-visible::after,
+.game-hud__perk-badge:active::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}

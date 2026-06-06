@@ -19,7 +19,7 @@
   border: var(--glass-border);
   border-radius: var(--radius-xl);
   padding: var(--space-2xl);
-  max-width: 500px;
+  max-width: 850px;
   width: 90%;
   text-align: center;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 20px rgba(69, 182, 254, 0.15);
@@ -131,3 +131,141 @@
 .wave-transition__sparkle--6 { --tx: 90px; --ty: 130px; animation-delay: 0.4s; background: var(--accent-gold); }
 .wave-transition__sparkle--7 { --tx: -180px; --ty: -40px; animation-delay: 0.8s; }
 .wave-transition__sparkle--8 { --tx: 180px; --ty: -30px; animation-delay: 0.6s; background: var(--accent-combo); }
+
+/* ── Perks Selection Section ── */
+.wave-transition__perks-section {
+  margin-top: var(--space-xl);
+  border-top: 1px solid rgba(197, 198, 199, 0.1);
+  padding-top: var(--space-xl);
+}
+
+.wave-transition__perks-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--accent-gold);
+  margin-bottom: var(--space-lg);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.wave-transition__perks-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+  margin-bottom: var(--space-sm);
+}
+
+@media (max-width: 768px) {
+  .wave-transition__perks-list {
+    grid-template-columns: 1fr;
+    gap: var(--space-sm);
+  }
+}
+
+.wave-transition__perk-card {
+  position: relative;
+  background: rgba(11, 12, 16, 0.6);
+  border: 1px solid rgba(197, 198, 199, 0.15);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg) var(--space-md);
+  cursor: pointer;
+  transition: transform 0.2s var(--spring), border-color 0.2s ease, box-shadow 0.2s ease;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  outline: none;
+}
+
+.wave-transition__perk-card:hover,
+.wave-transition__perk-card:focus-visible {
+  transform: translateY(-5px);
+  border-color: var(--accent-blue);
+  box-shadow: 0 5px 15px rgba(69, 182, 254, 0.2);
+}
+
+.wave-transition__perk-card:active {
+  transform: translateY(-2px);
+}
+
+.wave-transition__perk-rarity {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  width: fit-content;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.wave-transition__perk-name {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  margin-top: var(--space-xs);
+}
+
+.wave-transition__perk-desc {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* Rarity-specific card styles */
+.wave-transition__perk-card--common {
+  border-color: rgba(197, 198, 199, 0.2);
+}
+.wave-transition__perk-card--common .wave-transition__perk-rarity {
+  background: rgba(197, 198, 199, 0.15);
+  color: var(--text-secondary);
+}
+
+.wave-transition__perk-card--rare {
+  border-color: rgba(69, 182, 254, 0.3);
+}
+.wave-transition__perk-card--rare .wave-transition__perk-rarity {
+  background: rgba(69, 182, 254, 0.15);
+  color: var(--accent-blue);
+}
+.wave-transition__perk-card--rare:hover,
+.wave-transition__perk-card--rare:focus-visible {
+  border-color: var(--accent-blue);
+  box-shadow: 0 5px 20px rgba(69, 182, 254, 0.3);
+}
+
+.wave-transition__perk-card--epic {
+  border-color: rgba(179, 136, 255, 0.3);
+}
+.wave-transition__perk-card--epic .wave-transition__perk-rarity {
+  background: rgba(179, 136, 255, 0.15);
+  color: #b388ff;
+}
+.wave-transition__perk-card--epic .wave-transition__perk-name {
+  color: #e1d5ff;
+}
+.wave-transition__perk-card--epic:hover,
+.wave-transition__perk-card--epic:focus-visible {
+  border-color: #b388ff;
+  box-shadow: 0 5px 20px rgba(179, 136, 255, 0.35);
+}
+
+.wave-transition__perk-card--legendary {
+  border-color: rgba(255, 215, 0, 0.3);
+  background: linear-gradient(135deg, rgba(11, 12, 16, 0.7) 0%, rgba(255, 215, 0, 0.03) 100%);
+}
+.wave-transition__perk-card--legendary .wave-transition__perk-rarity {
+  background: rgba(255, 215, 0, 0.15);
+  color: var(--accent-gold);
+}
+.wave-transition__perk-card--legendary .wave-transition__perk-name {
+  color: var(--accent-gold);
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+}
+.wave-transition__perk-card--legendary:hover,
+.wave-transition__perk-card--legendary:focus-visible {
+  border-color: var(--accent-gold);
+  box-shadow: 0 5px 25px rgba(255, 215, 0, 0.4);
+}
+

@@ -116,3 +116,18 @@ export interface EvaluationResult {
   tipReward?: { type: 'score'; amount: number } | { type: 'token'; token: 'skip' | 'hint' | 'autoCorrect' } | null;
   reactionDialogue?: string;       // Dialogue spoken by client after evaluation
 }
+
+/** ID representation of an ingredient. */
+export type IngredientId = string;
+
+/** Strictly evaluated scaling configuration for any active wave. */
+export interface WaveDefinition {
+  waveNumber: number;
+  clientsRequired: number;
+  availableIngredients: IngredientId[];
+  basePatienceMs: number;
+  difficultyMultiplier: number;
+  targetScore: number;
+  description: string;
+}
+

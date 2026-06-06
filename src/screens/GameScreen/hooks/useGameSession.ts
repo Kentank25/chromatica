@@ -4,7 +4,9 @@ import { useGameStore } from '../../../store/gameStore';
 import { useAchievementStore } from '../../../store/achievementStore';
 import { generateClient } from '../../../engine/clientGenerator';
 import { evaluatePotion, getComboReward } from '../../../engine/scoring';
-import { getWaveConfig, isWaveClear } from '../../../engine/waveManager';
+import { getWaveMetrics, isWaveClear } from '../../../engine/waveManager';
+import { PERK_POOL } from '../../../engine/perksManager';
+import type { PerkDefinition } from '../../../engine/perksManager';
 import { audioManager } from '../../../audio/AudioManager';
 import { musicManager } from '../../../audio/MusicManager';
 import { BASE_INGREDIENTS } from '../../../engine/colorScience';
@@ -58,11 +60,18 @@ export function useGameSession() {
   const [hintChannel, setHintChannel] = useState<'r' | 'g' | 'b' | null>(null);
   const [waveAccuracies, setWaveAccuracies] = useState<number[]>([]);
   const [showWaveTransition, setShowWaveTransition] = useState(false);
-  const [transitionStats, setTransitionStats] = useState({
+  const [transitionStats, setTransitionStats] = useState<{
+    waveNumber: number;
+    clientsServed: number;
+    accuracy: number;
+    pointsEarned: number;
+    perks: PerkDefinition[];
+  }>({
     waveNumber: 1,
     clientsServed: 0,
     accuracy: 0,
     pointsEarned: 0,
+    perks: [],
   });
   const [showTutorial, setShowTutorial] = useState(() => {
     return !localStorage.getItem('chromatica-tutorial');
@@ -100,7 +109,7 @@ export function useGameSession() {
       return;
     }
 
-    const waveConfig = getWaveConfig(currentWave, difficulty);
+    const waveConfig = getWaveMetrics(currentWave, difficulty);
     if (isWaveClear(clientsServedThisWave, waveScore, waveConfig)) {
       const avgAccuracy = waveAccuracies.length > 0
         ? waveAccuracies.reduce((sum, val) => sum + val, 0) / waveAccuracies.length
@@ -113,11 +122,20 @@ export function useGameSession() {
         pointsEarned: waveScore,
       });
 
+      // Generate 3 unique random perks for this wave clear
+      const pool = [...PERK_POOL];
+      const selected: PerkDefinition[] = [];
+      while (selected.length < 3 && pool.length > 0) {
+        const idx = Math.floor(Math.random() * pool.length);
+        selected.push(pool.splice(idx, 1)[0]);
+      }
+
       setTransitionStats({
         waveNumber: currentWave,
         clientsServed: clientsServedThisWave,
         accuracy: avgAccuracy,
         pointsEarned: waveScore,
+        perks: selected,
       });
       setShowWaveTransition(true);
       setPhase('waveClear');
@@ -152,7 +170,16 @@ export function useGameSession() {
     audioManager.playSFX('timeout');
     
     // Apply client-specific satisfaction penalty rather than immediately ending the game
-    updateSatisfaction(-currentClient.modifiers.penaltySeverity);
+    const activePerks = useGameStore.getState().activePerks || [];
+    let penaltyMult = 1.0;
+    for (const perkId of activePerks) {
+      const perk = PERK_POOL.find((p) => p.id === perkId);
+      if (perk && perk.penaltyMultiplier) {
+        penaltyMult *= perk.penaltyMultiplier;
+      }
+    }
+    const penalty = Math.round(currentClient.modifiers.penaltySeverity * penaltyMult);
+    updateSatisfaction(-penalty);
     
     resetCombo();
     incrementPotionsFailed();
@@ -310,6 +337,7 @@ export function useGameSession() {
     const ingredientsUsed = activeIngredients.map(([id]) => id);
     const totalAmount = activeIngredients.reduce((sum, [, amt]) => sum + amt, 0);
 
+    const activePerks = useGameStore.getState().activePerks || [];
     const result = evaluatePotion(
       currentClient.targetColor,
       playerMix,
@@ -319,7 +347,8 @@ export function useGameSession() {
       currentClient.modifiers.efficiencyPenalty
         ? { ingredientsUsed: activeIngredients.length, totalAmount }
         : undefined,
-      playerMix
+      playerMix,
+      activePerks,
     );
 
     setFeedback(result);
@@ -361,13 +390,31 @@ export function useGameSession() {
       }
 
       if (hasMoreSubOrders) {
-        localTimeRef.current = Math.min(currentClient.modifiers.patience, localTimeRef.current + 2);
+        const activePerksList = useGameStore.getState().activePerks || [];
+        let patienceMult = 1.0;
+        for (const perkId of activePerksList) {
+          const perk = PERK_POOL.find((p) => p.id === perkId);
+          if (perk && perk.patienceMultiplier) {
+            patienceMult *= perk.patienceMultiplier;
+          }
+        }
+        const actualPatience = currentClient.modifiers.patience * patienceMult;
+        localTimeRef.current = Math.min(actualPatience, localTimeRef.current + 2);
         setTimeRemaining(localTimeRef.current);
       }
     } else {
       audioManager.playSFX('failure');
       // Apply client-specific satisfaction penalty rather than immediately ending the game
-      updateSatisfaction(-currentClient.modifiers.penaltySeverity);
+      const activePerks = useGameStore.getState().activePerks || [];
+      let penaltyMult = 1.0;
+      for (const perkId of activePerks) {
+        const perk = PERK_POOL.find((p) => p.id === perkId);
+        if (perk && perk.penaltyMultiplier) {
+          penaltyMult *= perk.penaltyMultiplier;
+        }
+      }
+      const penalty = Math.round(currentClient.modifiers.penaltySeverity * penaltyMult);
+      updateSatisfaction(-penalty);
       resetCombo();
       incrementPotionsFailed();
     }

@@ -12,6 +12,7 @@ import { computeAccuracy, computeDeltaE } from './colorScience';
 import { clamp } from '../utils/mathUtils';
 import { detectEffect } from './potionEffects';
 import { computeReactionTier, computeTipReward, generateReactionDialogue } from './reactionEngine';
+import { PERK_POOL } from './perksManager';
 
 // ---------------------------------------------------------------------------
 // Potion evaluation
@@ -47,6 +48,7 @@ export function evaluatePotion(
   comboStreak: number,
   efficiencyData?: { ingredientsUsed: number; totalAmount: number },
   playerMixColor?: RGB,
+  activePerkIds: string[] = [],
 ): EvaluationResult {
   const accuracy = computeAccuracy(target, submitted);
   const deltaE = computeDeltaE(target, submitted);
@@ -77,6 +79,19 @@ export function evaluatePotion(
     };
   }
 
+  // --- Calculate perk multipliers ---
+  let scoreMult = 1.0;
+  let comboMult = 1.0;
+  let patienceMult = 1.0;
+  for (const perkId of activePerkIds) {
+    const perk = PERK_POOL.find((p) => p.id === perkId);
+    if (perk) {
+      if (perk.scoreMultiplier) scoreMult *= perk.scoreMultiplier;
+      if (perk.comboMultiplier) comboMult *= perk.comboMultiplier;
+      if (perk.patienceMultiplier) patienceMult *= perk.patienceMultiplier;
+    }
+  }
+
   // --- Base points ---
   const basePoints = Math.floor(
     100 * (accuracy / 100) * client.modifiers.scoreMultiplier,
@@ -104,11 +119,14 @@ export function evaluatePotion(
   }
 
   // --- Combo bonus: +10 % per combo level (capped at 3.0x / 20 streak) ---
-  const comboMultiplier = getComboMultiplier(comboStreak);
-  const comboBonus = Math.floor(basePoints * Math.min(comboStreak, 20) * 0.1);
+  const rawComboMultiplier = getComboMultiplier(comboStreak);
+  const comboBonusPart = rawComboMultiplier - 1.0;
+  const comboMultiplier = 1.0 + comboBonusPart * comboMult;
+  const comboBonus = Math.floor(basePoints * Math.min(comboStreak, 20) * 0.1 * comboMult);
 
   // --- Speed bonus: 5-20 % based on time remaining vs patience ---
-  const timeRatio = clamp(timeRemaining / client.modifiers.patience, 0, 1);
+  const actualPatience = client.modifiers.patience * patienceMult;
+  const timeRatio = clamp(timeRemaining / actualPatience, 0, 1);
   // 5 % at the wire (timeRatio ≈ 0), up to 20 % when nearly full time remains
   const speedPercent = 0.05 + 0.15 * timeRatio;
   const pointsBeforeSpeed = Math.floor(basePoints * comboMultiplier);
@@ -123,6 +141,7 @@ export function evaluatePotion(
 
   // Apply efficiency deduction and add effect bonus to total points earned
   const totalPoints = Math.max(0, pointsBeforeSpeed + speedBonus + effectBonus - efficiencyDeduction);
+  const finalPoints = Math.floor(totalPoints * scoreMult);
 
   // --- Tip Reward ---
   const tipReward = computeTipReward(reactionTier);
@@ -131,7 +150,7 @@ export function evaluatePotion(
     accuracy,
     deltaE,
     passed: true,
-    pointsEarned: totalPoints,
+    pointsEarned: finalPoints,
     comboBonus,
     speedBonus,
     efficiencyDeduction,

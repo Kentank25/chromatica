@@ -8,6 +8,8 @@ import { create } from 'zustand';
 import type { RGB, Ingredient } from '../types/color.types';
 import type { Client, GamePhase, WaveResult, PotionEffect } from '../types/game.types';
 import { mixColorsKM, BASE_INGREDIENTS } from '../engine/colorScience';
+import { PERK_POOL } from '../engine/perksManager';
+
 
 const getInitialMixerAmounts = (): Record<string, number> => {
   const amounts: Record<string, number> = {};
@@ -41,6 +43,10 @@ interface GameState {
   multiOrderTargets: RGB[];
   currentSubOrderIndex: number;
 
+  // ── Perks System ──
+  activePerks: string[];
+
+
   // Actions
   startGame: () => void;
   setDifficulty: (difficulty: 'apprentice' | 'journeyman' | 'master') => void;
@@ -68,7 +74,9 @@ interface GameState {
   advanceSubOrder: () => RGB | null;
   clearMultiOrder: () => void;
   setActiveEffect: (effect: PotionEffect) => void;
+  acquirePerk: (perkId: string) => void;
 }
+
 
 const INITIAL_STATE = {
   score: 0,
@@ -91,12 +99,13 @@ const INITIAL_STATE = {
   activeEffect: null as PotionEffect,
   multiOrderTargets: [] as RGB[],
   currentSubOrderIndex: 0,
+  activePerks: [] as string[],
 };
 
 export const useGameStore = create<GameState>((set, get) => ({
   ...INITIAL_STATE,
 
-  startGame: () => set((s) => ({ ...INITIAL_STATE, difficulty: s.difficulty, phase: 'playing' })),
+  startGame: () => set((s) => ({ ...INITIAL_STATE, difficulty: s.difficulty, phase: 'playing', activePerks: [] })),
 
   setDifficulty: (difficulty) => set({ difficulty }),
 
@@ -281,4 +290,31 @@ export const useGameStore = create<GameState>((set, get) => ({
     }),
 
   setActiveEffect: (effect) => set({ activeEffect: effect }),
+
+  acquirePerk: (perkId) => {
+    const perk = PERK_POOL.find((p) => p.id === perkId);
+    if (!perk) return;
+
+    set((state) => {
+      const nextActivePerks = [...state.activePerks, perkId];
+
+      let satisfaction = state.satisfaction;
+      if (perk.instantSatisfactionHeal) {
+        satisfaction = Math.min(100, satisfaction + perk.instantSatisfactionHeal);
+      }
+
+      const tokens = { ...state.tokens };
+      if (perk.instantTokens) {
+        if (perk.instantTokens.skip) tokens.skip += perk.instantTokens.skip;
+        if (perk.instantTokens.hint) tokens.hint += perk.instantTokens.hint;
+        if (perk.instantTokens.autoCorrect) tokens.autoCorrect += perk.instantTokens.autoCorrect;
+      }
+
+      return {
+        activePerks: nextActivePerks,
+        satisfaction,
+        tokens,
+      };
+    });
+  },
 }));

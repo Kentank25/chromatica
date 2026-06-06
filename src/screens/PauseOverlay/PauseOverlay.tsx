@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import Button from '../../components/common/Button';
 import { useSettingsStore } from '../../store/settingsStore';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { useGameStore } from '../../store/gameStore';
+import { PERK_POOL } from '../../engine/perksManager';
+import { groupActivePerks } from '../../utils/perkUtils';
 import './PauseOverlay.css';
 
 import {
@@ -24,6 +27,11 @@ interface PauseOverlayProps {
 export const PauseOverlay: React.FC<PauseOverlayProps> = ({ onResume, onRestart, onQuit, onTriggerTutorial }) => {
   const { bgmVolume, sfxVolume, setVolume, muted, toggleMute } = useSettingsStore();
   const { containerRef, handleKeyDown } = useFocusTrap<HTMLDivElement>(true);
+  const activePerks = useGameStore((s) => s.activePerks);
+
+  const groupedPerks = useMemo(() => {
+    return groupActivePerks(activePerks, PERK_POOL);
+  }, [activePerks]);
 
   return (
     <div
@@ -80,6 +88,28 @@ export const PauseOverlay: React.FC<PauseOverlayProps> = ({ onResume, onRestart,
           >
             {muted ? 'Unmute All' : 'Mute All'}
           </Button>
+        </div>
+
+        <div className="pause-overlay__perks-section">
+          <h3 className="pause-overlay__section-title">Active Perks</h3>
+          {groupedPerks.length === 0 ? (
+            <p className="pause-overlay__no-perks">No active perks yet. Clear waves to choose upgrades!</p>
+          ) : (
+            <div className="pause-overlay__perks-list">
+              {groupedPerks.map(({ perk, count }) => (
+                <div key={perk.id} className={`pause-overlay__perk-item pause-overlay__perk-item--${perk.rarity}`}>
+                  <div className="pause-overlay__perk-header">
+                    <span className="pause-overlay__perk-name">{perk.name}</span>
+                    <span className="pause-overlay__perk-rarity">{perk.rarity}</span>
+                  </div>
+                  <div className="pause-overlay__perk-body">
+                    <span className="pause-overlay__perk-desc">{perk.description}</span>
+                    {count > 1 && <span className="pause-overlay__perk-count">×{count}</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="pause-overlay__actions">

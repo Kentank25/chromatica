@@ -11,6 +11,7 @@
  */
 
 import type { RGB, LAB, Ingredient } from '../types/color.types';
+import { getWaveMetrics } from './waveManager';
 import { clamp, randomInt, randomFloat } from '../utils/mathUtils';
 import { rgbToHsl } from '../utils/colorUtils';
 
@@ -405,30 +406,15 @@ export const BASE_INGREDIENTS: Ingredient[] = [
  * @param wave - Current wave to filter available ingredients.
  * @returns An sRGB colour suitable as a client's target.
  */
-export function generateTargetColor(difficulty: number, wave: number = 1): RGB {
-  const diff = clamp(Math.round(difficulty), 1, 3);
-
-  // Filter ingredients to only those unlocked in the current wave
+export function generateTargetColor(difficultyMultiplier: number, wave: number = 1): RGB {
+  const waveMetrics = getWaveMetrics(wave);
   const unlockedIngredients = BASE_INGREDIENTS.filter(
-    (ing) => (ing.unlockWave ?? 1) <= wave
+    (ing) => waveMetrics.availableIngredients.includes(ing.id)
   );
 
-  // Number of ingredients based on difficulty
-  let ingredientCount: number;
-  switch (diff) {
-    case 1:
-      ingredientCount = Math.min(2, unlockedIngredients.length);
-      break;
-    case 2:
-      ingredientCount = clamp(randomInt(2, 3), 1, unlockedIngredients.length);
-      break;
-    case 3:
-    default:
-      ingredientCount = clamp(randomInt(3, 4), 1, unlockedIngredients.length);
-      break;
-  }
+  // N_ingredients(w) = min(4, floor(2 + 0.15 * w))
+  const ingredientCount = Math.min(4, Math.floor(2 + 0.15 * wave));
 
-  // Pick distinct random ingredients (avoid duplicates)
   const availableIndices = Array.from(
     { length: unlockedIngredients.length },
     (_, i) => i,
@@ -440,20 +426,10 @@ export function generateTargetColor(difficulty: number, wave: number = 1): RGB {
     const ingredientIdx = availableIndices.splice(pickIdx, 1)[0];
     const ingredient = unlockedIngredients[ingredientIdx];
 
-    // Amount range shrinks with difficulty for subtler mixes
-    let amount: number;
-    switch (diff) {
-      case 1:
-        amount = randomFloat(0.5, 2.0);
-        break;
-      case 2:
-        amount = randomFloat(0.3, 1.5);
-        break;
-      case 3:
-      default:
-        amount = randomFloat(0.15, 1.0);
-        break;
-    }
+    const d = difficultyMultiplier;
+    const cMin = Math.max(0.05, 0.5 - (d - 1.0) * 0.15);
+    const cMax = 2.0 + (d - 1.0) * 0.2;
+    const amount = randomFloat(cMin, cMax);
 
     chosen.push({ ingredient, amount });
   }

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useGameStore } from '../../../store/gameStore';
 import { useGameLoop } from '../../../hooks/useGameLoop';
+import { PERK_POOL } from '../../../engine/perksManager';
 import type { Client } from '../../../types/game.types';
 
 interface UseGameTimerProps {
@@ -19,8 +20,17 @@ export function useGameTimer({ currentClient, running, onTimeout }: UseGameTimer
   // Synchronize local timer reference when currentClient changes (only on client ID change)
   useEffect(() => {
     if (currentClient) {
-      localTimeRef.current = currentClient.modifiers.patience;
-      setTimeRemaining(currentClient.modifiers.patience);
+      const activePerks = useGameStore.getState().activePerks || [];
+      let patienceMult = 1.0;
+      for (const perkId of activePerks) {
+        const perk = PERK_POOL.find((p) => p.id === perkId);
+        if (perk && perk.patienceMultiplier) {
+          patienceMult *= perk.patienceMultiplier;
+        }
+      }
+      const actualPatience = currentClient.modifiers.patience * patienceMult;
+      localTimeRef.current = actualPatience;
+      setTimeRemaining(actualPatience);
     }
   }, [currentClientId, currentClient, setTimeRemaining]);
 
