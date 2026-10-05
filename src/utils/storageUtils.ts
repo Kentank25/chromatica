@@ -3,13 +3,9 @@
  * LocalStorage persistence helpers for Chromatica v2.
  */
 
-export interface LeaderboardEntry {
-  id: string;
-  score: number;
-  grade: string;
-  date: string;
-  timestamp: number;
-}
+import type { LeaderboardEntry, Difficulty } from '../types/leaderboard.types';
+export type { LeaderboardEntry };
+
 
 const HIGH_SCORES_KEY = 'chromatica_v2_high_scores';
 const MAX_HIGH_SCORES = 10;
@@ -69,7 +65,18 @@ export function getHighScores(): LeaderboardEntry[] {
  * Keeps only the top {@link MAX_HIGH_SCORES} entries, sorted descending.
  * Saves the newly added entry's ID to localStorage key 'chromatica_v2_latest_score_id'.
  */
-export function saveHighScore(score: number): void {
+export function saveHighScore(
+  score: number,
+  details?: {
+    uid?: string;
+    displayName?: string;
+    isGuest?: boolean;
+    wave?: number;
+    potionsBrewed?: number;
+    highestCombo?: number;
+    difficulty?: Difficulty;
+  }
+): void {
   const entries = getHighScores();
   const newEntry: LeaderboardEntry = {
     id: `score_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
@@ -77,6 +84,7 @@ export function saveHighScore(score: number): void {
     grade: getRatingGrade(score),
     date: new Date().toLocaleDateString(),
     timestamp: Date.now(),
+    ...details
   };
 
   entries.push(newEntry);

@@ -5,10 +5,12 @@ import Button from '../../components/common/Button';
 import GlassCard from '../../components/common/GlassCard';
 import { saveHighScore } from '../../utils/storageUtils';
 import { musicManager } from '../../audio/MusicManager';
-import { RestartIcon } from '../../utils/icons';
+import { RestartIcon, TrophyIcon } from '../../utils/icons';
 import { useAchievementStore } from '../../store/achievementStore';
 import { ACHIEVEMENT_DEFINITIONS } from '../../engine/achievementDefinitions';
 import { DynamicLucideIcon } from '../../components/game/AchievementToast';
+import { useAuthStore } from '../../store/authStore';
+import { useLeaderboardStore } from '../../store/leaderboardStore';
 import './ResultsScreen.css';
 
 function getRating(score: number): { grade: string; color: string } {
@@ -64,8 +66,23 @@ export const ResultsScreen: React.FC = () => {
 
   const rating = getRating(score);
 
+  const user = useAuthStore((s) => s.user);
+  const authLoading = useAuthStore((s) => s.isLoading);
+  const updateDisplayName = useAuthStore((s) => s.updateDisplayName);
+  const submitNewScore = useLeaderboardStore((s) => s.submitNewScore);
+
+  const [submittingOnline, setSubmittingOnline] = useState(false);
+  const [submittedOnline, setSubmittedOnline] = useState(false);
+  const [onlineSubmitError, setOnlineSubmitError] = useState<string | null>(null);
+
+  const [customName, setCustomName] = useState('');
+  const [nameEditing, setNameEditing] = useState(false);
+  const [nameUpdateSuccess, setNameUpdateSuccess] = useState(false);
+  const [nameUpdateError, setNameUpdateError] = useState<string | null>(null);
+
+  const lastSubmittedUid = React.useRef<string | null>(null);
+
   useEffect(() => {
-    saveHighScore(score);
     musicManager.play('results');
     // Animated count-up
     const duration = 1500;
@@ -78,6 +95,79 @@ export const ResultsScreen: React.FC = () => {
     };
     requestAnimationFrame(animate);
   }, [score]);
+
+  // Save score locally with full details once auth resolves
+  useEffect(() => {
+    if (!authLoading && user) {
+      saveHighScore(score, {
+        uid: user.uid,
+        displayName: user.displayName,
+        isGuest: user.isGuest,
+        wave: waveHistory.length || currentWave,
+        potionsBrewed: potionsCompleted,
+        highestCombo,
+        difficulty: useGameStore.getState().difficulty
+      });
+    }
+  }, [authLoading, user, score, currentWave, highestCombo, potionsCompleted, waveHistory]);
+
+  // Sync score online to global leaderboard
+  useEffect(() => {
+    if (!authLoading && user && score > 0) {
+      const shouldSubmit = !submittedOnline && !submittingOnline && !onlineSubmitError;
+      const uidChanged = lastSubmittedUid.current !== null && lastSubmittedUid.current !== user.uid;
+
+      if (shouldSubmit || uidChanged) {
+        lastSubmittedUid.current = user.uid;
+        setSubmittingOnline(true);
+        setSubmittedOnline(false);
+        setOnlineSubmitError(null);
+
+        submitNewScore({
+          score,
+          grade: rating.grade,
+          wave: waveHistory.length || currentWave,
+          potionsBrewed: potionsCompleted,
+          highestCombo
+        })
+        .then(() => {
+          setSubmittedOnline(true);
+          setSubmittingOnline(false);
+        })
+        .catch((err: unknown) => {
+          console.error(err);
+          setOnlineSubmitError("Could not sync score online.");
+          setSubmittingOnline(false);
+        });
+      }
+    }
+  }, [authLoading, user, score, submittedOnline, submittingOnline, onlineSubmitError, rating.grade, currentWave, potionsCompleted, highestCombo, waveHistory, submitNewScore]);
+
+  const handleUpdateName = async () => {
+    if (!customName.trim()) return;
+    try {
+      setNameUpdateError(null);
+      setNameUpdateSuccess(false);
+      await updateDisplayName(customName.trim());
+      setNameUpdateSuccess(true);
+      setNameEditing(false);
+
+      // Re-submit score to update name on global leaderboard
+      setSubmittingOnline(true);
+      await submitNewScore({
+        score,
+        grade: rating.grade,
+        wave: waveHistory.length || currentWave,
+        potionsBrewed: potionsCompleted,
+        highestCombo
+      });
+      setSubmittedOnline(true);
+      setSubmittingOnline(false);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to update tag name.";
+      setNameUpdateError(message);
+    }
+  };
 
   return (
     <div className="results" id="results-screen">
@@ -141,6 +231,107 @@ export const ResultsScreen: React.FC = () => {
           </div>
         )}
 
+        {/* Global Leaderboard Sync Status & Identity Controls */}
+        <GlassCard className="results__leaderboard-card" padding="md">
+          <h3 className="results__leaderboard-title">
+            <TrophyIcon className="icon--sm icon--gold" style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+            Hall of Alchemy Registry
+          </h3>
+
+          {authLoading ? (
+            <p className="results__leaderboard-status">Consulting the registry archives...</p>
+          ) : (
+            <div className="results__leaderboard-details">
+              {user && (
+                <>
+                  <p className="results__leaderboard-text">
+                    Registered as: <strong className="results__leaderboard-name">{user.displayName}</strong>
+                    {user.isGuest && <span className="results__leaderboard-guest-badge">Guest</span>}
+                  </p>
+
+                  {/* Submission Status Message */}
+                  {submittingOnline && (
+                    <p className="results__leaderboard-status results__leaderboard-status--syncing">
+                      Inscribing your recipe to the global archives...
+                    </p>
+                  )}
+                  {submittedOnline && (
+                    <p className="results__leaderboard-status results__leaderboard-status--success">
+                      ✓ Score successfully synced to the global archives!
+                    </p>
+                  )}
+                  {onlineSubmitError && (
+                    <p className="results__leaderboard-status results__leaderboard-status--error">
+                      ⚠️ {onlineSubmitError} (Saved locally)
+                    </p>
+                  )}
+
+                  {/* Tag name editing — available for all users, including guests */}
+                  <div className="results__leaderboard-actions">
+                    {nameEditing ? (
+                      <div className="results__leaderboard-edit-form">
+                        <input
+                          type="text"
+                          maxLength={20}
+                          value={customName}
+                          onChange={(e) => {
+                            setCustomName(e.target.value);
+                            setNameUpdateError(null);
+                          }}
+                          className="results__leaderboard-input"
+                          placeholder="Enter tag name..."
+                        />
+                        <div className="results__leaderboard-edit-buttons">
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            disabled={!customName.trim() || customName.trim() === user.displayName}
+                            onClick={handleUpdateName}
+                          >
+                            Save Tag
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setNameEditing(false);
+                              setCustomName(user.displayName);
+                              setNameUpdateError(null);
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                        {nameUpdateError && (
+                          <span className="results__leaderboard-error">{nameUpdateError}</span>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="results__leaderboard-view-form">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => {
+                            setNameEditing(true);
+                            setNameUpdateSuccess(false);
+                            setCustomName(user.displayName);
+                          }}
+                        >
+                          Change Tag Name
+                        </Button>
+                        {nameUpdateSuccess && (
+                          <span className="results__leaderboard-success">✓ Tag updated!</span>
+                        )}
+                      </div>
+                    )}
+
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </GlassCard>
+
         <div className="results__actions">
           <Button
             variant="primary"
@@ -151,7 +342,16 @@ export const ResultsScreen: React.FC = () => {
           >
             Try Again
           </Button>
-          <Button variant="secondary" size="md" onClick={() => navigate('/menu')} id="btn-menu">
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={() => navigate('/leaderboard')}
+            id="btn-leaderboard"
+            icon={<TrophyIcon className="icon--sm" />}
+          >
+            Leaderboard
+          </Button>
+          <Button variant="ghost" size="md" onClick={() => navigate('/menu')} id="btn-menu">
             Main Menu
           </Button>
         </div>

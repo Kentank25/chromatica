@@ -10,6 +10,7 @@ import { useAudio } from './hooks/useAudio';
 import { audioManager } from './audio/AudioManager';
 import { musicManager } from './audio/MusicManager';
 import { useAchievementStore } from './store/achievementStore';
+import { useAuthStore } from './store/authStore';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import { useGameStore } from './store/gameStore';
 
@@ -34,8 +35,12 @@ function App() {
     
     // Subscribe achievement store to event bus
     const unsubAchievements = useAchievementStore.getState().init();
+    // Subscribe auth store to Firebase auth state changes
+    const unsubAuth = useAuthStore.getState().initAuth();
+
     return () => {
       unsubAchievements();
+      unsubAuth();
     };
   }, []);
 
