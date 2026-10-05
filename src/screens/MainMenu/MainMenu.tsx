@@ -20,6 +20,7 @@ import {
   BookIcon,
 } from '../../utils/icons';
 import { useAchievementStore } from '../../store/achievementStore';
+import { useAuthStore } from '../../store/authStore';
 import './MainMenu.css';
 
 export const MainMenu: React.FC = () => {
@@ -30,6 +31,8 @@ export const MainMenu: React.FC = () => {
   const { bgmVolume, sfxVolume, setVolume, muted, toggleMute } = useSettingsStore();
   const { difficulty, setDifficulty } = useGameStore();
   const achievements = useAchievementStore((s) => s.achievements);
+  
+  const { user, isLoading, loginWithGoogle, logout } = useAuthStore();
 
   const stats = React.useMemo(() => {
     const total = Object.keys(achievements).length;
@@ -51,6 +54,40 @@ export const MainMenu: React.FC = () => {
     <div className="main-menu" id="main-menu">
       <div className="main-menu__orb main-menu__orb--1" />
       <div className="main-menu__orb main-menu__orb--2" />
+
+      {/* Auth Status Bar */}
+      <div className="main-menu__auth-bar">
+        {isLoading ? (
+          <span className="main-menu__auth-loading">Entering the laboratory...</span>
+        ) : user ? (
+          <div className="main-menu__auth-user">
+            <span className="main-menu__auth-avatar">
+              {user.displayName.substring(0, 1).toUpperCase()}
+            </span>
+            <span className="main-menu__auth-info">
+              <span className="main-menu__auth-welcome">Alchemist Profile</span>
+              <span className="main-menu__auth-name">
+                {user.displayName} {user.isGuest && <span className="main-menu__auth-guest-badge">Guest</span>}
+              </span>
+            </span>
+            {user.isGuest ? (
+              <button 
+                className="main-menu__auth-action-btn"
+                onClick={loginWithGoogle}
+              >
+                Sign In
+              </button>
+            ) : (
+              <button 
+                className="main-menu__auth-action-btn main-menu__auth-action-btn--signout"
+                onClick={logout}
+              >
+                Sign Out
+              </button>
+            )}
+          </div>
+        ) : null}
+      </div>
 
       <div className="main-menu__content">
         <div className="main-menu__header">
